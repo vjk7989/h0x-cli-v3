@@ -29,7 +29,7 @@ export function ImportPanel(props: ImportPanelProps): ReactElement {
   return (
     <Box flexDirection="column">
       <Text bold color={theme.colors.accentSoft}>
-        Import · {sourceLabel} {theme.glyphs.arrowRight} atomic-agent
+        Import · {sourceLabel} {theme.glyphs.arrowRight} h0x-cli
       </Text>
       {panel.notice ? (
         <Box marginTop={1}>

@@ -264,8 +264,8 @@ export async function checkLlamaServer(
 export function formatLlamaUnreachableHint(url: string): string {
   return [
     `llama-server is not reachable at ${url}`,
-    "  start it with:       atomic-agent models start",
-    `  or point elsewhere:  atomic-agent config set localModels.url <url>`,
+    "  start it with:       h0x-cli models start",
+    `  or point elsewhere:  h0x-cli config set localModels.url <url>`,
   ].join("\n");
 }
 

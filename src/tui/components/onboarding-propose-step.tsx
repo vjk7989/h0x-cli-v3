@@ -9,7 +9,7 @@ import { theme } from "../theme/theme.js";
 
 /** Hand-wrapped, so the measured block width matches what is drawn. */
 const EXPLAINER: readonly string[] = [
-  "atomic-agent runs both side by side — local for private or offline work,",
+  "h0x-cli runs both side by side — local for private or offline work,",
   "cloud for the heavy turns, switchable mid-session. You have one of the two.",
 ];
 

@@ -22,7 +22,7 @@ import {
 
 const HELP =
   [
-    "atomic-agent import — one-shot import from another agent's state",
+    "h0x-cli import — one-shot import from another agent's state",
     "",
     "Subcommands:",
     "  hermes [options]          Import conversation history + cron jobs from ~/.hermes",
@@ -50,11 +50,11 @@ const HELP =
     "  --yes                     Skip the interactive confirmation",
     "",
     "Examples:",
-    "  atomic-agent import hermes --dry-run",
-    "  atomic-agent import hermes --yes",
-    "  atomic-agent import hermes --migrate-secrets --overwrite",
-    "  atomic-agent import openclaw --dry-run",
-    "  atomic-agent import openclaw --agent main --yes",
+    "  h0x-cli import hermes --dry-run",
+    "  h0x-cli import hermes --yes",
+    "  h0x-cli import hermes --migrate-secrets --overwrite",
+    "  h0x-cli import openclaw --dry-run",
+    "  h0x-cli import openclaw --agent main --yes",
   ].join("\n") + "\n";
 
 export async function importCommand(args: string[]): Promise<number> {

@@ -15,12 +15,19 @@ function read(relative: string): string {
   return readFileSync(resolve(repoRoot, relative), "utf8");
 }
 
-describe("atag alias", () => {
-  it("npm exposes it as a bin entry pointing at the CLI entrypoint", () => {
+describe("CLI package and compatibility aliases", () => {
+  it("publishes h0x-cli with the canonical and legacy entrypoints", () => {
     const manifest = JSON.parse(read("package.json")) as {
+      name: string;
       bin: Record<string, string>;
     };
-    expect(manifest.bin.atag).toBe(manifest.bin["atomic-agent"]);
+    expect(manifest.name).toBe("h0x-cli");
+    expect(manifest.bin).toMatchObject({
+      "h0x-cli": "dist/cli/index.js",
+      "atomic-agent": "dist/cli/index.js",
+      atag: "dist/cli/index.js",
+      "atomic-agent-sidecar": "dist/sidecar/main.js",
+    });
   });
 
   it("the POSIX installer links it next to the binary", () => {
@@ -35,9 +42,5 @@ describe("atag alias", () => {
     expect(script).toContain('Join-Path $InstallDir "atag.cmd"');
     // %~dp0 keeps the shim pointed at the binary beside it.
     expect(script).toContain('"`"%~dp0atomic-agent.exe`" %*"');
-  });
-
-  it("is documented in the CLI help", () => {
-    expect(read("src/cli/index.ts")).toContain("atag <command> [options]");
   });
 });

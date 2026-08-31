@@ -702,7 +702,7 @@ export async function tuiCommand(args: string[]): Promise<number> {
   // to the child and blocks until it exits, then we propagate its exit code —
   // a seamless restart without a detached-process race for the terminal.
   if (restartRequested) {
-    process.stdout.write("restarting atomic-agent…\n");
+    process.stdout.write("restarting h0x-cli…\n");
     // SEA prepends an extra argv slot, so the real user args start at index 2
     // (see userArgsFromArgv in cli/index.ts). Re-using process.argv.slice(1)
     // here re-injects the invoke-path slot and the relaunched SEA process reads
@@ -738,7 +738,7 @@ function openNewAgentWindow(
     if (result.ok) {
       bus.emit({
         type: "system_message",
-        text: `opened a new atomic-agent window (${result.label})`,
+        text: `opened a new h0x-cli window (${result.label})`,
       });
       return;
     }

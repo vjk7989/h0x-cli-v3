@@ -39,8 +39,8 @@ export interface TuiColors {
   /**
    * The accent hue as a *ground* — the tone a chip, badge or panel is
    * painted in, with `accent` ink read on top of it. A palette is free
-   * to make it much darker than `accent` (the house one does: `#294793`
-   * against `#7195e8`), so it is never a text colour. Text reads
+   * to make it much darker than `accent` (the house one does: `#4b2870`
+   * against `#b084f5`), so it is never a text colour. Text reads
    * `accent`; borders and other chrome may keep this tone, since they
    * are looked at rather than read.
    */
@@ -54,10 +54,8 @@ export interface TuiColors {
    */
   readonly accentAlt: string;
   /**
-   * The brand mark's own blue — deliberately lighter and whiter than
-   * `accent`. The mark is not a control, and painting it in the same
-   * blue as every accented control made the start page read as one big
-   * highlighted widget.
+   * The wordmark follows the active palette's accent, including live previews.
+   * Retained as a named role for brand consumers and existing theme contracts.
    */
   readonly brandMark: string;
   /**

@@ -35,7 +35,7 @@ import {
 
 const HELP =
   [
-    "atomic-agent skill — manage installed skills",
+    "h0x-cli skill — manage installed skills",
     "",
     "Subcommands:",
     "  install <path|owner/repo[/path]|@owner/slug> [--force] [--acknowledge-risk]",
@@ -92,7 +92,7 @@ async function handleInstall(args: string[]): Promise<number> {
   const source = args.find((a) => !a.startsWith("--"));
   if (!source) {
     process.stderr.write(
-      "usage: atomic-agent skill install <path|owner/repo[/path]> [--force] [--acknowledge-risk]\n",
+      "usage: h0x-cli skill install <path|owner/repo[/path]> [--force] [--acknowledge-risk]\n",
     );
     return 2;
   }
@@ -200,7 +200,7 @@ async function handleClawHubInstall(
 async function handleUninstall(args: string[]): Promise<number> {
   const name = args[0];
   if (!name) {
-    process.stderr.write("usage: atomic-agent skill uninstall <name>\n");
+    process.stderr.write("usage: h0x-cli skill uninstall <name>\n");
     return 2;
   }
   const config = getConfig();
@@ -259,7 +259,7 @@ async function handleList(): Promise<number> {
 async function handleShow(args: string[]): Promise<number> {
   const name = args[0];
   if (!name) {
-    process.stderr.write("usage: atomic-agent skill show <name>\n");
+    process.stderr.write("usage: h0x-cli skill show <name>\n");
     return 2;
   }
   const config = getConfig();
@@ -284,7 +284,7 @@ async function handleShow(args: string[]): Promise<number> {
 async function handleEnable(args: string[]): Promise<number> {
   const name = args[0];
   if (!name) {
-    process.stderr.write("usage: atomic-agent skill enable <name>\n");
+    process.stderr.write("usage: h0x-cli skill enable <name>\n");
     return 2;
   }
   const result = mutateDisabledList((current) => {
@@ -302,7 +302,7 @@ async function handleEnable(args: string[]): Promise<number> {
 async function handleDisable(args: string[]): Promise<number> {
   const name = args[0];
   if (!name) {
-    process.stderr.write("usage: atomic-agent skill disable <name>\n");
+    process.stderr.write("usage: h0x-cli skill disable <name>\n");
     return 2;
   }
   const result = mutateDisabledList((current) => {
@@ -342,7 +342,7 @@ async function handleBrowse(args: string[]): Promise<number> {
   const source =
     sourceIdx !== -1 ? args[sourceIdx + 1]?.trim() : undefined;
   if (sourceIdx !== -1 && !source) {
-    process.stderr.write("usage: atomic-agent skill browse [--source owner/repo]\n");
+    process.stderr.write("usage: h0x-cli skill browse [--source owner/repo]\n");
     return 2;
   }
   // ClawHub is the primary catalog; `--source owner/repo` narrows to a
@@ -356,7 +356,7 @@ async function handleBrowse(args: string[]): Promise<number> {
 async function handleSearch(args: string[]): Promise<number> {
   const query = args.filter((a) => !a.startsWith("--")).join(" ").trim();
   if (query.length === 0) {
-    process.stderr.write("usage: atomic-agent skill search <query>\n");
+    process.stderr.write("usage: h0x-cli skill search <query>\n");
     return 2;
   }
   const clawEntries = await browseClawHubSafe(query);
@@ -441,7 +441,7 @@ async function handleTap(args: string[]): Promise<number> {
   if (verb === "add" || verb === "remove") {
     const repo = args[1]?.trim();
     if (!repo) {
-      process.stderr.write(`usage: atomic-agent skill tap ${verb} <owner/repo>\n`);
+      process.stderr.write(`usage: h0x-cli skill tap ${verb} <owner/repo>\n`);
       return 2;
     }
     try {
@@ -469,7 +469,7 @@ async function handleTap(args: string[]): Promise<number> {
     return 0;
   }
   process.stderr.write(
-    "usage: atomic-agent skill tap list | add <owner/repo> | remove <owner/repo>\n",
+    "usage: h0x-cli skill tap list | add <owner/repo> | remove <owner/repo>\n",
   );
   return 2;
 }

@@ -113,7 +113,7 @@ export function McpAddModal({
       <Box marginTop={1} width="100%">
         <Text color={theme.colors.muted}>
           Enter: submit · Shift/Alt+Enter: newline · Esc: cancel ·
-          restart atomic-agent for the new server to connect
+          restart h0x-cli for the new server to connect
         </Text>
       </Box>
     </Box>

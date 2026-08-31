@@ -146,7 +146,7 @@ export async function runLocalModelsUse(idArg: string | undefined): Promise<numb
   const fresh = getConfig();
   if (st0.running && prevModel !== idArg) {
     process.stderr.write(
-      "note: daemon is running with old model. Run `atomic-agent models stop && atomic-agent models start` to apply.\n",
+      "note: daemon is running with old model. Run `h0x-cli models stop && h0x-cli models start` to apply.\n",
     );
   }
   process.stdout.write(
@@ -218,7 +218,7 @@ export async function runLocalModelsStart(): Promise<number> {
   const mid = cfg.localModels.managed.modelId;
   if (!mid || !isKnownLocalModelId(mid)) {
     process.stderr.write(
-      "pick a model first: atomic-agent models pull <id> && atomic-agent models use <id>\n",
+      "pick a model first: h0x-cli models pull <id> && h0x-cli models use <id>\n",
     );
     return 1;
   }
@@ -257,7 +257,7 @@ export async function runLocalModelsStart(): Promise<number> {
         // left to fall back to — nothing can be started.
         process.stderr.write(
           `backend auto-update failed and no usable backend remains: ${auto.error}\n` +
-            `run 'atomic-agent models update' once connectivity is back.\n`,
+            `run 'h0x-cli models update' once connectivity is back.\n`,
         );
         return 1;
       }
@@ -294,7 +294,7 @@ export async function runLocalModelsStart(): Promise<number> {
     if (!embReady) {
       process.stderr.write(
         `note: embedding model ${embCfg.modelId} not downloaded — skipping embedding daemon\n` +
-          `      run 'atomic-agent models pull-embedding ${embCfg.modelId}' to enable hybrid recall.\n`,
+          `      run 'h0x-cli models pull-embedding ${embCfg.modelId}' to enable hybrid recall.\n`,
       );
     }
   }
@@ -408,7 +408,7 @@ export async function runLocalModelsDevices(): Promise<number> {
   const dataDir = cfg.paths.localModelsDataDir;
   if (!isBackendDownloaded(dataDir)) {
     process.stderr.write(
-      "backend not downloaded; run 'atomic-agent models update' first\n",
+      "backend not downloaded; run 'h0x-cli models update' first\n",
     );
     return 1;
   }
@@ -450,14 +450,14 @@ export async function runLocalModelsUseDevice(
   const value = arg?.trim();
   if (!value) {
     process.stderr.write(
-      "usage: atomic-agent models use-device <auto|cpu|Vulkan0>\n",
+      "usage: h0x-cli models use-device <auto|cpu|Vulkan0>\n",
     );
     return 1;
   }
   if (value !== "auto" && value !== "cpu" && !DEVICE_ID_RE.test(value)) {
     process.stderr.write(
       `invalid device ${JSON.stringify(value)}. Expected 'auto', 'cpu', or a device id ` +
-        "(e.g. Vulkan0 — see 'atomic-agent models devices').\n",
+        "(e.g. Vulkan0 — see 'h0x-cli models devices').\n",
     );
     return 1;
   }
@@ -474,7 +474,7 @@ export async function runLocalModelsUseDevice(
   writeUserConfigFileSync(path, next);
   resetConfigCache();
   process.stdout.write(
-    `device set to ${value}. run 'atomic-agent models start' (or restart) to apply.\n`,
+    `device set to ${value}. run 'h0x-cli models start' (or restart) to apply.\n`,
   );
   return 0;
 }
@@ -537,11 +537,11 @@ export async function runLocalModelsPullEmbedding(
  * Memory-v2 phase 1B. Enable/disable the embedding daemon and select
  * its model. Writes through to `<stateDir>/config.json` so the choice
  * survives restarts. Does not start/stop the daemon — operator runs
- * `atomic-agent models start` afterwards.
+ * `h0x-cli models start` afterwards.
  *
  * Usage:
- *   atomic-agent models use-embedding <id>      # enable + select
- *   atomic-agent models use-embedding --disable # turn off
+ *   h0x-cli models use-embedding <id>      # enable + select
+ *   h0x-cli models use-embedding --disable # turn off
  */
 export async function runLocalModelsUseEmbedding(
   arg: string | undefined,
@@ -564,7 +564,7 @@ export async function runLocalModelsUseEmbedding(
     writeUserConfigFileSync(cfg.paths.userConfigFile, next);
     resetConfigCache();
     process.stdout.write(
-      "embedding daemon disabled. run 'atomic-agent models start' to apply.\n",
+      "embedding daemon disabled. run 'h0x-cli models start' to apply.\n",
     );
     return 0;
   }
@@ -591,7 +591,7 @@ export async function runLocalModelsUseEmbedding(
   writeUserConfigFileSync(cfg.paths.userConfigFile, next);
   resetConfigCache();
   process.stdout.write(
-    `embedding model set to ${arg}. run 'atomic-agent models start' to apply.\n`,
+    `embedding model set to ${arg}. run 'h0x-cli models start' to apply.\n`,
   );
   return 0;
 }
@@ -633,7 +633,7 @@ export async function runLocalModelsListEmbeddings(): Promise<number> {
 export async function runLocalModelsUpdate(): Promise<number> {
   const cfg = getConfig();
   if (cfg.localModels.mode !== "managed") {
-    process.stderr.write("switch to managed mode first (atomic-agent models use <id>)\n");
+    process.stderr.write("switch to managed mode first (h0x-cli models use <id>)\n");
     return 1;
   }
   const dataDir = cfg.paths.localModelsDataDir;
@@ -662,7 +662,7 @@ export async function runLocalModelsUpdate(): Promise<number> {
       },
     });
     if (tty) process.stderr.write("\n");
-    process.stdout.write("done. run 'atomic-agent models start' to use the new backend.\n");
+    process.stdout.write("done. run 'h0x-cli models start' to use the new backend.\n");
     return 0;
   } catch (e) {
     process.stderr.write(`${e instanceof Error ? e.message : String(e)}\n`);
@@ -686,7 +686,7 @@ export async function runLocalModelsRemove(idArg: string | undefined): Promise<n
     const st = await getDaemonStatus(dataDir, cfg.localModels.managed.port);
     if (st.running) {
       process.stderr.write(
-        "cannot remove active model while daemon is running. Run 'atomic-agent models stop' first\n",
+        "cannot remove active model while daemon is running. Run 'h0x-cli models stop' first\n",
       );
       return 1;
     }

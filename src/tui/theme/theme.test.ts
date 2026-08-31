@@ -43,7 +43,7 @@ describe("theme proxy", () => {
 
     setActiveTheme(THEMES["classic-light"]);
     expect(theme.colors.accent).toBe(THEMES["classic-light"].colors.accent);
-    expect(theme.colors.accent).toBe("#1f4bb8");
+    expect(theme.colors.accent).toBe("#6b35b5");
   });
 
   it("reflects swaps for glyphs and spinner too (shared, but proxied)", () => {
@@ -102,7 +102,7 @@ describe("theme proxy", () => {
       expect(isThemeName(resolved as string)).toBe(true);
       expect(isRetiredThemeName(name)).toBe(true);
     }
-    // The house palette kept its colours and changed only its name.
+    // Retired configuration names still resolve to the house palette.
     expect(resolveThemeName("atomic-retro")).toBe("classic-dark");
     // Anything that was never a theme still falls through to autodetect.
     expect(resolveThemeName("not-a-theme")).toBeNull();
@@ -115,5 +115,34 @@ describe("theme proxy", () => {
     expect(getActiveThemeName()).toBe("toxic-green");
     setActiveTheme(THEMES["moon-yellow"]);
     expect(getActiveThemeName()).toBe("moon-yellow");
+  });
+
+  it("uses the approved purple page and rail tokens in the classic palettes", () => {
+    expect(THEMES["classic-dark"].colors).toMatchObject({
+      user: "#b084f5", accent: "#b084f5", info: "#b084f5", brandMark: "#b084f5",
+      accentSoft: "#4b2870", railBackground: "#382052", railMuted: "#cbb8e5",
+      railAccent: "#d8baff", badgeBackground: "#1d1828",
+    });
+    expect(THEMES["classic-light"].colors).toMatchObject({
+      user: "#6b35b5", accent: "#6b35b5", info: "#6b35b5", brandMark: "#6b35b5",
+      accentSoft: "#cbb7e5", railBackground: "#ede7f3", railAccent: "#6b35b5",
+      badgeBackground: "#e6dcf2",
+    });
+  });
+
+  it.each(THEME_NAMES)("keeps the wordmark on %s's own accent", (name) => {
+    setActiveTheme(THEMES[name]);
+    expect(theme.colors.brandMark).toBe(theme.colors.accent);
+  });
+
+  it.each([
+    ["classic-dark", "#eb6264", "#e6d35c", "#5edb81"],
+    ["classic-light", "#c1121f", "#7a5300", "#136c33"],
+    ["toxic-green", "#ff6b6b", "#f7e05c", "#9df871"],
+    ["khorne-red", "#ff7a5c", "#e8c15a", "#d9a441"],
+    ["darky-dark", "#d98a8a", "#cfc08a", "#b9c9b4"],
+    ["moon-yellow", "#e78b8b", "#e6b962", "#a9d6a4"],
+  ] as const)("preserves semantic status inks in %s", (name, error, warn, success) => {
+    expect(THEMES[name].colors).toMatchObject({ error, warn, success });
   });
 });

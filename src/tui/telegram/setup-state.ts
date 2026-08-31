@@ -105,7 +105,7 @@ export function deriveSetupState(panel: TelegramPanelState): SetupView {
     return {
       step: "needs_pairing",
       title: "One last step — confirm it's you",
-      body: "Open Telegram, DM your bot any message. Atomic Agent will recognise you as the owner.",
+      body: "Open Telegram, DM your bot any message. h0x-cli will recognise you as the owner.",
       cta: "Press Enter to open the pairing window",
       isTerminal: false,
     };
@@ -116,7 +116,7 @@ export function deriveSetupState(panel: TelegramPanelState): SetupView {
     title: panel.botUsername
       ? `✅ Telegram is connected as @${panel.botUsername}`
       : "✅ Telegram is connected",
-    body: "Send a message to the bot to control Atomic Agent. Use /help inside Telegram for available commands.",
+    body: "Send a message to the bot to control h0x-cli. Use /help inside Telegram for available commands.",
     cta: null,
     isTerminal: true,
   };

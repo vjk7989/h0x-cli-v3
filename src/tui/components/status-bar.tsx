@@ -16,7 +16,7 @@ import { sessionTitleLine } from "./session-title.js";
 interface StatusBarProps {
   state: TuiState;
   /**
-   * Draw the `atomic-agent vX.Y.Z` lockup. False when the rail is on
+   * Draw the `h0x-cli vX.Y.Z` lockup. False when the rail is on
    * screen: the rail already carries the brand and the version, and two
    * copies of them read as a rendering bug rather than as chrome.
    */
@@ -54,8 +54,8 @@ export function StatusBar({
     <Box>
       {brand ? (
         <>
-          <Text color={theme.colors.accentSoft} bold>
-            atomic-agent
+          <Text color={theme.colors.brandMark} bold>
+            h0x-cli
           </Text>
           <Text color={theme.colors.muted}> v{getAppVersion()}</Text>
           <Sep />

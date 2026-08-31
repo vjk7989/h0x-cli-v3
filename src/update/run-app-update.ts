@@ -1,5 +1,5 @@
-import { spawn } from "node:child_process";
-import { dirname, posix as pathPosix, win32 as pathWin32 } from "node:path";
+import { win32 as pathWin32 } from "node:path";
+import { APP_UPDATE_UNAVAILABLE } from "./check-app-update.js";
 
 export interface RunAppUpdateOptions {
   repo?: string;
@@ -22,15 +22,6 @@ export class AppUpdateError extends Error {
   }
 }
 
-const DEFAULT_REPO = "AtomicBot-ai/atomic-agent";
-
-/**
- * How many trailing installer lines travel with a failure. The installers put
- * the reason last (`error: ...` on Windows, a bare stderr line on POSIX), so a
- * short tail is enough to explain a 404, a checksum mismatch or a locked file.
- */
-const FAILURE_TAIL_LINES = 8;
-
 /**
  * Compose the failure message for a non-zero installer exit. The exit code on
  * its own is not actionable, and the streamed `onLine` output lands in the
@@ -46,32 +37,12 @@ export function formatInstallFailure(
   return [header, ...tail.map((line) => `  ${line}`)].join("\n");
 }
 
-/**
- * Whether the running process is the installed SEA binary (and thus a
- * self-update over `process.execPath` is meaningful). Returns `false`
- * when running under `node` / `tsx` in development — overwriting the
- * Node binary with the agent installer would be destructive.
- *
- * Supported on all platforms. On Windows the installer (`install.ps1`)
- * applies the new tree as an all-or-nothing transaction: every existing
- * file — including the locked, running `atomic-agent.exe` and the loaded
- * `better_sqlite3.node` — is displaced to `<name>.old-<stamp>` before its
- * replacement is written, so a mid-run failure rolls back instead of
- * leaving a half-updated install. The update completes while the process
- * is live; the user relaunches to pick up the new binary.
- */
+/** No binary is self-updatable until h0x-cli distribution is configured. */
 export function canSelfUpdate(
-  platform: NodeJS.Platform = process.platform,
-  execPath: string = process.execPath,
+  _platform: NodeJS.Platform = process.platform,
+  _execPath: string = process.execPath,
 ): boolean {
-  const base =
-    platform === "win32"
-      ? pathWin32.basename(execPath)
-      : pathPosix.basename(execPath);
-  const exe = base.toLowerCase();
-  // `node` / `node.exe` (and the rare `tsx` shim) are dev runtimes.
-  if (exe.startsWith("node") || exe.startsWith("tsx")) return false;
-  return exe.startsWith("atomic-agent");
+  return false;
 }
 
 export interface UpdateInvocation {
@@ -158,70 +129,9 @@ export function buildUpdateInvocation(params: {
   return { command: "sh", args: ["-c", `curl -fsSL ${scriptUrl} | sh`], env };
 }
 
-/**
- * Re-run the canonical installer from GitHub, targeting the directory of
- * the currently-running binary so the existing install is upgraded in
- * place. Only valid for the installed SEA binary — see
- * {@link canSelfUpdate}. The running process is **not** restarted; the
- * caller must prompt the user to relaunch so the new binary takes effect.
- */
+/** Fail closed, including explicit tags and legacy upstream configuration. */
 export async function runAppUpdate(
-  opts?: RunAppUpdateOptions,
+  _opts?: RunAppUpdateOptions,
 ): Promise<RunAppUpdateResult> {
-  if (!canSelfUpdate()) {
-    throw new AppUpdateError(
-      "self-update is only supported for the installed binary; " +
-        "update via your package manager or git checkout in development",
-    );
-  }
-
-  const repo = opts?.repo ?? DEFAULT_REPO;
-  const installDir = dirname(process.execPath);
-  const invocation = buildUpdateInvocation({
-    platform: process.platform,
-    repo,
-    installDir,
-    ...(opts?.version ? { version: opts.version } : {}),
-  });
-
-  await runProcess(invocation, opts?.onLine, opts?.signal);
-  return { ok: true, installDir };
-}
-
-function runProcess(
-  invocation: UpdateInvocation,
-  onLine: ((line: string) => void) | undefined,
-  signal: AbortSignal | undefined,
-): Promise<void> {
-  return new Promise((resolvePromise, reject) => {
-    const child = spawn(invocation.command, invocation.args, {
-      env: invocation.env,
-      stdio: ["ignore", "pipe", "pipe"],
-      ...(signal ? { signal } : {}),
-    });
-
-    const tail: string[] = [];
-    const emit = (chunk: Buffer): void => {
-      for (const line of chunk.toString("utf-8").split(/\r?\n/)) {
-        const trimmed = line.trim();
-        if (trimmed.length === 0) continue;
-        onLine?.(trimmed);
-        tail.push(trimmed);
-        if (tail.length > FAILURE_TAIL_LINES) tail.shift();
-      }
-    };
-    child.stdout.on("data", emit);
-    child.stderr.on("data", emit);
-
-    child.on("error", (err) => {
-      reject(new AppUpdateError(`install script failed to start: ${err.message}`));
-    });
-    child.on("close", (code) => {
-      if (code === 0) {
-        resolvePromise();
-        return;
-      }
-      reject(new AppUpdateError(formatInstallFailure(code, tail)));
-    });
-  });
+  throw new AppUpdateError(APP_UPDATE_UNAVAILABLE);
 }

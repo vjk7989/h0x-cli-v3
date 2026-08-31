@@ -1,96 +1,56 @@
-<div align="center">
+# h0x - CLI
 
-<img src="assets/logo.svg" alt="Atomic Agent" width="120" />
+**Built by TEAM PAVii.Ai** · [pavii.tech](https://pavii.tech) · [Documentation placeholder](https://pavii.tech/docs)
 
-# Atomic Agent
+A local-first terminal agent with local or cloud models. Typing `h0x-cli` opens the existing full-screen interface in the same terminal and uses your current directory.
 
-### A local-first AI agent that runs on your machine, with local or cloud models.
-
-Drives your browser, edits files, runs approved commands, and remembers context across sessions. Open source, running on our TurboQuant `llama.cpp` for +30-50% throughput on small local models.
-
-[![GAIA L1 · 69.8%](https://img.shields.io/badge/GAIA%20L1-69.8%25-0b63f6)](#benchmarks)
-[![Release](https://github.com/AtomicBot-ai/atomic-agent/actions/workflows/release.yml/badge.svg)](https://github.com/AtomicBot-ai/atomic-agent/actions/workflows/release.yml)
-[![Latest release](https://img.shields.io/github/v/release/AtomicBot-ai/atomic-agent?sort=semver&display_name=tag&logo=github)](https://github.com/AtomicBot-ai/atomic-agent/releases)
-[![Version](https://img.shields.io/github/package-json/v/AtomicBot-ai/atomic-agent?logo=npm)](package.json)
-[![License](https://img.shields.io/github/license/AtomicBot-ai/atomic-agent)](LICENSE)
-[![Node.js](https://img.shields.io/badge/node-%3E%3D25.7-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![TypeScript](https://img.shields.io/badge/typescript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-![Local first](https://img.shields.io/badge/local--first-agent-7C3AED)
-![Private by default](https://img.shields.io/badge/private--by--default-local-059669)
-![No per-token fees](https://img.shields.io/badge/no%20per--token%20fees-llama.cpp-111827)
-![llama.cpp](https://img.shields.io/badge/llama.cpp-supported-111827)
-![Tauri sidecar](https://img.shields.io/badge/Tauri-sidecar-24C8DB?logo=tauri&logoColor=white)
-
-**[Quick Install](#quick-install) · [Uninstall](#uninstall) · [Benchmarks](#benchmarks) · [Why Local-First](#why-local-first) · [Ways to Use It](#ways-to-use-it) · [Docs](#development)**
-
-![Atomic Agent terminal demo](assets/demo.gif)
-
-</div>
-
----
-
-A local-first AI agent that runs the control loop and all state on your machine. It drives your desktop: browse, read and edit files, run approved shell commands, inspect documents, remember context across sessions, schedule follow-ups, and call external tools over MCP. Embed it in your own apps over HTTP or a Tauri sidecar. `llama.cpp` first, so small quantized models stay useful for long, multi-step work on consumer hardware.
+This is a development-stage fork of [Atomic Agent](https://github.com/AtomicBot-ai/atomic-agent). Its history, MIT license, upstream copyright, and third-party attribution are preserved. This first stage changes the command identity and terminal branding, not the agent's core behavior or protocols. Public releases and h0x distribution packaging are not ready.
 
 ## Quick Install
 
-macOS / Linux:
+### Local Windows Development
 
-```bash
-curl -fsSL https://atomicagent.io/install | sh
-```
+Use Node **25.7 or newer** from a G-drive directory. In this workspace, Node 25.7.0 is unpacked at `G:\h0xi\atomic-agent\.local\runtime\node-v25.7.0-win-x64`. A fresh clone needs that runtime installed first; it is not committed.
 
-Windows (PowerShell):
+From `G:\h0xi\atomic-agent` in PowerShell:
 
 ```powershell
-irm https://atomicagent.io/install.ps1 | iex
+$nodeDir = Join-Path $PWD '.local/runtime/node-v25.7.0-win-x64'
+$env:PATH = "$nodeDir;" + $env:PATH
+$env:TEMP = $env:TMP = $env:TMPDIR = Join-Path $PWD '.local/tmp'
+$env:npm_config_cache = Join-Path $PWD '.local/npm-cache'
+$env:npm_config_devdir = Join-Path $PWD '.local/node-gyp'
+$env:PLAYWRIGHT_BROWSERS_PATH = Join-Path $PWD '.local/browsers'
+New-Item -ItemType Directory -Force $env:TEMP | Out-Null
+npm ci --no-audit --no-fund
+.\scripts\install-local.ps1 -NodeDirectory $nodeDir
 ```
 
-The installer downloads the release archive, verifies the checksum, and installs the CLI plus support assets (`grammars/`, native prebuilds, and bundled `ripgrep`). Atomic Agent updates itself in place; after an update the TUI prompts you to restart. Outside the TUI, run `atomic-agent update` (or `atag update`) to check for a newer release and re-run the installer in place — `atomic-agent update --check` probes without installing, and `--version <tag>` pins a specific release. Only the installed binary can self-update; a dev checkout updates via git.
+The helper builds the app, links the package under `.local/prefix`, and installs pinned launchers under `.local/bin`. It adds only that bin directory to your user PATH. Its launchers preserve the invoking directory and terminal streams, while directing runtime state, temporary files, npm cache, and browser downloads to this workspace on G:.
 
-> [!NOTE]
-> Developer preview. APIs, commands, config, and behavior are still moving, so pin a release if you need a stable integration point. Current builds: macOS (Apple Silicon), Linux x64 / arm64, and Windows x64.
+Open a new terminal after installation, move to your project directory, then run:
 
-### Run
-
-```bash
-atomic-agent
+```text
+h0x-cli
 ```
 
-Both installers also drop a short alias next to the binary, so this is the same thing:
+First-run model setup and existing permissions are preserved. The welcome displays the installed version, the actual selected model, current directory, and Git repository/branch when available. The `pavii.tech/docs` address is a temporary placeholder, not a promise of live documentation.
 
-```bash
-atag
-```
+Compatibility aliases remain: `atomic-agent`, `atag`, and `atomic-agent-sidecar`. Existing config keys, `ATOMIC_AGENT_*` environment variables, and storage discovery are unchanged. Outside the local launchers, set `ATOMIC_AGENT_STATE_DIR` explicitly when you need G-drive storage.
 
-> [!TIP]
-> Need a second agent? Press **Ctrl+N** (or run `/window`) inside the TUI — it opens a new terminal window with a fresh atomic-agent in the same directory.
+### Updates and Removal
 
-> [!TIP]
-> Coming from Hermes or OpenClaw? Run `/import` in the TUI for a one-shot migration: sessions, cron jobs, and optionally your provider keys.
+App update checks and installers are disabled in this build, including `h0x-cli update --check` and `--version`. Update the source checkout through Git and rebuild. Do not use the inherited upstream release installers for h0x-cli; public installation/release packaging is a later stage. Managed model/backend downloads are a separate, unchanged feature.
 
-### Uninstall
+The inherited `uninstall` command still targets legacy installation layouts and can delete persistent data. It is not an uninstaller for this development checkout; use `h0x-cli uninstall --dry-run` only to inspect its plan. Do not run a destructive uninstall to remove the local development launcher.
 
-One command removes everything — the state directory (config, memory, sessions, tasks, traces, downloaded models), the binary and its `atag` alias, the asset directories beside them, and the PATH line the installer added to your shell rc file:
+### Support and Project Records
 
-```bash
-atomic-agent uninstall
-```
-
-It prints exactly what it will delete, with sizes, and then asks you to type the word `uninstall`. Nothing is uploaded and nothing is kept — this cannot be undone. Preview it with `atomic-agent uninstall --dry-run`, keep your data with `--keep-data`, or skip the prompt in a script with `--yes`. The same flow is the last entry in the TUI's own menu (**Ctrl+P → Danger zone**, or `/uninstall`).
-
-### Troubleshooting
-
-If something isn't working:
-
-1. Copy your error logs and system specs.
-2. Open an issue on [GitHub](https://github.com/AtomicBot-ai/atomic-agent/issues).
-3. Or ask for help in our [Discord](https://discord.gg/kXWDFSJpMW).
-
-## Talk to Us
-
-Building something with Atomic Agent, stuck on setup, or just want to share what you are working on? Grab a slot and talk to the team directly: **[cal.com/atomicagent/demo](https://cal.com/atomicagent/demo)**. No agenda required. Questions, feedback, feature requests, or a plain hello all count. We read every issue and every Discord message too, but sometimes a 15-minute call beats a week of comments.
+Report issues in [h0x-cli-v3](https://github.com/vjk7989/h0x-cli-v3/issues). See the [architecture record](docs/rebrand/decisions.md), [handoff](docs/rebrand/handoff.md), and [engineering guide](AGENTS.md) for scope, compatibility decisions, and verification status.
 
 ## Benchmarks
+
+The following results and graphics are historical **upstream Atomic Agent** evaluations. They have not been rerun or certified as h0x-cli benchmarks.
 
 On the public **GAIA validation Level 1** split (53 tasks), Atomic Agent and Hermes drove the **same** local `qwen-3.6-35b-a3b` (`llama-server`, UD-Q4_K_XL), with the same step budget and timeout. The only variable is the agent loop.
 
@@ -154,7 +114,7 @@ The control loop and all state run on your machine, not a hosted service:
 
 An agent is a loop: the model picks an action, something runs it, the result feeds back in, and it repeats until the job is done. The catch is cost. Every turn re-sends the growing context through the model, so a naive loop gets slower and pricier each pass, and small local models choke on it fastest.
 
-Atomic Agent keeps the loop cheap. One inference produces one JSON array of tool calls, and it runs them without re-encoding the whole world every turn:
+h0x-cli keeps the loop cheap. One inference produces one JSON array of tool calls, and it runs them without re-encoding the whole world every turn:
 
 ```mermaid
 flowchart LR
@@ -171,11 +131,11 @@ flowchart LR
 4. **Compress:** results and state are summarized, not pasted back in full.
 5. **Repeat:** loop again until reply, finish, cancel, or a max-step limit.
 
-The model chooses actions. Atomic Agent owns the loop, the state, the approvals, the traces, the stop conditions, and the failure boundaries.
+The model chooses actions. h0x-cli owns the loop, the state, the approvals, the traces, the stop conditions, and the failure boundaries.
 
 ### Built to Make Local Models Work
 
-We run local models on our own TurboQuant `llama.cpp` ([`AtomicBot-ai/atomic-llama-cpp-turboquant-nightly`](https://github.com/AtomicBot-ai/atomic-llama-cpp-turboquant-nightly)):
+Managed local models currently use the upstream TurboQuant `llama.cpp` ([`AtomicBot-ai/atomic-llama-cpp-turboquant-nightly`](https://github.com/AtomicBot-ai/atomic-llama-cpp-turboquant-nightly)):
 
 - **TurboQuant KV-cache:** WHT-rotated low-bit quantization compresses the KV-cache up to ~6.4× versus F16, with a fused Metal decode kernel, so long-context sessions fit in far less memory.
 - **TurboQuant weights:** Lloyd-Max weight quantization with WHT rotation and fused Metal/Vulkan kernels keeps quality usable while small models fit on consumer hardware.
@@ -185,7 +145,7 @@ We run local models on our own TurboQuant `llama.cpp` ([`AtomicBot-ai/atomic-lla
 
 ### Tuned for Small Local Models
 
-Atomic Agent's prompt is engineered so a small model never wastes tokens or breaks format:
+h0x-cli's prompt is engineered so a small model never wastes tokens or breaks format:
 
 - **Stable prefix:** persona, rules, tools, skills, capabilities, and instructions stay byte-stable inside a session so `cache_prompt` and `slot_id` can reuse KV-cache instead of re-encoding the prompt every turn.
 - **Bounded tail:** conversation, memory, world state, recalled notes, lessons, procedures, and loaded skill bodies are clipped into a predictable prompt budget.
@@ -198,7 +158,7 @@ This is why small local models can stay useful across long, tool-heavy work.
 
 ## What It Can Do
 
-Atomic Agent drives a full desktop tool surface. Dangerous actions are routed through approvals; independent read-only calls run in parallel.
+h0x-cli drives a full desktop tool surface. Dangerous actions are routed through approvals; independent read-only calls run in parallel.
 
 | Area | Capabilities |
 |---|---|
@@ -218,7 +178,7 @@ Atomic Agent drives a full desktop tool surface. Dangerous actions are routed th
 
 ### Memory That Grows Outside the Prompt
 
-Atomic Agent's memory is not a giant chat log pasted back into the prompt. It's a local, inspectable store: durable identity, episodic notes, associations, distilled lessons, and reusable procedures. The prompt sees compact pointers, and full bodies are recalled by tool call only when the agent needs them.
+h0x-cli's memory is not a giant chat log pasted back into the prompt. It's a local, inspectable store: durable identity, episodic notes, associations, distilled lessons, and reusable procedures. The prompt sees compact pointers, and full bodies are recalled by tool call only when the agent needs them.
 
 - **Profile facts** render into `### profile` with contextual keyword gating; facts are versioned, with queryable history.
 - **Notes** are stored in SQLite + FTS5, optionally paired with embeddings for hybrid recall.
@@ -237,12 +197,12 @@ Atomic Agent's memory is not a giant chat log pasted back into the prompt. It's 
 Use the CLI for simple sessions, automation, and debugging. Use the TUI for an interactive control console: approvals, logs, models, skills, tasks, memory, MCP, Telegram, and traces.
 
 ```bash
-atomic-agent run --cwd /path/to/work
-atomic-agent tui --cwd /path/to/work
+h0x-cli run --cwd /path/to/work
+h0x-cli tui --cwd /path/to/work
 
-atomic-agent skill list
-atomic-agent task list
-atomic-agent trace list --limit 10
+h0x-cli skill list
+h0x-cli task list
+h0x-cli trace list --limit 10
 ```
 
 **The context readout.** The chip at the right of the composer gauges the prompt against the model's real context window — `8/20 tasks · 39.9k/48k` — so you can see whether there is room for what you are about to send. History is limited in **tasks**, not tokens: one task is a thing you asked plus everything the agent did answering it, and `agent.conversationMaxPairs` (1-100, default 20) says how many the prompt carries. Tokens are the wrong unit to steer with — nobody thinks in them — but they are still the ceiling underneath, because one task can run twenty tool calls and no task count keeps a prompt inside the window on its own. Once history has been dropped it says so in words (`· 3 tasks lost`) and turns violet: that is the point where the agent stops knowing things it knew a minute ago, and answers quietly start getting less consistent. Cloud models take their window from the model catalogue, so the gauge is drawn against a real scale there too; when nothing knows the window at all it falls back to the transcript's own ceiling, labelled `cap` so the number cannot be mistaken for one.
@@ -279,7 +239,7 @@ All six are designed here rather than transcribed from upstream terminal themes,
 
 **Mouse.** The TUI is clickable: the breadcrumb (which opens the menu, the same as `ctrl+p`), sidebar sessions and tasks, every list row (skills, tasks, memory, MCP, models, providers), the session / theme / slash pickers, approval buttons, tool cards, and the prompt itself — clicking in the input places the caret. A click selects a row, a second click on the selected row opens it, and the wheel scrolls the chat or walks the focused panel.
 
-While mouse reporting is on the terminal hands clicks to the app, which means its own drag-to-select is unavailable (iTerm2, GNOME Terminal and Windows Terminal let you hold Shift to bypass; Apple Terminal does not). Turn it off whenever you want to select text: `/mouse off` in the app, `atomic-agent tui --no-mouse` for one run, or `"tui": { "mouse": false }` in `<stateDir>/config.json`. With mouse off, wheel scrolling still works through the terminal's alternate-scroll mode, exactly as before.
+While mouse reporting is on the terminal hands clicks to the app, which means its own drag-to-select is unavailable (iTerm2, GNOME Terminal and Windows Terminal let you hold Shift to bypass; Apple Terminal does not). Turn it off whenever you want to select text: `/mouse off` in the app, `h0x-cli tui --no-mouse` for one run, or `"tui": { "mouse": false }` in `<stateDir>/config.json`. With mouse off, wheel scrolling still works through the terminal's alternate-scroll mode, exactly as before.
 
 Cloud provider setup pulls each provider's full live model catalog, hundreds of models, instead of a short hardcoded list; OpenAI-compatible servers are asked for their own `/v1/models`. The picker filters as you type, and `/model` switches models mid-session.
 
@@ -293,18 +253,18 @@ A cloud key is checked before it is saved. The key screen refuses an empty key, 
 The CLI can manage a paired `llama.cpp` setup for chat and embeddings:
 
 ```bash
-atomic-agent models update
-atomic-agent models list
-atomic-agent models pull qwen-3.5-4b
-atomic-agent models use qwen-3.5-4b
+h0x-cli models update
+h0x-cli models list
+h0x-cli models pull qwen-3.5-4b
+h0x-cli models use qwen-3.5-4b
 
-atomic-agent models list-embeddings
-atomic-agent models pull-embedding <model>
-atomic-agent models use-embedding <model>
+h0x-cli models list-embeddings
+h0x-cli models pull-embedding <model>
+h0x-cli models use-embedding <model>
 
-atomic-agent models start
+h0x-cli models start
 
-atomic-agent tui --cwd /path/to/work
+h0x-cli tui --cwd /path/to/work
 ```
 
 Managed mode downloads the backend, pulls GGUF models, selects the active model, and starts detached chat / embedding daemons when configured.
@@ -314,10 +274,10 @@ The managed chat daemon stops when the last session exits, freeing the RAM and V
 Cloud models are searchable from the same command — by id, vendor, or capability, across every configured cloud provider:
 
 ```bash
-atomic-agent models search claude vision
-atomic-agent models search free tools --json
-atomic-agent models search "1m cache" --provider openrouter --limit 10
-atomic-agent models search kimi --refresh   # pull live /models lists first
+h0x-cli models search claude vision
+h0x-cli models search free tools --json
+h0x-cli models search "1m cache" --provider openrouter --limit 10
+h0x-cli models search kimi --refresh   # pull live /models lists first
 ```
 
 Every term has to match (`claude vision` is not a substring of any id), a size term names a whole-unit bucket whatever the row displays (`1m` finds windows from 1M up to 2M, including the 1,048,576-token ones that render as `1.0M`; a 2M window answers to `2m`; `128k` finds 131,072), results are ranked best-first, and the same query works in the TUI Cloud pane — press `f`.
@@ -327,7 +287,7 @@ Every term has to match (`claude vision` is not a substring of any id), a size t
 <details>
 <summary><b>External <code>llama-server</code></b></summary>
 
-Already have your own `llama.cpp` process? Point `atomic-agent` at it:
+Already have your own `llama.cpp` process? Point `h0x-cli` at it:
 
 ```bash
 export ATOMIC_AGENT_LLAMA_URL=http://127.0.0.1:8080
@@ -338,7 +298,7 @@ export ATOMIC_AGENT_LLAMA_URL=http://127.0.0.1:8080
   --port 8080 \
   --cache-reuse 256
 
-atomic-agent tui --cwd /path/to/work
+h0x-cli tui --cwd /path/to/work
 ```
 
 The LLM tab in the TUI has an External pane for this setup. Saving a URL runs an honest health probe: it validates the `/health` body, reports llama.cpp's 503 answer while a model loads as loading rather than dead, and recognizes when the URL is a different OpenAI-compatible runner that should be added as a cloud provider instead.
@@ -354,7 +314,7 @@ Running models under [Ollama](https://ollama.com) or [LM Studio](https://lmstudi
 ollama serve
 ollama pull qwen2.5:0.5b
 
-atomic-agent tui --cwd /path/to/work
+h0x-cli tui --cwd /path/to/work
 ```
 
 In the TUI, open the LLM tab, add a provider, and pick **Ollama (local)** (or **LM Studio (local)**). A local server has no API key, so the wizard skips the key screen and goes straight to the model choice: two screens, service then model.
@@ -377,10 +337,10 @@ Tool calling works over this path, so the agent loop runs normally, but it is on
 <details>
 <summary><b>OpenAI-compatible HTTP</b></summary>
 
-Run `atomic-agent` as a local HTTP service:
+Run `h0x-cli` as a local HTTP service:
 
 ```bash
-atomic-agent serve \
+h0x-cli serve \
   --host 127.0.0.1 \
   --port 8787 \
   --cwd /path/to/work \
@@ -432,7 +392,7 @@ The TUI can store the token, start the channel, open pairing mode, and show stat
 
 While a turn runs, the bot keeps one live progress bubble updated in place. It is sent silently and shows step labels only, never tool output; turn it off with `"telegram": { "progressIndicator": false }`.
 
-Scheduled tasks can report back to the same chat: create a cron job with `atomic-agent task create --cron "0 9 * * *" --message "morning digest" --notify telegram` (or ask the agent to schedule with `notify: "telegram"`), and each run posts its final result to your paired DM when it finishes. Reporting is strictly per-task opt-in, and the report's result text is sent to Telegram's servers; when the channel is down or unpaired the report is skipped with a logged warning and the task itself is unaffected.
+Scheduled tasks can report back to the same chat: create a cron job with `h0x-cli task create --cron "0 9 * * *" --message "morning digest" --notify telegram` (or ask the agent to schedule with `notify: "telegram"`), and each run posts its final result to your paired DM when it finishes. Reporting is strictly per-task opt-in, and the report's result text is sent to Telegram's servers; when the channel is down or unpaired the report is skipped with a logged warning and the task itself is unaffected.
 
 </details>
 
@@ -466,11 +426,11 @@ The TUI MCP panel supports live add / remove without restarting the process. Whe
 
 ## Safety and Observability
 
-Everything Atomic Agent does is inspectable and interruptible:
+Everything h0x-cli does is inspectable and interruptible:
 
 - **Approval gates:** shell, filesystem writes, patches, archive extraction, process kill, HTTP requests, skill scripts, and untrusted MCP tools are gated by policy.
 - **Append-only traces:** prompts, completions, tool invocations, outcomes, failure categories, votes, and lifecycle events recorded as local NDJSON.
-- **Prompt drift replay:** `atomic-agent trace replay <sessionId>` compares current stable-prefix hashes against recorded traces.
+- **Prompt drift replay:** `h0x-cli trace replay <sessionId>` compares current stable-prefix hashes against recorded traces.
 - **Failure taxonomy:** transport, grammar, model, tool, and cancellation failures classified across events, traces, metrics, TUI, sidecar, and HTTP.
 - **No-progress guard:** repeated identical tool calls draw a warning at 3 repeats and a hard veto at 5; after 3 consecutive vetoes the agent is forced into a graceful reply.
 - **Per-session FIFO:** every surface enters the same `TurnController`; one session stays ordered while different sessions run concurrently.
@@ -481,9 +441,9 @@ Everything Atomic Agent does is inspectable and interruptible:
 
 ### Privacy and Egress
 
-By default, Atomic Agent does not require a hosted agent provider. Model calls go to your configured backend, and local artifacts stay under `<stateDir>`.
+By default, h0x-cli does not require a hosted agent provider. Model calls go to your configured backend, and local artifacts stay under `<stateDir>`.
 
-Anonymous usage analytics is on by default. It sends the provider and model names, a random per-install id, and turn-shape numbers (latency, step count, outcome), never message content, file paths, or tool arguments. It also records that the app launched, which first-run screen was reached (a fixed list of screen names, never anything you typed), and that a backend was set up — the provider name and whether it is local or cloud, never the key, the URL, or the host. Crash reports go to Sentry on the same switch, stripped to error type, category, safe scalar codes, a bounded tool name or URL host when present, and path-stripped stack frames. Turn both off with `/privacy analytics off` in the TUI or `"analytics": { "enabled": false }` in `config.json`; the toggle applies live, no restart.
+Upstream PostHog analytics and Sentry crash ingestion are disabled in this h0x-cli build through the existing disabled sentinels, even if an inherited config enables analytics. The legacy privacy setting remains compatible but cannot enable those upstream clients. This does not disable configured model providers, browser requests, MCP servers, Telegram, or managed backend/model downloads.
 
 Local-first bounds where control lives, not where packets go. Network egress happens when:
 
@@ -509,7 +469,7 @@ The promise is not magic secrecy. The promise is that the agent control plane do
 <summary><b>Requirements</b> (Node, llama-server, browser, git) + Linux notes</summary>
 
 - Node.js for development; release bundles ship as Node SEA binaries.
-- A reachable `llama-server`, either managed by `atomic-agent models` or launched externally.
+- A reachable `llama-server`, either managed by `h0x-cli models` or launched externally.
 - Managed mode picks the GPU backend automatically: Metal on Apple Silicon, CUDA on Windows when `nvidia-smi` reports a supported driver (including the reworked driver 610+ headers) with Vulkan as the fallback, Vulkan on Linux, CPU when no GPU is usable. Managed local models ship for Linux x64 only; on arm64 point the agent at an external `llama-server` instead.
 - Chrome, Microsoft Edge, or another configured Chromium-family executable. Browser binaries are not bundled.
 - `git` for git tools.
@@ -518,7 +478,7 @@ The promise is not magic secrecy. The promise is that the agent control plane do
 **Linux notes:**
 - **Desktop tools** (install via your package manager): `ripgrep` (file search; bundled binary used when present), `xclip`/`xsel` (X11) or `wl-clipboard` (Wayland) for clipboard, `libnotify-bin` for notifications, `wmctrl` for window control (X11/XWayland only), `gio` (glib2) or `trash-cli` for `fs.trash`.
 - **Browser:** Chromium-family sandboxing can fail under some Linux setups (containers, certain kernels). If Chrome refuses to launch, run it with `--no-sandbox`.
-- **GPU acceleration (managed mode):** the backend always starts and falls back to CPU when no GPU driver is available. For GPU offload install a Vulkan driver. Intel/AMD: `mesa-vulkan-drivers` (+ `vulkan-loader`/`libvulkan1`); NVIDIA: the stock proprietary driver bundles its Vulkan ICD. Device auto-selected at start; override with `atomic-agent models use-device <auto|cpu|Vulkan0>`, inspect with `atomic-agent models devices`, or press `G` in the TUI Models tab.
+- **GPU acceleration (managed mode):** the backend always starts and falls back to CPU when no GPU driver is available. For GPU offload install a Vulkan driver. Intel/AMD: `mesa-vulkan-drivers` (+ `vulkan-loader`/`libvulkan1`); NVIDIA: the stock proprietary driver bundles its Vulkan ICD. Device auto-selected at start; override with `h0x-cli models use-device <auto|cpu|Vulkan0>`, inspect with `h0x-cli models devices`, or press `G` in the TUI Models tab.
 
 </details>
 

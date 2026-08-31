@@ -10,7 +10,7 @@ import { createAgentRuntime } from "../runtime/bootstrap.js";
 
 const HELP =
   [
-    "atomic-agent task — manage durable task queue",
+    "h0x-cli task — manage durable task queue",
     "",
     "Tasks are deferred runTurn submissions kept in <stateDir>/tasks.sqlite.",
     "Eager drain on create is controlled by tasks.runOnCreate; scheduled",
@@ -41,11 +41,11 @@ const HELP =
     "                            scheduled_for) without starting the long-lived ticker",
     "",
     "Examples:",
-    "  atomic-agent task list --status pending",
-    "  atomic-agent task create --session s-abc --message 'tidy inbox'",
-    "  atomic-agent task create --message 'morning digest' --cron '0 9 * * *' --tz Europe/Berlin --notify telegram",
-    "  atomic-agent task run --all-pending --session s-abc",
-    "  atomic-agent task tick",
+    "  h0x-cli task list --status pending",
+    "  h0x-cli task create --session s-abc --message 'tidy inbox'",
+    "  h0x-cli task create --message 'morning digest' --cron '0 9 * * *' --tz Europe/Berlin --notify telegram",
+    "  h0x-cli task run --all-pending --session s-abc",
+    "  h0x-cli task tick",
   ].join("\n") + "\n";
 
 export async function taskCommand(args: string[]): Promise<number> {
@@ -111,7 +111,7 @@ function handleList(args: string[]): number {
 function handleShow(args: string[]): number {
   const id = args[0];
   if (!id) {
-    process.stderr.write("usage: atomic-agent task show <id>\n");
+    process.stderr.write("usage: h0x-cli task show <id>\n");
     return 1;
   }
   const store = openTaskStore();
@@ -147,7 +147,7 @@ async function handleCreate(args: string[]): Promise<number> {
 
   if (!message) {
     process.stderr.write(
-      "usage: atomic-agent task create [--session <id>] --message <text> [--at <ms> | --cron <expr> | --every <seconds>] [--tz <iana>] [--notify telegram] [--max-attempts N] [--max-steps N]\n",
+      "usage: h0x-cli task create [--session <id>] --message <text> [--at <ms> | --cron <expr> | --every <seconds>] [--tz <iana>] [--notify telegram] [--max-attempts N] [--max-steps N]\n",
     );
     return 1;
   }
@@ -271,7 +271,7 @@ async function handleCreate(args: string[]): Promise<number> {
 function handleCancel(args: string[]): number {
   const id = args[0];
   if (!id) {
-    process.stderr.write("usage: atomic-agent task cancel <id>\n");
+    process.stderr.write("usage: h0x-cli task cancel <id>\n");
     return 1;
   }
   const store = openTaskStore();
@@ -306,7 +306,7 @@ async function handleRun(args: string[]): Promise<number> {
   const explicitId = args.find((arg) => !arg.startsWith("--"));
   if (!allPending && !explicitId) {
     process.stderr.write(
-      "usage: atomic-agent task run <id> | --all-pending [--session <id>]\n",
+      "usage: h0x-cli task run <id> | --all-pending [--session <id>]\n",
     );
     return 1;
   }

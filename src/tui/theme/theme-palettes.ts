@@ -81,55 +81,43 @@ export const CANONICAL_PAGE: Record<string, string> = {
 // ---------------------------------------------------------------------------
 // classic dark — the house palette, and the one the app boots into.
 //
-// Unchanged in its page inks: these are the design's own oklch tokens
-// converted to sRGB, and they were the one palette in the old registry
-// that had actually been checked against the ground it is read on.
-// What is new is the rail ink set. The sidebar is a solid indigo panel
-// (`#294793`) — the design's own choice, and the reason the house
-// palette was the only one whose rail was never inverted — and page ink
-// on it measured 2.48:1 (`muted`), 2.67:1 (`error`) and 2.97:1
-// (`accent`). Those three now have rail-side counterparts.
+// Lavender ink identifies the product and active controls. Darker purple
+// grounds carry their own readable rail ink; semantic status hues stay distinct.
 // ---------------------------------------------------------------------------
 export const CLASSIC_DARK_COLORS: TuiColors = {
-  // `primary` (oklch 42% .13 265 = #294793) is a *fill* in the design:
-  // the rail and the composer sit on it. As TEXT on a dark terminal it
-  // lands around 2:1 against the ground, so anything drawn in the accent
-  // uses the same hue lifted to oklch 68% instead. Same colour, readable.
-  user: "#7195e8",
+  user: "#b084f5",
   assistant: "#5edb81",
   system: "#858992",
   reasoning: "#bb9af4",
   tool: "#e6e8eb",
   toolOk: "#5edb81",
   toolError: "#eb6264",
-  accent: "#7195e8",
+  accent: "#b084f5",
   accentAlt: "#bb9af4",
   // The un-lifted fill. Anything that paints a ground (chips, the RUN
   // badge, the composer) reaches for this, not for `accent`; anything
   // that paints *text* on a ground reaches for `accent`, not for this.
   // Borders and other chrome may sit at either — looked at, not read.
-  accentSoft: "#294793",
+  accentSoft: "#4b2870",
   border: "#3c4048",
   muted: "#858992",
   error: "#eb6264",
   warn: "#e6d35c",
   warnStrong: "#f98f3a",
   success: "#5edb81",
-  info: "#7195e8",
-  brandMark: "#c4d8ff",
+  info: "#b084f5",
+  brandMark: "#b084f5",
   brandFace: "#ffffff",
-  // The design's sidebar is a solid indigo panel — the one place the
-  // fill colour is used as a fill, exactly as drawn.
-  railBackground: "#294793",
+  railBackground: "#382052",
   railForeground: "#eef1f6",
-  railMuted: "#b9c8ea",
-  railAccent: "#cfe0ff",
+  railMuted: "#cbb8e5",
+  railAccent: "#d8baff",
   railSuccess: "#a5e8b8",
   railWarn: "#f2dd93",
   railError: "#ffb3b4",
-  badgeBackground: "#181d2b",
+  badgeBackground: "#1d1828",
   chipBackground: "#f1f3f8",
-  chipForeground: "#13161d",
+  chipForeground: "#000000",
 };
 
 // ---------------------------------------------------------------------------
@@ -143,33 +131,33 @@ export const CLASSIC_DARK_COLORS: TuiColors = {
 // a surface.
 // ---------------------------------------------------------------------------
 export const CLASSIC_LIGHT_COLORS: TuiColors = {
-  user: "#1f4bb8",
+  user: "#6b35b5",
   assistant: "#136c33",
   system: "#5a6069",
   reasoning: "#6b30bd",
   tool: "#24282e",
   toolOk: "#136c33",
   toolError: "#c1121f",
-  accent: "#1f4bb8",
+  accent: "#6b35b5",
   accentAlt: "#6b30bd",
-  accentSoft: "#bccdf0",
+  accentSoft: "#cbb7e5",
   border: "#c9ced6",
   muted: "#5a6069",
   error: "#c1121f",
   warn: "#7a5300",
   warnStrong: "#a03d00",
   success: "#136c33",
-  info: "#1f4bb8",
-  brandMark: "#2c3b96",
+  info: "#6b35b5",
+  brandMark: "#6b35b5",
   brandFace: "#0b0e14",
-  railBackground: "#e7ebf1",
+  railBackground: "#ede7f3",
   railForeground: "#171a1f",
   railMuted: "#4e545d",
-  railAccent: "#1b429f",
+  railAccent: "#6b35b5",
   railSuccess: "#0f5c2b",
   railWarn: "#6b4900",
   railError: "#a90f1b",
-  badgeBackground: "#dde4f4",
+  badgeBackground: "#e6dcf2",
   chipBackground: "#0f1216",
   chipForeground: "#f4f6f9",
 };
@@ -201,7 +189,7 @@ export const TOXIC_GREEN_COLORS: TuiColors = {
   warnStrong: "#ff9d42",
   success: "#9df871",
   info: "#5ef58a",
-  brandMark: "#b6ffcb",
+  brandMark: "#5ef58a",
   brandFace: "#f2fff6",
   railBackground: "#10331d",
   railForeground: "#e4f7e9",
@@ -244,7 +232,7 @@ export const KHORNE_RED_COLORS: TuiColors = {
   warnStrong: "#ff9138",
   success: "#d9a441",
   info: "#f2555f",
-  brandMark: "#ff9aa1",
+  brandMark: "#f2555f",
   brandFace: "#fff0f1",
   railBackground: "#3a0f16",
   railForeground: "#f7e6e7",
@@ -287,7 +275,7 @@ export const DARKY_DARK_COLORS: TuiColors = {
   warnStrong: "#d9a06e",
   success: "#b9c9b4",
   info: "#9fb4d4",
-  brandMark: "#c2cfe4",
+  brandMark: "#9fb4d4",
   brandFace: "#f2f4f7",
   railBackground: "#16181c",
   railForeground: "#e2e4e8",
@@ -329,7 +317,7 @@ export const MOON_YELLOW_COLORS: TuiColors = {
   warnStrong: "#ef9247",
   success: "#a9d6a4",
   info: "#e8d79a",
-  brandMark: "#f3e7b8",
+  brandMark: "#e8d79a",
   brandFace: "#fffbe9",
   railBackground: "#232840",
   railForeground: "#eceef7",

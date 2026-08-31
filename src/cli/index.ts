@@ -83,7 +83,7 @@ const COMMANDS: CommandDescriptor[] = [
   },
   {
     name: "serve",
-    summary: "Expose an OpenAI-compatible HTTP API plus atomic-agent admin routes",
+    summary: "Expose an OpenAI-compatible HTTP API plus h0x-cli admin routes",
     run: serveCommand,
   },
   {
@@ -109,7 +109,7 @@ const COMMANDS: CommandDescriptor[] = [
   },
   {
     name: "update",
-    summary: "Self-update the installed binary from GitHub Releases (--check to probe only)",
+    summary: "Unavailable until h0x-cli release packaging is ready",
     run: updateCommand,
   },
   {
@@ -118,25 +118,28 @@ const COMMANDS: CommandDescriptor[] = [
     // rather than next to `update`, which it otherwise rhymes with.
     name: "uninstall",
     summary:
-      "Remove atomic-agent and all of its data from this machine (--dry-run to preview)",
+      "Remove the legacy installation and its data (--dry-run to preview)",
     run: uninstallCommand,
   },
 ];
 
 function printHelp(): void {
   const lines = [
-    "atomic-agent — lightweight local operator agent (browser + OS)",
+    "h0x-cli — h0x - CLI, a local-first operator agent (browser + OS)",
+    "Built by TEAM PAVii.Ai | https://pavii.tech",
     "",
     "Usage:",
-    "  atomic-agent <command> [options]",
-    "  atag <command> [options]       (short alias, same binary)",
+    "  h0x-cli                       Open the TUI in this terminal",
+    "  h0x-cli <command> [options]",
+    "  atomic-agent <command> [options] (compatibility alias)",
+    "  atag <command> [options]       (compatibility alias, same binary)",
     "",
     "Commands:",
     ...COMMANDS.filter((c) => !c.hidden).map(
       (c) => `  ${c.name.padEnd(9)} ${c.summary}`,
     ),
     "",
-    "User config (edit via `atomic-agent config`):",
+    "User config (edit via `h0x-cli config`; legacy env names retained):",
     "  <stateDir>/config.json         localModels.url, localModels.mode, log.level, agent.{tokenBudget,maxSteps,toolTimeoutMs,approvalLevel}",
     "",
     "Bootstrap env:",
@@ -176,7 +179,7 @@ async function main(): Promise<number> {
     return 0;
   }
   if (command === "-v" || command === "--version" || command === "version") {
-    process.stdout.write(`atomic-agent ${getAppVersion()}\n`);
+    process.stdout.write(`h0x-cli ${getAppVersion()}\n`);
     return 0;
   }
   // `help <cmd>` reads as naturally as `<cmd> --help`; alias one to the other.

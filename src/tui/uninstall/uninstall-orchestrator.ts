@@ -72,7 +72,7 @@ export async function performUninstall(
   options: PerformUninstallOptions,
 ): Promise<number> {
   const write = options.write ?? ((text: string) => void process.stdout.write(text));
-  write("uninstalling atomic-agent…\n");
+  write("removing the legacy installation…\n");
   let plan: ResolvedUninstallPlan;
   try {
     plan = await resolveUninstallPlan({ stateDir: options.stateDir });
@@ -98,6 +98,6 @@ export async function performUninstall(
     );
     return 1;
   }
-  write("atomic-agent is uninstalled. Thanks for trying it.\n");
+  write("Legacy installation removed. Thanks for trying h0x-cli.\n");
   return 0;
 }

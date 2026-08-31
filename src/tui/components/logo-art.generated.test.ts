@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { CROSS_MARKS, type MarkScale } from "./logo-art.js";
 
@@ -10,8 +11,8 @@ import { CROSS_MARKS, type MarkScale } from "./logo-art.js";
 describe("logo-art.ts", () => {
   it("is in sync with assets/logo.svg", () => {
     expect(() =>
-      execFileSync("node", ["scripts/generate-logo-art.mjs", "--check"], {
-        cwd: new URL("../../../", import.meta.url).pathname,
+      execFileSync(process.execPath, ["scripts/generate-logo-art.mjs", "--check"], {
+        cwd: fileURLToPath(new URL("../../../", import.meta.url)),
         stdio: "pipe",
       }),
     ).not.toThrow();

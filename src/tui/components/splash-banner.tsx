@@ -5,7 +5,9 @@ import { computeChatViewportRows, computeChatWidth } from "../layout.js";
 import { MouseTarget, useMouseCommands } from "../mouse/mouse-context.js";
 import { isPrimaryPress } from "../mouse/mouse-event.js";
 import { theme } from "../theme/theme.js";
-import { Logo } from "./logo.js";
+import { Logo, TAGLINE } from "./logo.js";
+import { getAppVersion } from "../../version.js";
+import type { GitContext } from "../read-git-context.js";
 import {
   computeSplashFit,
   SPLASH_TIPS,
@@ -16,22 +18,13 @@ import {
 } from "./splash-fit.js";
 
 /**
- * Welcome screen shown in place of an empty chat-log. Renders the brand
- * `Logo` (atomic-plus mark + wordmark) vertically centred via flexGrow
- * spacers, with a compact tip-list underneath that surfaces the most
- * useful slash commands.
- *
- * Everything on it is sized against the live terminal: the mark shrinks
- * (34×20 → 17×10 → one line) as the window narrows or shortens, the tip
- * list drops entries from its tail, and the tip descriptions collapse to
- * terse copy before disappearing entirely. See `splash-fit.ts` for the
- * breakpoints — this component only renders the plan it is handed.
- *
- * Visibility is decided by the parent (`ChatLog`) based on
- * `messages.length === 0`, so restoring a historical session via
- * `/sessions` swaps the banner out for the transcript.
+ * Empty-chat identity and live context. The fit reserves metadata before
+ * artwork and tips so a small terminal keeps the working context visible.
  */
 export interface SplashBannerProps {
+  model?: string | null;
+  workingDir?: string;
+  git?: GitContext | null;
   /**
    * Explicit surface size, bypassing the terminal measurement. Only
    * used by tests — ink-testing-library's stdout stub reports a fixed
@@ -40,16 +33,25 @@ export interface SplashBannerProps {
   size?: SplashSize;
 }
 
-export function SplashBanner({ size }: SplashBannerProps = {}): ReactElement {
+export function SplashBanner({ size, model, workingDir, git }: SplashBannerProps = {}): ReactElement {
   const terminal = useTerminalSize();
   const surface: SplashSize = size ?? {
     columns: computeChatWidth(terminal.columns, terminal.rows),
     rows: computeChatViewportRows(terminal.rows, terminal.columns),
   };
-  const fit = computeSplashFit(surface);
+  const info = [
+    `h0x-cli v${getAppVersion()}`,
+    `model: ${model?.trim() || "not configured"}`,
+    `directory: ${workingDir ?? process.cwd()}`,
+    ...(git ? [`git: ${git.name} (${git.branch})`] : []),
+    TAGLINE,
+    "https://pavii.tech",
+    "docs (placeholder): https://pavii.tech/docs",
+  ].map((line) => line.replace(/[\x00-\x1f\x7f-\x9f]/g, ""));
+  const fit = computeSplashFit(surface, info.length);
   const tips = SPLASH_TIPS.slice(0, fit.tipCount);
   return (
-    <Box flexDirection="column" flexGrow={1} alignItems="center" paddingX={2}>
+    <Box flexDirection="column" width={surface.columns} flexGrow={1} alignItems="center" paddingX={2}>
       <Box flexGrow={1} />
       {fit.logo === "none" ? null : (
         <Logo
@@ -59,9 +61,18 @@ export function SplashBanner({ size }: SplashBannerProps = {}): ReactElement {
           placement={fit.wordmarkPlacement}
         />
       )}
+      {fit.infoRows > 0 ? (
+        <Box flexDirection="column" width="100%" marginTop={fit.logo === "none" ? 0 : 1}>
+          {info.slice(0, fit.infoRows).map((line, index) => (
+            <Text key={index} color={index === 0 ? theme.colors.brandMark : theme.colors.muted} bold={index === 0} wrap="truncate-middle">
+              {line}
+            </Text>
+          ))}
+        </Box>
+      ) : null}
       {tips.length > 0 ? (
         <Box
-          marginTop={fit.logo === "none" ? 0 : 1}
+          marginTop={1}
           flexDirection="column"
         >
           {tips.map((tip) => (

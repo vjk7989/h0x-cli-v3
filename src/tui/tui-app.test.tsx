@@ -94,7 +94,7 @@ describe("TuiApp (smoke)", () => {
     const text = strip(lastFrame() ?? "");
     // The brand lockup lives in the rail now; the one-row bar keeps the
     // breadcrumb and drops its own copy of the brand.
-    expect(text).toContain("atomic-agent");
+    expect(text).toContain("h0x-cli");
     // The status bar shows where you are, not a menu of where you could go —
     // the three-section pill row moved into the ctrl+p menu.
     expect(text).toContain("R U N");
@@ -107,17 +107,14 @@ describe("TuiApp (smoke)", () => {
     unmount();
   });
 
-  it("hides verbose chrome (cwd label, llama URL, KV/tools counters) by default", () => {
+  it("keeps verbose counters out of the status bar while showing the splash directory", () => {
     const bus = makeTuiEventBus();
     const { lastFrame, unmount } = render(
       <TuiApp session={SESSION} bus={bus} callbacks={noopCallbacks()} />,
     );
     const text = strip(lastFrame() ?? "");
-    // The status bar must stay compact — no "cwd" label, no kv counters,
-    // no tools ok/err counters, no approval flag. The working directory
-    // itself can show up in the right-rail Workspace card; that is part
-    // of the new layout and tested separately.
-    expect(text).not.toContain("cwd");
+    // The splash owns the directory; compact chrome still omits counters.
+    expect(text).toContain(SESSION.workingDir);
     expect(text).not.toContain("kv");
     expect(text).not.toContain("tools 0ok/0err");
     expect(text).not.toContain("approval");
@@ -299,10 +296,16 @@ describe("TuiApp (smoke)", () => {
     // reported `down` against working daemons often enough to be noise,
     // so the coloured dot is the whole readout now — see
     // `composer-meta-controls.tsx`.
-    expect(text).toContain("●");
-    expect(text).not.toContain("healthy");
-    expect(text).toContain("Qwen3-30B-A3B-Instruct");
-    expect(text).not.toContain(".gguf");
+    // The welcome panel keeps the full model filename; only the composer
+    // meta-row abbreviates it. Select that row by its health dot and backend.
+    const composerRow = text.split("\n").find(
+      (line) => line.includes("●") && line.includes("llama.cpp"),
+    );
+    expect(composerRow).toBeDefined();
+    expect(composerRow).toContain("●");
+    expect(composerRow).not.toContain("healthy");
+    expect(composerRow).toContain("Qwen3-30B-A3B-Instruct");
+    expect(composerRow).not.toContain(".gguf");
     unmount();
   });
 

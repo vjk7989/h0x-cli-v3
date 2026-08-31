@@ -69,7 +69,7 @@ describe("modelsCommand", () => {
   it("prints help", async () => {
     const code = await modelsCommand([]);
     expect(code).toBe(0);
-    expect(stdout()).toMatch(/atomic-agent models/);
+    expect(stdout()).toMatch(/h0x-cli models/);
     expect(stdout()).toMatch(/models list/);
   });
 

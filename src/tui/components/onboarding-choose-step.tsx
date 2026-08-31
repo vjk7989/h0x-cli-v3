@@ -28,7 +28,7 @@ const LABEL_COLUMNS = 20;
  * not predict would move the whole box.
  */
 const EXPLAINER: readonly string[] = [
-  "atomic-agent can drive models three ways. Nothing here is permanent — you",
+  "h0x-cli can drive models three ways. Nothing here is permanent — you",
   "can add the others at any time from the menu.",
 ];
 

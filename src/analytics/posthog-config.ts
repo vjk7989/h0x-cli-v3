@@ -9,7 +9,7 @@
  * lets a build ship with analytics stubbed out.
  */
 export const POSTHOG_PROJECT_KEY: string =
-  "phc_vUYmW2qixSnPt4qTZBTWaVFw3JXxyZi8iEiG5TCDYkoH";
+  "PLACEHOLDER";
 
 export const POSTHOG_HOST = "https://us.i.posthog.com";
 

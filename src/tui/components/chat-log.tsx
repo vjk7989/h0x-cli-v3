@@ -16,6 +16,8 @@ import {
 } from "./chat-message-height.js";
 import { ReasoningBubble } from "./reasoning-bubble.js";
 import { SplashBanner } from "./splash-banner.js";
+import { selectPromptLlmMeta } from "../llm-panel/llm-panel-selectors.js";
+import { useGitContext } from "../hooks/use-git-context.js";
 import { SystemBubble } from "./system-bubble.js";
 import { ThinkingIndicator } from "./thinking-indicator.js";
 import { ToolCard } from "./tool-card.js";
@@ -94,6 +96,7 @@ export function ChatLog({
     state.reasoning.length > 0;
   const showIndicator = state.status === "running";
   const isEmpty = finalised.length === 0 && !hasStreamingTail && !showIndicator;
+  const git = useGitContext(state.session.workingDir, `${state.session.sessionId}:${state.status}:${isEmpty}`);
   // All hooks must run unconditionally — only the JSX branches on
   // `isEmpty`. Compute viewport / measured-K / clamp regardless,
   // even when the early return for the splash branch fires below.
@@ -144,7 +147,7 @@ export function ChatLog({
   if (isEmpty) {
     return (
       <Box flexDirection="column" flexGrow={1} justifyContent="center">
-        <SplashBanner />
+        <SplashBanner model={selectPromptLlmMeta(state).model} workingDir={state.session.workingDir} git={git} />
       </Box>
     );
   }

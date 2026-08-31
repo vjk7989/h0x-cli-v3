@@ -116,7 +116,7 @@ describe("traceCommand", () => {
     const written = (process.stdout.write as ReturnType<typeof vi.fn>).mock
       .calls.map((c) => c[0])
       .join("");
-    expect(written).toMatch(/atomic-agent trace/);
+    expect(written).toMatch(/h0x-cli trace/);
   });
 
   it("lists available traces", async () => {

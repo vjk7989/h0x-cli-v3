@@ -593,13 +593,13 @@ export interface AgentRuntime {
 /**
  * Log hint when managed mode llama-server is down.
  * Invariant: the agent runtime never spawns llama-server — use
- * `atomic-agent models start`. Exported for unit tests.
+ * `h0x-cli models start`. Exported for unit tests.
  */
 export function managedLocalLlmHealthFailureHint(port: number): string {
   const url = `http://127.0.0.1:${port}`;
   return (
-    `managed llama-server not reachable at ${url} → run \`atomic-agent models start\` or, if backend/model missing, ` +
-    `\`atomic-agent models update\` + \`atomic-agent models pull <id>\``
+    `managed llama-server not reachable at ${url} → run \`h0x-cli models start\` or, if backend/model missing, ` +
+    `\`h0x-cli models update\` + \`h0x-cli models pull <id>\``
   );
 }
 

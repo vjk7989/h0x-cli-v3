@@ -18,9 +18,9 @@ import { runModelsSearch } from "./models-search-command.js";
 
 const HELP =
   [
-    "atomic-agent models — manage the local-LLM runtime (llama.cpp backend + GGUF models)",
+    "h0x-cli models — manage the local-LLM runtime (llama.cpp backend + GGUF models)",
     "",
-    "Available only when config.localModels.mode = \"managed\" (see `atomic-agent config`).",
+    "Available only when config.localModels.mode = \"managed\" (see `h0x-cli config`).",
     "",
     "Subcommands:",
     "  list                          Show model catalog + disk presence (active marked with *)",
@@ -51,15 +51,15 @@ const HELP =
     "                                if the embedding daemon fails the chat one stays up.",
     "",
     "Examples:",
-    "  atomic-agent models list",
-    "  atomic-agent models search claude vision",
-    "  atomic-agent models pull qwen-3.5-4b",
-    "  atomic-agent models use qwen-3.5-4b",
-    "  atomic-agent models pull-embedding nomic-embed-text-v1.5",
-    "  atomic-agent models use-embedding nomic-embed-text-v1.5",
-    "  atomic-agent models update",
-    "  atomic-agent models start",
-    "  atomic-agent models status",
+    "  h0x-cli models list",
+    "  h0x-cli models search claude vision",
+    "  h0x-cli models pull qwen-3.5-4b",
+    "  h0x-cli models use qwen-3.5-4b",
+    "  h0x-cli models pull-embedding nomic-embed-text-v1.5",
+    "  h0x-cli models use-embedding nomic-embed-text-v1.5",
+    "  h0x-cli models update",
+    "  h0x-cli models start",
+    "  h0x-cli models status",
   ].join("\n") + "\n";
 
 export async function modelsCommand(args: string[]): Promise<number> {

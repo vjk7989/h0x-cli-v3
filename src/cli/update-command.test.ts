@@ -3,12 +3,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   AppUpdateCheckError,
   AppUpdateError,
+  APP_UPDATE_UNAVAILABLE,
   type AppUpdateCheckResult,
 } from "../update/index.js";
 import {
   updateCommand,
   type UpdateCommandDeps,
 } from "./update-command.js";
+
+const spawn = vi.hoisted(() => vi.fn(() => { throw new Error("Unexpected installer spawn"); }));
+vi.mock("node:child_process", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("node:child_process")>()), spawn,
+}));
 
 function makeResult(
   overrides: Partial<AppUpdateCheckResult> = {},
@@ -22,7 +28,7 @@ function makeResult(
   };
 }
 
-describe("atomic-agent update", () => {
+describe("h0x-cli update", () => {
   let stdoutChunks: string[];
   let stderrChunks: string[];
   let deps: Required<UpdateCommandDeps>;
@@ -73,8 +79,10 @@ describe("atomic-agent update", () => {
   it("prints help and exits 0 for -h and --help", async () => {
     expect(await updateCommand(["-h"], deps)).toBe(0);
     expect(await updateCommand(["--help"], deps)).toBe(0);
-    expect(stdout()).toMatch(/atomic-agent update/);
+    expect(stdout()).toMatch(/h0x-cli update/);
+    expect(stdout()).toContain(APP_UPDATE_UNAVAILABLE);
     expect(stdout()).toMatch(/--check/);
+    expect(stdout()).toMatch(/--version/);
     expect(check).not.toHaveBeenCalled();
   });
 
@@ -118,10 +126,10 @@ describe("atomic-agent update", () => {
     expect(runInstaller).not.toHaveBeenCalled();
   });
 
-  it("refuses to self-update in a dev build, exiting 1", async () => {
+  it("reports unavailable updates when canSelfUpdate refuses, exiting 1", async () => {
     canSelfUpdate.mockReturnValue(false);
     expect(await updateCommand([], deps)).toBe(1);
-    expect(stderr()).toMatch(/installed binary/);
+    expect(stderr()).toContain(APP_UPDATE_UNAVAILABLE);
     expect(runInstaller).not.toHaveBeenCalled();
   });
 
@@ -198,5 +206,39 @@ describe("atomic-agent update", () => {
     expect(runInstaller).toHaveBeenCalledWith(
       expect.objectContaining({ version: "v0.3.2" }),
     );
+  });
+});
+
+describe("real fork update entrypoints", () => {
+  const fetch = vi.fn().mockRejectedValue(new Error("Unexpected release request"));
+  let output: string[];
+  let errors: string[];
+
+  beforeEach(() => {
+    output = [];
+    errors = [];
+    fetch.mockClear();
+    spawn.mockClear();
+    vi.stubGlobal("fetch", fetch);
+    vi.spyOn(process.stdout, "write").mockImplementation((chunk) => { output.push(String(chunk)); return true; });
+    vi.spyOn(process.stderr, "write").mockImplementation((chunk) => { errors.push(String(chunk)); return true; });
+  });
+  afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+
+  it.each([
+    { label: "normal", args: [] },
+    { label: "check", args: ["--check"] },
+    { label: "pinned", args: ["--version", "v9.9.9"] },
+  ])("$label refuses the actual updater even with legacy upstream settings", async ({ args }) => {
+    const confirm = vi.fn().mockResolvedValue(true);
+    const code = await updateCommand(args, {
+      getRepo: () => "AtomicBot-ai/atomic-agent", isTTY: () => true, confirm,
+    });
+    expect(code).toBe(1);
+    expect(errors.join("")).toContain(APP_UPDATE_UNAVAILABLE);
+    expect(output.join("")).not.toMatch(/up to date|updated to|installing|update available/);
+    expect(confirm).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+    expect(spawn).not.toHaveBeenCalled();
   });
 });

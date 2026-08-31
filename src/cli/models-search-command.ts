@@ -20,7 +20,7 @@ import { resolveLlmConfig } from "../llm/provider/registry/provider-types.js";
 import type { LlmProviderConfigEntry } from "../llm/provider/registry/provider-types.js";
 
 /**
- * `atomic-agent models search <query>` — the cloud half of `models`.
+ * `h0x-cli models search <query>` — the cloud half of `models`.
  *
  * The rest of this command group manages local GGUF weights. Cloud
  * models were only ever searchable from inside the TUI, which is no

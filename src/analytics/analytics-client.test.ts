@@ -1,6 +1,13 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { AnalyticsClient, createAnalyticsClient } from "./analytics-client.js";
+import { POSTHOG_PLACEHOLDER_KEY, POSTHOG_PROJECT_KEY } from "./posthog-config.js";
+import { parseUserConfigFile } from "../config/config-schema.js";
+
+const posthogConstructor = vi.hoisted(() => vi.fn(function () {
+  throw new Error("The fork must not construct the PostHog SDK");
+}));
+vi.mock("posthog-node", () => ({ PostHog: posthogConstructor }));
 
 function fakePosthog() {
   return {
@@ -97,5 +104,36 @@ describe("AnalyticsClient", () => {
       version: "1.0.0",
     });
     expect(client).toBeNull();
+  });
+});
+
+describe("fork analytics defaults", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+    posthogConstructor.mockClear();
+  });
+
+  it("ships the existing placeholder instead of the upstream ingestion key", () => {
+    expect(POSTHOG_PROJECT_KEY).toBe(POSTHOG_PLACEHOLDER_KEY);
+    expect(POSTHOG_PROJECT_KEY).toBe("PLACEHOLDER");
+  });
+
+  it("does not construct PostHog with an enabled legacy config outside test mode", async () => {
+    const config = parseUserConfigFile({ version: 42, analytics: { enabled: true } });
+    expect(config.analytics.enabled).toBe(true);
+    // Exercise the placeholder gate, not the independent test-runner guard.
+    vi.stubEnv("VITEST", undefined);
+    vi.stubEnv("NODE_ENV", "production");
+    const fetch = vi.fn().mockRejectedValue(new Error("Unexpected network request"));
+    vi.stubGlobal("fetch", fetch);
+    const client = createAnalyticsClient({
+      enabled: config.analytics.enabled, installId: "legacy-install", platform: "win32", version: "0.4.2",
+    });
+    client?.capture("app_opened");
+    await client?.shutdown();
+    expect(client).toBeNull();
+    expect(posthogConstructor).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
   });
 });

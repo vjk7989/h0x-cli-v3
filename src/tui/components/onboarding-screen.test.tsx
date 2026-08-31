@@ -320,13 +320,13 @@ describe("OnboardingScreen", () => {
     expect(actions).toContainEqual({ type: "onboarding_finished", outcome: "skipped" });
   });
 
-  it("opens on the splash: mark, wordmark, tagline and the promise it makes", () => {
+  it("opens on the h0x splash with its site and invitation", () => {
     const { view } = renderFlow("intro");
     const frame = strip(view.lastFrame() ?? "");
-    expect(frame).toContain("\u2588"); // the mark
+    expect(frame).toContain("h0x-cli");
+    expect(frame).toContain("https://pavii.tech");
+    expect(frame).toContain("docs (placeholder)");
     expect(frame).toContain("press any key to continue");
-    // The wordmark's first row, `ATOMIC` only — not `ATOMIC AGENT`.
-    expect(frame).toContain("\u2584\u2580\u2588 \u2580\u2588\u2580 \u2588\u2580\u2588");
     expect(frame).not.toContain("setup \u00b7 step 1 of 2");
   });
 

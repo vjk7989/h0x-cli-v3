@@ -24,10 +24,10 @@ interface ServeArgs {
 
 const HELP =
   [
-    "atomic-agent serve — start the OpenAI-compatible HTTP API",
+    "h0x-cli serve — start the OpenAI-compatible HTTP API",
     "",
     "Usage:",
-    "  atomic-agent serve [options]",
+    "  h0x-cli serve [options]",
     "",
     "Options:",
     "  --host <h>          Listen host (default 127.0.0.1)",
@@ -117,7 +117,7 @@ function parseArgs(args: string[]): ServeArgs | { help: true } | { error: string
 }
 
 /**
- * Entry point for `atomic-agent serve`. Boots the shared agent runtime
+ * Entry point for `h0x-cli serve`. Boots the shared agent runtime
  * once, wires it to an HTTP-facing approval bus, starts the server,
  * and hands control to the host process until SIGINT/SIGTERM. Per-turn
  * concurrency is owned by `runtime.turnController`, so HTTP requests on
@@ -171,11 +171,11 @@ export async function serveCommand(args: string[]): Promise<number> {
     });
     const authNote = parsed.apiKey ? "auth=bearer" : "auth=none";
     process.stderr.write(
-      `[atomic-agent] serve listening on http://${handle.host}:${handle.port} (${authNote}, cwd=${parsed.workingDir})\n`,
+      `[h0x-cli] serve listening on http://${handle.host}:${handle.port} (${authNote}, cwd=${parsed.workingDir})\n`,
     );
 
     await waitForShutdownSignal();
-    process.stderr.write(`[atomic-agent] shutdown signal received, closing\n`);
+    process.stderr.write(`[h0x-cli] shutdown signal received, closing\n`);
     return 0;
   } catch (err) {
     const message = err instanceof Error ? err.stack ?? err.message : String(err);

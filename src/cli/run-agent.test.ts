@@ -31,8 +31,8 @@ describe("formatAgentEvent llama hint", () => {
     });
     expect(line).toContain("! [transport] fetch failed");
     expect(line).toContain("llama-server is not reachable at http://127.0.0.1:8080");
-    expect(line).toContain("atomic-agent models start");
-    expect(line).toContain("config set localModels.url");
+    expect(line).toContain("h0x-cli models start");
+    expect(line).toContain("h0x-cli config set localModels.url <url>");
   });
 
   it("prints the hint once, not on every retry", () => {
@@ -92,8 +92,8 @@ describe("formatLlamaUnreachableHint", () => {
   it("names the URL, the start command and the config key", () => {
     const hint = formatLlamaUnreachableHint("http://10.0.0.4:9090");
     expect(hint).toContain("http://10.0.0.4:9090");
-    expect(hint).toContain("atomic-agent models start");
-    expect(hint).toContain("localModels.url");
+    expect(hint).toContain("h0x-cli models start");
+    expect(hint).toContain("h0x-cli config set localModels.url <url>");
   });
 });
 

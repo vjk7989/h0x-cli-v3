@@ -1,8 +1,9 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { SentryClient, createSentryClient } from "./sentry-client.js";
 import type { FetchLike } from "./sentry-client.js";
-import { parseSentryDsn } from "./sentry-config.js";
+import { parseSentryDsn, SENTRY_DSN, SENTRY_PLACEHOLDER_DSN } from "./sentry-config.js";
+import { parseUserConfigFile } from "../config/config-schema.js";
 
 const DSN = parseSentryDsn("https://pub@o1.ingest.sentry.io/7")!;
 
@@ -103,5 +104,33 @@ describe("SentryClient", () => {
         dsn: "https://pub@o1.ingest.sentry.io/7",
       }),
     ).toBeNull();
+  });
+});
+
+describe("fork error-reporting defaults", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it("ships the existing placeholder instead of the upstream DSN", () => {
+    expect(SENTRY_DSN).toBe(SENTRY_PLACEHOLDER_DSN);
+    expect(SENTRY_DSN).toBe("PLACEHOLDER");
+  });
+
+  it("does not send errors with an enabled legacy config outside test mode", async () => {
+    const config = parseUserConfigFile({ version: 42, analytics: { enabled: true } });
+    expect(config.analytics.enabled).toBe(true);
+    vi.stubEnv("VITEST", undefined);
+    vi.stubEnv("NODE_ENV", "production");
+    const fetch = vi.fn().mockRejectedValue(new Error("Unexpected network request"));
+    vi.stubGlobal("fetch", fetch);
+    const client = createSentryClient({
+      enabled: config.analytics.enabled, installId: "legacy-install", platform: "win32", release: "0.4.2",
+    });
+    client?.capture({ errorType: "TransportError", source: "llm_failure", frames: [] });
+    await client?.shutdown();
+    expect(client).toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
   });
 });

@@ -118,7 +118,7 @@ function ThemeRow({
   return (
     <Box>
       <Text
-        color={selected ? theme.colors.accentSoft : theme.colors.muted}
+        color={selected ? theme.colors.accent : theme.colors.muted}
         bold={selected}
       >
         {chevron} {marker} {name.padEnd(18)}

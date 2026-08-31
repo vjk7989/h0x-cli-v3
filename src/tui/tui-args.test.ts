@@ -3,10 +3,10 @@ import { describe, expect, it } from "vitest";
 import { nonInteractiveStdinError, parseTuiArgs, TUI_HELP } from "./tui-args.js";
 
 describe("nonInteractiveStdinError", () => {
-  it("refuses a piped stdin with an actionable sentence", () => {
-    const message = nonInteractiveStdinError({ isTTY: undefined });
+  it.each([false, undefined])("refuses stdin with isTTY=%s with an actionable sentence", (isTTY) => {
+    const message = nonInteractiveStdinError({ isTTY });
     expect(message).toContain("needs an interactive terminal");
-    expect(message).toContain("atomic-agent run");
+    expect(message).toContain("h0x-cli run");
   });
 
   it("stays silent on a real terminal", () => {
@@ -21,6 +21,10 @@ describe("nonInteractiveStdinError", () => {
 });
 
 describe("parseTuiArgs", () => {
+  it("uses the caller's current directory when no arguments are given", () => {
+    expect(parseTuiArgs([])).toMatchObject({ workingDir: process.cwd() });
+  });
+
   it("still reports unknown flags as usage errors", () => {
     expect(parseTuiArgs(["--definitely-not-a-flag"])).toHaveProperty("error");
   });

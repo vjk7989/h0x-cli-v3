@@ -64,7 +64,7 @@ function Chip({ chip }: { chip: HotkeyChip }): ReactElement {
   const mouse = useMouseCommands();
   const label = (
     <Text>
-      <Text color={theme.colors.accentSoft} bold>
+      <Text color={theme.colors.accent} bold>
         [{chip.key}]
       </Text>
       <Text color={theme.colors.muted}> {chip.label}</Text>

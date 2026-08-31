@@ -26,7 +26,8 @@ describe("formatAgentErrorForChat", () => {
     expect(text).toContain(
       "llama-server is not reachable at http://127.0.0.1:19091",
     );
-    expect(text).toContain("atomic-agent models start");
+    expect(text).toContain("h0x-cli models start");
+    expect(text).toContain("h0x-cli config set localModels.url <url>");
   });
 
   it("keeps the hint away from cloud providers — advice about the wrong server", () => {

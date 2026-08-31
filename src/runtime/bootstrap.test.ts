@@ -706,8 +706,11 @@ describe("createAgentRuntime", () => {
   });
 
   it("managedLocalLlmHealthFailureHint documents CLI daemon control", () => {
-    expect(managedLocalLlmHealthFailureHint(18991)).toContain("atomic-agent models start");
-    expect(managedLocalLlmHealthFailureHint(18991)).toContain("127.0.0.1:18991");
+    const hint = managedLocalLlmHealthFailureHint(18991);
+    expect(hint).toContain("h0x-cli models start");
+    expect(hint).toContain("h0x-cli models update");
+    expect(hint).toContain("h0x-cli models pull <id>");
+    expect(hint).toContain("http://127.0.0.1:18991");
   });
 
   // -----------------------------------------------------------------

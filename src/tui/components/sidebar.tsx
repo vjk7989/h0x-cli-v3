@@ -262,8 +262,8 @@ function RailBrand({
             own bar — rather than riding high against its top arm.
           */}
           <Text> </Text>
-          <Text color={theme.colors.railForeground} bold wrap="truncate">
-            {clip("atomic-agent", textWidth)}
+          <Text color={theme.colors.railAccent} bold wrap="truncate">
+            {clip("h0x-cli", textWidth)}
           </Text>
           <Text color={theme.colors.railMuted} wrap="truncate">
             {clip(`v${getAppVersion()}`, textWidth)}

@@ -59,7 +59,7 @@ const V0_2_2_SLASH_COMMANDS = [
   {
     name: "quit",
     description:
-      "exit atomic-agent",
+      "exit h0x-cli",
     aliases: ["exit"],
   },
   {
@@ -179,7 +179,7 @@ const V0_2_2_SLASH_COMMANDS = [
   {
     name: "import",
     description:
-      "open the Import tab (one-shot Hermes -> atomic-agent migration)",
+      "open the Import tab (one-shot Hermes -> h0x-cli migration)",
   },
   {
     name: "privacy",
@@ -205,7 +205,7 @@ const V0_2_2_SLASH_COMMANDS = [
   {
     name: "window",
     description:
-      "open a new terminal window running atomic-agent (ctrl+n)",
+      "open a new terminal window running h0x-cli (ctrl+n)",
     aliases: ["newwindow"],
   },
   {
@@ -220,7 +220,7 @@ const V0_2_2_SLASH_COMMANDS = [
   {
     name: "uninstall",
     description:
-      "remove atomic-agent and all of its data from this machine — permanent, no undo",
+      "remove the legacy installation and its data — permanent, no undo",
   },
 ];
 

@@ -3,6 +3,11 @@ import { describe, expect, it } from "vitest";
 import { parseTuiArgs, TUI_HELP } from "./tui-args.js";
 
 describe("parseTuiArgs --help", () => {
+  it("uses the canonical command in usage and script guidance", () => {
+    expect(TUI_HELP).toContain("h0x-cli tui [options]");
+    expect(TUI_HELP).toContain("h0x-cli run");
+  });
+
   it("returns the help marker for --help and -h", () => {
     expect(parseTuiArgs(["--help"])).toEqual({ help: true });
     expect(parseTuiArgs(["-h"])).toEqual({ help: true });

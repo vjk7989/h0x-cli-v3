@@ -228,8 +228,8 @@ describe("skillCommand", () => {
     expect(await skillCommand(["uninstall"])).toBe(2);
     expect(await skillCommand(["enable"])).toBe(2);
     expect(await skillCommand(["disable"])).toBe(2);
-    expect(stderr).toContain("usage: atomic-agent skill show <name>");
-    expect(stderr).toContain("usage: atomic-agent skill uninstall <name>");
+    expect(stderr).toContain("usage: h0x-cli skill show <name>");
+    expect(stderr).toContain("usage: h0x-cli skill uninstall <name>");
   });
 
   it("returns 2 for an unknown subcommand", async () => {
@@ -250,20 +250,20 @@ describe("skillCommand", () => {
     // search with an empty query, tap with a missing repo or a verb that
     // does not exist.
     expect(await skillCommand(["install"])).toBe(2);
-    expect(stderr).toContain("usage: atomic-agent skill install");
+    expect(stderr).toContain("usage: h0x-cli skill install");
 
     expect(await skillCommand(["browse", "--source"])).toBe(2);
-    expect(stderr).toContain("usage: atomic-agent skill browse");
+    expect(stderr).toContain("usage: h0x-cli skill browse");
 
     expect(await skillCommand(["search"])).toBe(2);
-    expect(stderr).toContain("usage: atomic-agent skill search");
+    expect(stderr).toContain("usage: h0x-cli skill search");
 
     expect(await skillCommand(["tap", "add"])).toBe(2);
     expect(await skillCommand(["tap", "remove"])).toBe(2);
-    expect(stderr).toContain("usage: atomic-agent skill tap add <owner/repo>");
+    expect(stderr).toContain("usage: h0x-cli skill tap add <owner/repo>");
 
     expect(await skillCommand(["tap", "frobnicate"])).toBe(2);
-    expect(stderr).toContain("usage: atomic-agent skill tap list");
+    expect(stderr).toContain("usage: h0x-cli skill tap list");
   });
 
   it("browse and search return 1 when every source failed and nothing was found", async () => {

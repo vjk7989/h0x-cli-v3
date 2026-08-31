@@ -463,7 +463,7 @@ export const CROSS_MARKS: Readonly<Record<MarkStroke, MarkArt>> = {
 
 if (process.argv.includes("--check")) {
   const current = readFileSync(OUT, "utf8");
-  if (current !== out) {
+  if (current.replace(/\r\n/g, "\n") !== out) {
     console.error(
       `${OUT} is stale.\nRun: node scripts/generate-logo-art.mjs`,
     );

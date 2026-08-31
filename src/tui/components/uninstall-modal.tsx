@@ -114,11 +114,11 @@ interface BodyLine {
 function title(flow: UninstallFlowState): string {
   switch (flow.step) {
     case "loading":
-      return "UNINSTALL ATOMIC-AGENT — READING DISK…";
+      return "LEGACY UNINSTALL — READING DISK…";
     case "review":
-      return "UNINSTALL ATOMIC-AGENT — THIS DELETES DATA";
+      return "LEGACY UNINSTALL — THIS DELETES DATA";
     case "confirm":
-      return "UNINSTALL ATOMIC-AGENT — LAST CHANCE";
+      return "LEGACY UNINSTALL — LAST CHANCE";
     case "closing":
       return "UNINSTALLING…";
     case "failed":

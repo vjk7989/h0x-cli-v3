@@ -26,7 +26,7 @@ export function SkillsList(props: SkillsListProps): ReactElement {
       <Box flexDirection="column" paddingY={1}>
         <Text color={theme.colors.muted}>
           no skills match the current filter — install one with
-          `atomic-agent skill install`, or press `f` to cycle filter / `r`
+          `h0x-cli skill install`, or press `f` to cycle filter / `r`
           to refresh.
         </Text>
       </Box>

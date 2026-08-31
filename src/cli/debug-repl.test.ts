@@ -17,7 +17,7 @@ describe("debugReplCommand --help", () => {
       expect(code).toBe(0);
       expect(stdout).toBe(REPL_HELP);
       expect(stdout).toContain("not yet implemented");
-      expect(stdout).not.toContain("atomic-agent> ");
+      expect(stdout).not.toContain("h0x-cli> ");
     } finally {
       vi.restoreAllMocks();
     }

@@ -55,7 +55,7 @@ describe("taskCommand", () => {
   it("prints help when no subcommand is passed", async () => {
     const code = await taskCommand([]);
     expect(code).toBe(0);
-    expect(stdout()).toMatch(/atomic-agent task/);
+    expect(stdout()).toMatch(/h0x-cli task/);
     expect(stdout()).toMatch(/list \[--session/);
   });
 

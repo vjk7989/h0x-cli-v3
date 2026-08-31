@@ -1,7 +1,7 @@
 import { USER_CONFIG_VERSION } from "../config/index.js";
 
 /**
- * Help text for `atomic-agent config`, kept beside the command rather
+ * Help text for `h0x-cli config`, kept beside the command rather
  * than inside it so `config-command.ts` stays within the 300-line limit
  * and holds only command behaviour.
  */
@@ -28,7 +28,7 @@ const CONFIG_SET_KEY_EXAMPLE = "agent.maxSteps 40";
 
 export const HELP =
   [
-    "atomic-agent config — manage the user config file",
+    "h0x-cli config — manage the user config file",
     "",
     "Location: <stateDir>/config.json (stateDir comes from ATOMIC_AGENT_STATE_DIR",
     "or defaults to ~/.atomic-agent).",
@@ -51,7 +51,7 @@ export const HELP =
     "set those with the whole-file JSON form. `unset` works on them.",
     "",
     "Example:",
-    "  atomic-agent config get",
-    `  atomic-agent config set ${CONFIG_SET_KEY_EXAMPLE}`,
-    `  atomic-agent config set '${CONFIG_SET_EXAMPLE}'`,
+    "  h0x-cli config get",
+    `  h0x-cli config set ${CONFIG_SET_KEY_EXAMPLE}`,
+    `  h0x-cli config set '${CONFIG_SET_EXAMPLE}'`,
   ].join("\n") + "\n";

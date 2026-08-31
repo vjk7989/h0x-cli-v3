@@ -16,7 +16,7 @@ export function UpdateIndicator(): ReactElement {
     <Box paddingX={1}>
       <Text color={theme.colors.accent}>{spinner} </Text>
       <Text color={theme.colors.muted}>
-        updating atomic-agent… (do not close)
+        updating h0x-cli… (do not close)
       </Text>
     </Box>
   );

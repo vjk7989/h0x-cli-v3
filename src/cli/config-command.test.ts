@@ -140,7 +140,7 @@ describe("configCommand", () => {
   it("set without a payload prints usage and returns non-zero", async () => {
     const code = await configCommand(["set"]);
     expect(code).toBe(1);
-    expect(stderr).toContain("usage: atomic-agent config set");
+    expect(stderr).toContain("usage: h0x-cli config set");
   });
 
   it("help prints subcommand summary", async () => {

@@ -1,7 +1,14 @@
 import { render } from "ink-testing-library";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createInitialTuiState, type TuiSessionInfo, type TuiState } from "../tui-state.js";
 import { ChatLog } from "./chat-log.js";
+import type { GitContext } from "../read-git-context.js";
+
+const gitHook = vi.hoisted(() => vi.fn<(cwd: string, refreshKey: unknown) => GitContext | null>());
+vi.mock("../hooks/use-git-context.js", () => ({ useGitContext: gitHook }));
+
+beforeEach(() => { gitHook.mockReset().mockReturnValue(null); });
+afterEach(() => vi.restoreAllMocks());
 
 const BASE_SESSION: TuiSessionInfo = {
   sessionId: "abc",
@@ -25,12 +32,47 @@ describe("ChatLog", () => {
     const state = createInitialTuiState(BASE_SESSION);
     const { lastFrame } = render(<ChatLog state={state} />);
     const text = strip(lastFrame() ?? "");
-    // Every size is its own drawing now, and the splash draws the ASCII
-    // stroke, so assert that *some* mark is present rather than a
-    // wordmark only a tall terminal earns. See
-    // `splash-fit.render.test.tsx`.
-    expect(text).toMatch(/#{4}|[█▀▄]/u);
-    expect(text).toContain("/help");
+    expect(text).toContain("h0x-cli");
+    expect(text).toContain(BASE_SESSION.workingDir);
+  });
+
+  it("passes model, directory and repository context into the empty-chat splash", () => {
+    gitHook.mockReturnValue({ name: "sample-repo", branch: "feature/ui" });
+    const initial = createInitialTuiState({ ...BASE_SESSION, workingDir: "G:/work/sample" });
+    const state = { ...initial, llmHealth: { ...initial.llmHealth, model: "local-model" } };
+    const view = render(<ChatLog state={state} />);
+    const text = strip(view.lastFrame() ?? "");
+    expect(text).toContain("local-model");
+    expect(text).toContain("G:/work/sample");
+    expect(text).toContain("sample-repo");
+    expect(text).toContain("feature/ui");
+    expect(gitHook).toHaveBeenCalledWith("G:/work/sample", expect.anything());
+    view.unmount();
+  });
+
+  it("refreshes Git context across status, transcript and same-directory session changes", async () => {
+    const state = createInitialTuiState(BASE_SESSION);
+    const view = render(<ChatLog state={state} />);
+    const keys: unknown[] = [gitHook.mock.lastCall?.[1]];
+    const states: TuiState[] = [
+      { ...state, status: "running" },
+      { ...state, messages: [{ id: "m1", role: "user", text: "hello", timestamp: 1 }] },
+      state,
+      { ...state, session: { ...state.session, sessionId: "next-session" } },
+    ];
+    try {
+      for (const next of states) {
+        const calls = gitHook.mock.calls.length;
+        view.rerender(<ChatLog state={next} />);
+        await vi.waitFor(() => expect(gitHook.mock.calls.length).toBeGreaterThan(calls));
+        const key = gitHook.mock.lastCall?.[1];
+        expect(key).not.toEqual(keys.at(-1));
+        expect(gitHook.mock.lastCall?.[0]).toBe(BASE_SESSION.workingDir);
+        keys.push(key);
+      }
+    } finally {
+      view.unmount();
+    }
   });
 
   it("renders a user and assistant bubble with the role implied by the border colour", () => {

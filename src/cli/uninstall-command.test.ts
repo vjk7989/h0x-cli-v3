@@ -33,7 +33,7 @@ function makePlan(
   };
 }
 
-describe("atomic-agent uninstall", () => {
+describe("h0x-cli uninstall", () => {
   let out: string[];
   let err: string[];
   let deps: UninstallCommandDeps;
@@ -67,6 +67,7 @@ describe("atomic-agent uninstall", () => {
   it("prints the plan with sizes before asking anything", async () => {
     await uninstallCommand([], deps);
     expect(stdout()).toContain("/Users/op/.atomic-agent");
+    expect(stdout()).toContain("h0x-cli uninstall will remove:");
     expect(stdout()).toContain("1 KB");
     expect(stdout()).toContain("total: 2 KB");
   });
@@ -89,7 +90,7 @@ describe("atomic-agent uninstall", () => {
     expect(code).toBe(0);
     expect(run).toHaveBeenCalledOnce();
     expect(run.mock.calls[0]?.[0].targets).toHaveLength(2);
-    expect(stdout()).toContain("uninstalled");
+    expect(stdout()).toContain("Legacy installation removed. Thanks for trying h0x-cli.");
   });
 
   it("accepts the word with stray case and whitespace", async () => {
@@ -153,7 +154,7 @@ describe("atomic-agent uninstall", () => {
     );
     const code = await uninstallCommand([], deps);
     expect(code).toBe(0);
-    expect(stdout()).toContain("not installed here");
+    expect(stdout()).toContain("the legacy installation is not present here");
     expect(run).not.toHaveBeenCalled();
   });
 
@@ -194,6 +195,7 @@ describe("atomic-agent uninstall", () => {
     const code = await uninstallCommand(["--help"], deps);
     expect(code).toBe(0);
     expect(resolvePlan).not.toHaveBeenCalled();
+    expect(stdout()).toContain("h0x-cli uninstall - remove the legacy installation and its data");
     expect(stdout()).toContain("--dry-run");
     expect(stdout()).toContain("cannot be undone");
   });

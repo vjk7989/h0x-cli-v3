@@ -2,11 +2,11 @@ import { createInterface } from "node:readline";
 
 export const REPL_HELP =
   [
-    "atomic-agent repl — interactive debug scaffold (not yet implemented)",
+    "h0x-cli repl — interactive debug scaffold (not yet implemented)",
     "",
     "Currently a stub: only 'help' and 'quit' work inside. The real",
     "step-the-agent-manually REPL lands with a later milestone, and the",
-    "command is hidden from `atomic-agent --help` until then.",
+    "command is hidden from `h0x-cli --help` until then.",
   ].join("\n") + "\n";
 
 /**
@@ -23,7 +23,7 @@ export async function debugReplCommand(args: string[]): Promise<number> {
     return 0;
   }
   const rl = createInterface({ input: process.stdin, output: process.stdout });
-  rl.setPrompt("atomic-agent> ");
+  rl.setPrompt("h0x-cli> ");
   process.stdout.write(
     "debug repl scaffolded. type 'help' for commands, 'quit' to exit.\n",
   );

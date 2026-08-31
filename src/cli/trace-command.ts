@@ -20,11 +20,11 @@ import { formatTraceChronology } from "./trace-formatter.js";
 
 const HELP =
   [
-    "atomic-agent trace — inspect append-only session traces",
+    "h0x-cli trace — inspect append-only session traces",
     "",
     "Traces live at <stateDir>/traces/<sessionId>.ndjson and are written by",
-    "default when running via `atomic-agent run`, `atomic-agent tui`, or",
-    "`atomic-agent serve`. Sidecar mode is off unless configured.",
+    "default when running via `h0x-cli run`, `h0x-cli tui`, or",
+    "`h0x-cli serve`. Sidecar mode is off unless configured.",
     "",
     "Subcommands:",
     "  list [--limit N]          Summarise the most recent trace files",
@@ -37,9 +37,9 @@ const HELP =
     "                            Drift means tools/capabilities/skills changed.",
     "",
     "Examples:",
-    "  atomic-agent trace list --limit 20",
-    "  atomic-agent trace show s-1234 --step 2 --raw",
-    "  atomic-agent trace export s-1234 --format json > session.json",
+    "  h0x-cli trace list --limit 20",
+    "  h0x-cli trace show s-1234 --step 2 --raw",
+    "  h0x-cli trace export s-1234 --format json > session.json",
   ].join("\n") + "\n";
 
 export async function traceCommand(args: string[]): Promise<number> {
@@ -85,7 +85,7 @@ async function handleList(args: string[]): Promise<number> {
 async function handleShow(args: string[]): Promise<number> {
   const sessionId = args[0];
   if (!sessionId || sessionId.startsWith("-")) {
-    process.stderr.write("usage: atomic-agent trace show <sessionId> [--step N] [--raw]\n");
+    process.stderr.write("usage: h0x-cli trace show <sessionId> [--step N] [--raw]\n");
     return 1;
   }
   const dir = getConfig().paths.tracesDir;
@@ -112,7 +112,7 @@ async function handleReplay(args: string[]): Promise<number> {
   const sessionId = args[0];
   if (!sessionId || sessionId.startsWith("-")) {
     process.stderr.write(
-      "usage: atomic-agent trace replay <sessionId>\n",
+      "usage: h0x-cli trace replay <sessionId>\n",
     );
     return 1;
   }
@@ -193,7 +193,7 @@ async function handleExport(args: string[]): Promise<number> {
   const sessionId = args[0];
   if (!sessionId || sessionId.startsWith("-")) {
     process.stderr.write(
-      "usage: atomic-agent trace export <sessionId> [--format ndjson|json]\n",
+      "usage: h0x-cli trace export <sessionId> [--format ndjson|json]\n",
     );
     return 1;
   }

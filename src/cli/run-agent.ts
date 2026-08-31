@@ -34,11 +34,11 @@ interface RunArgs {
 
 const HELP =
   [
-    "atomic-agent run — chat with the agent over stdin",
+    "h0x-cli run — chat with the agent over stdin",
     "",
     "Usage:",
-    "  atomic-agent run [options]           interactive: one message per line",
-    "  echo \"<goal>\" | atomic-agent run     one-shot: answer on stdout, logs on stderr",
+    "  h0x-cli run [options]           interactive: one message per line",
+    "  echo \"<goal>\" | h0x-cli run     one-shot: answer on stdout, logs on stderr",
     "",
     "Options:",
     "  --cwd <dir>          Working directory for OS tools (default: current directory)",
@@ -357,7 +357,7 @@ async function runChatLoop(opts: ChatLoopOptions): Promise<SessionState> {
 }
 
 /**
- * CLI entry for `atomic-agent run`. Pure interactive chat: each stdin
+ * CLI entry for `h0x-cli run`. Pure interactive chat: each stdin
  * line is one user message, each `reply` from the model becomes one
  * assistant message. `/quit` exits, `/abort` cancels the current turn.
  */
@@ -424,7 +424,7 @@ export async function runAgentCommand(args: string[]): Promise<number> {
   });
 
   process.stderr.write(
-    `atomic-agent run (chat)\n` +
+    `h0x-cli run (chat)\n` +
       `  cwd:     ${parsed.workingDir}\n` +
       `  llama:   ${config.localModels.url}\n` +
       `  browser: ${config.browser.channel}${config.browser.headless ? " (headless)" : ""}\n` +

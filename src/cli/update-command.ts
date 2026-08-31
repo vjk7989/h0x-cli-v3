@@ -5,6 +5,7 @@ import {
   checkForAppUpdate,
   runAppUpdate,
   canSelfUpdate,
+  APP_UPDATE_UNAVAILABLE,
 } from "../update/index.js";
 
 /**
@@ -31,17 +32,14 @@ export interface UpdateCommandDeps {
 }
 
 const HELP = [
-  "atomic-agent update — self-update the installed binary from GitHub Releases",
+  "h0x-cli update - unavailable in this development build",
   "",
-  "Checks GitHub Releases for a newer published version and re-runs the",
-  "canonical installer (install.sh / install.ps1) in place, exactly like the",
-  "TUI's in-app update. Only meaningful for the installed SEA binary — a dev",
-  "checkout is updated via git. The running process is not restarted; the",
-  "next launch picks up the new binary.",
+  APP_UPDATE_UNAVAILABLE,
+  "No release checks or installers are run. Update this checkout through Git.",
   "",
   "Flags:",
-  "  --check              Check only: report current vs latest, install nothing",
-  "  --version <tag>      Install a specific release tag (e.g. v0.3.2) instead of latest",
+  "  --check              Retained for compatibility; currently unavailable",
+  "  --version <tag>      Retained for compatibility; currently unavailable",
   "  -h, --help           Show this help",
   "",
   "Exit codes:",
@@ -50,9 +48,9 @@ const HELP = [
   "  2  usage error (unknown flag, missing --version value, conflicting flags)",
   "",
   "Examples:",
-  "  atomic-agent update",
-  "  atomic-agent update --check",
-  "  atomic-agent update --version v0.3.2",
+  "  h0x-cli update",
+  "  h0x-cli update --check",
+  "  h0x-cli update --version v0.3.2",
 ].join("\n") + "\n";
 
 /** Parse flags into a discriminated plan; returns a usage error string on bad input. */
@@ -139,8 +137,7 @@ export async function updateCommand(
     if (parsed.version) {
       if (!canSelf()) {
         process.stderr.write(
-          "self-update is only supported for the installed binary; " +
-            "update via git in development\n",
+          `${APP_UPDATE_UNAVAILABLE}\n`,
         );
         return 1;
       }
@@ -175,8 +172,7 @@ export async function updateCommand(
     }
     if (!canSelf()) {
       process.stderr.write(
-        "self-update is only supported for the installed binary; " +
-          "update via git in development\n",
+        `${APP_UPDATE_UNAVAILABLE}\n`,
       );
       return 1;
     }

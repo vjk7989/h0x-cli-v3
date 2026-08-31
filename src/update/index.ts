@@ -1,4 +1,5 @@
 export {
+  APP_UPDATE_UNAVAILABLE,
   checkForAppUpdate,
   resetAppReleaseCache,
   AppUpdateCheckError,

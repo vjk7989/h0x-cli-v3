@@ -1,13 +1,43 @@
-# atomic-agent — engineering guide for agents
+# h0x-cli — engineering guide for agents
 
 This is the source-of-truth for automated contributors (LLM agents, codegen, etc.). Human-facing docs live in `README.md`.
 
+## Project operating rules
+
+These instructions are deterministic project policy for automated contributors:
+
+- Use YAGNI: implement only what the current task requires, and avoid speculative abstractions, broad refactors, or unused configurability.
+- Keep all generated work, temporary artifacts, caches, logs, reports, and test outputs inside `G:\h0xi\atomic-agent` or another user-approved folder on the G drive. Do not write project artifacts to the C drive; reading installed tools, skills, or runtime dependencies from C is allowed when required by the environment.
+- Break every task into the smallest practical subtasks before editing. Finish and verify the current subtask before moving to the next one.
+- Prefer deterministic instructions, repeatable commands, explicit file paths, and concrete acceptance checks over vague process notes.
+- For coding work, use subagents where available:
+  - one subagent designs or writes focused tests and edge cases;
+  - one subagent runs the relevant tests;
+  - one subagent investigates any failing tests and proposes a fix plan before implementation continues.
+- Continue to the next task area only after the relevant tests for the current area pass, or after documenting exactly why they cannot be run.
+- Maintain two context-management artifacts when a task is substantial:
+  - an architecture record that captures decisions, important context, changed areas, and a codebase map for the next contributor;
+  - a handoff document that compacts the conversation for the next agent, includes suggested skills, and references existing artifacts by path instead of duplicating their content.
+
+### Handoff agent contract
+
+When asked to create a handoff document, use this agent shape:
+
+```yaml
+name: handoff
+description: Compact the current conversation into a handoff document for another agent to pick up.
+argument-hint: "What will the next session be used for?"
+disable-model-invocation: true
+```
+
+The handoff document must summarize the current conversation so a fresh agent can continue the work. Include a `suggested skills` section. Do not duplicate content already captured in specs, plans, ADRs, issues, commits, or diffs; reference those artifacts by path or URL instead. If the user passes arguments, treat them as the next session focus and tailor the document accordingly.
+
 ## Mission
 
-`atomic-agent` is a lightweight local operator agent runtime that:
+`h0x-cli` is a fork of Atomic Agent, a lightweight local operator agent runtime that:
 
 - Embeds as a **sidecar** in Tauri desktop apps (stdin/stdout NDJSON).
-- Ships a **CLI** (`atomic-agent`) for local debugging.
+- Ships a **CLI** (`h0x-cli`, with `atomic-agent` and `atag` compatibility aliases).
 - Connects to an **external** `llama-server` (llama.cpp) over HTTP — the LLM runtime, model weights, and binaries are **not** part of this project.
 - Keeps every LLM step under ~2.5k tokens by externalising session state, summarising results, and keeping the stable prompt prefix small.
 

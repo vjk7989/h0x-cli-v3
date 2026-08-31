@@ -82,8 +82,8 @@ function handleGet(args: string[]): number {
 function handleSet(args: string[]): number {
   if (args.length === 0) {
     process.stderr.write(
-      "usage: atomic-agent config set <key> <value>\n" +
-        "   or: atomic-agent config set '<json>'\n",
+      "usage: h0x-cli config set <key> <value>\n" +
+        "   or: h0x-cli config set '<json>'\n",
     );
     return 1;
   }
@@ -100,7 +100,7 @@ function handleSet(args: string[]): number {
     // `get` would silently do something other than what was typed.
     process.stderr.write(
       `config set failed: no value given for ${first}\n` +
-        `usage: atomic-agent config set ${first} <value>\n`,
+        `usage: h0x-cli config set ${first} <value>\n`,
     );
     return 1;
   }
@@ -150,7 +150,7 @@ function setOneKey(key: string, value: string): number {
   if (leaf.isArray) {
     process.stderr.write(
       `config set failed: ${key} is a list; set it with the whole-file JSON form\n` +
-        `  atomic-agent config set '{"version":${USER_CONFIG_VERSION}, ...}'\n`,
+        `  h0x-cli config set '{"version":${USER_CONFIG_VERSION}, ...}'\n`,
     );
     return 1;
   }
@@ -182,7 +182,7 @@ function setOneKey(key: string, value: string): number {
 
 function handleUnset(args: string[]): number {
   if (args.length === 0) {
-    process.stderr.write("usage: atomic-agent config unset <key>\n");
+    process.stderr.write("usage: h0x-cli config unset <key>\n");
     return 1;
   }
   const key = args[0]!;
@@ -246,7 +246,7 @@ function rejectUnknownKey(sub: string, key: string): number {
   const suggestion = suggestConfigKey(key);
   const hint = suggestion ? ` (did you mean ${suggestion}?)` : "";
   process.stderr.write(`config ${sub} failed: unknown key ${key}${hint}\n`);
-  process.stderr.write("run `atomic-agent config list` to see every key\n");
+  process.stderr.write("run `h0x-cli config list` to see every key\n");
   return 1;
 }
 

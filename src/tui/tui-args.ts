@@ -23,10 +23,10 @@ export type TuiArgsResult = TuiArgs | { error: string } | { help: true };
 
 export const TUI_HELP =
   [
-    "atomic-agent tui — the interactive terminal dashboard",
+    "h0x-cli tui — the interactive terminal dashboard",
     "",
     "Usage:",
-    "  atomic-agent tui [options]     (also the default when no command is given)",
+    "  h0x-cli tui [options]     (also the default when no command is given)",
     "",
     "Options:",
     "  --cwd <dir>          Working directory for OS tools (default: current directory)",
@@ -37,7 +37,7 @@ export const TUI_HELP =
     "  --mouse              Force terminal mouse support on for this run",
     "  --no-mouse           Disable mouse support; restores drag-to-select",
     "",
-    "Needs an interactive terminal; in scripts use `atomic-agent run`.",
+    "Needs an interactive terminal; in scripts use `h0x-cli run`.",
   ].join("\n") + "\n";
 
 /**
@@ -116,6 +116,6 @@ export function nonInteractiveStdinError(
   stdin: { isTTY?: boolean } = process.stdin,
 ): string | null {
   if (stdin.isTTY) return null;
-  return "atomic-agent needs an interactive terminal — use 'atomic-agent run' for scripts.";
+  return "h0x-cli needs an interactive terminal — use 'h0x-cli run' for scripts.";
 }
 

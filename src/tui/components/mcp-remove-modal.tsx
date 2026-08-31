@@ -33,7 +33,7 @@ export function McpRemoveModal(props: McpRemoveModalProps): ReactElement {
         <Text color={theme.colors.muted}>name:</Text> {confirm.name}
       </Text>
       <Text color={theme.colors.muted}>
-        rewrites config.json; restart atomic-agent to drop the live connection.
+        rewrites config.json; restart h0x-cli to drop the live connection.
       </Text>
       {confirm.error ? (
         <Text color={theme.colors.error}>! {confirm.error}</Text>

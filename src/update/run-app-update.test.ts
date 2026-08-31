@@ -1,22 +1,30 @@
-import { describe, it, expect } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import {
   canSelfUpdate,
   buildUpdateInvocation,
   formatInstallFailure,
+  runAppUpdate,
+  AppUpdateError,
 } from "./run-app-update.js";
+import { APP_UPDATE_UNAVAILABLE } from "./check-app-update.js";
+
+const spawn = vi.hoisted(() => vi.fn(() => { throw new Error("Unexpected installer spawn"); }));
+vi.mock("node:child_process", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("node:child_process")>()), spawn,
+}));
 
 describe("canSelfUpdate", () => {
-  it("allows the installed binary on POSIX", () => {
-    expect(canSelfUpdate("linux", "/home/u/.local/bin/atomic-agent")).toBe(true);
+  it("disables installed legacy binaries on POSIX", () => {
+    expect(canSelfUpdate("linux", "/home/u/.local/bin/atomic-agent")).toBe(false);
     expect(canSelfUpdate("darwin", "/Users/u/.local/bin/atomic-agent")).toBe(
-      true,
+      false,
     );
   });
 
-  it("allows the installed binary on Windows", () => {
+  it("disables installed legacy binaries on Windows", () => {
     expect(
       canSelfUpdate("win32", "C:\\Users\\u\\AppData\\Local\\atomic-agent\\atomic-agent.exe"),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("rejects dev runtimes (node / tsx)", () => {
@@ -29,6 +37,42 @@ describe("canSelfUpdate", () => {
 
   it("rejects unrelated binaries", () => {
     expect(canSelfUpdate("linux", "/usr/bin/bash")).toBe(false);
+  });
+
+  it.each(["win32", "linux", "darwin", "freebsd"] as const)("disables every invocation name on %s", (platform) => {
+    for (const name of ["h0x-cli", "h0x-cli.exe", "atomic-agent", "atomic-agent.exe", "atag", "node", "tsx"]) {
+      const path = platform === "win32" ? "G:\\tools\\" + name : "/opt/bin/" + name;
+      expect(canSelfUpdate(platform, path)).toBe(false);
+    }
+    expect(canSelfUpdate()).toBe(false);
+  });
+});
+
+describe("fork installer execution", () => {
+  beforeEach(() => { spawn.mockClear(); });
+  afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
+
+  it.each([undefined, { repo: "AtomicBot-ai/atomic-agent" }, { repo: "fork/example", version: "v9.9.9" }])(
+    "refuses %j with the shared error without fetching or spawning", async (options) => {
+      const fetch = vi.fn().mockRejectedValue(new Error("Unexpected installer fetch"));
+      vi.stubGlobal("fetch", fetch);
+      vi.stubEnv("ATOMIC_AGENT_REPO", "AtomicBot-ai/atomic-agent");
+      const failure = await runAppUpdate(options).catch((error: unknown) => error);
+      expect(failure).toBeInstanceOf(AppUpdateError);
+      expect(failure).toMatchObject({ message: APP_UPDATE_UNAVAILABLE });
+      expect(fetch).not.toHaveBeenCalled();
+      expect(spawn).not.toHaveBeenCalled();
+    },
+  );
+
+  it("does not emit installer progress even for a pinned, cancelled request", async () => {
+    const onLine = vi.fn();
+    const controller = new AbortController();
+    controller.abort();
+    await expect(runAppUpdate({ version: "v9.9.9", onLine, signal: controller.signal }))
+      .rejects.toThrow(APP_UPDATE_UNAVAILABLE);
+    expect(onLine).not.toHaveBeenCalled();
+    expect(spawn).not.toHaveBeenCalled();
   });
 });
 

@@ -29,7 +29,7 @@ export interface UninstallCommandDeps {
 }
 
 const HELP = [
-  "atomic-agent uninstall — remove atomic-agent and its data from this machine",
+  "h0x-cli uninstall - remove the legacy installation and its data",
   "",
   "Deletes the state directory (config, memory, sessions, tasks, traces and any",
   "downloaded GGUF models), the installed binary and its `atag` alias, the asset",
@@ -37,7 +37,7 @@ const HELP = [
   "to your shell rc file.",
   "",
   "This cannot be undone. There is no backup. Nothing is uploaded anywhere, and",
-  "nothing is kept — after this the only trace of atomic-agent on the machine is",
+  "nothing is kept — after this the only trace of the legacy installation is",
   "whatever you copied out yourself.",
   "",
   "Interactive runs print the full list with sizes and then ask you to type the",
@@ -57,9 +57,9 @@ const HELP = [
   "  2  usage error (unknown flag, or no TTY and no --yes)",
   "",
   "Examples:",
-  "  atomic-agent uninstall --dry-run",
-  "  atomic-agent uninstall",
-  "  atomic-agent uninstall --keep-data      # reinstall later, keep your memory",
+  "  h0x-cli uninstall --dry-run",
+  "  h0x-cli uninstall",
+  "  h0x-cli uninstall --keep-data      # reinstall later, keep your memory",
 ].join("\n") + "\n";
 
 interface UninstallFlags {
@@ -176,7 +176,7 @@ export async function uninstallCommand(
   write(renderPlan(plan, flags));
 
   if (plan.measured.targets.length === 0) {
-    write("nothing to remove — atomic-agent is not installed here\n");
+    write("nothing to remove — the legacy installation is not present here\n");
     return 0;
   }
   if (flags.dryRun) {
@@ -218,13 +218,13 @@ export async function uninstallCommand(
     );
     return 1;
   }
-  write("atomic-agent is uninstalled. Thanks for trying it.\n");
+  write("Legacy installation removed. Thanks for trying h0x-cli.\n");
   return 0;
 }
 
 /** The plan, with sizes, as the operator sees it before deciding. */
 function renderPlan(plan: ResolvedUninstallPlan, flags: UninstallFlags): string {
-  const lines: string[] = ["", "atomic-agent uninstall will remove:", ""];
+  const lines: string[] = ["", "h0x-cli uninstall will remove:", ""];
   for (const target of plan.measured.targets) {
     lines.push(
       `  ${target.path}  (${formatBytes(target.bytes)})`,

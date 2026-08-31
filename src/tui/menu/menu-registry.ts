@@ -322,7 +322,7 @@ export const MENU: readonly MenuNode[] = [
     slash: {
       name: "import",
       description:
-        "open the Import tab (one-shot Hermes -> atomic-agent migration)",
+        "open the Import tab (one-shot Hermes -> h0x-cli migration)",
       rank: 30,
     },
     section: "manage",
@@ -488,7 +488,7 @@ export const MENU: readonly MenuNode[] = [
     slash: {
       name: "window",
       description:
-        "open a new terminal window running atomic-agent (ctrl+n)",
+        "open a new terminal window running h0x-cli (ctrl+n)",
       aliases: ["newwindow"],
       rank: 35,
     },
@@ -636,7 +636,7 @@ export const MENU: readonly MenuNode[] = [
     slash: {
       name: "quit",
       description:
-        "exit atomic-agent",
+        "exit h0x-cli",
       aliases: ["exit"],
       rank: 7,
     },
@@ -644,7 +644,7 @@ export const MENU: readonly MenuNode[] = [
   {
     kind: "action",
     id: "danger.uninstall",
-    label: "Uninstall atomic-agent…",
+    label: "Uninstall legacy installation…",
     group: "danger",
     // No chord. Every other verb here is one leader-plus-key away, and
     // that is exactly the property this one must not have: a chord is
@@ -653,7 +653,7 @@ export const MENU: readonly MenuNode[] = [
     slash: {
       name: "uninstall",
       description:
-        "remove atomic-agent and all of its data from this machine — permanent, no undo",
+        "remove the legacy installation and its data — permanent, no undo",
       // Last in the palette too: an empty `/` lists the registry in
       // rank order, and this is the entry that belongs at the bottom
       // of that list rather than fuzzy-matching next to `/update`.
