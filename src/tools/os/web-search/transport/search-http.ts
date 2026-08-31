@@ -115,7 +115,9 @@ async function sendOnce(
   request: SearchHttpRequest,
 ): Promise<SearchHttpAttempt> {
   const runCommand = request.runCommand ?? defaultRunCommand;
-  const method = request.method ?? "GET";
+  const initialUrl = parseHttpUrl(request.url);
+  let method = request.method ?? "GET";
+  let body = request.body;
   let currentUrl = parseHttpUrl(request.url);
   const chain: string[] = [];
 
@@ -127,8 +129,8 @@ async function sendOnce(
       url: currentUrl,
       pinnedIps,
       method,
-      headers: request.headers ?? {},
-      hasBody: request.body !== undefined,
+      headers: headersForHop(request.headers ?? {}, initialUrl, currentUrl),
+      hasBody: body !== undefined,
       timeoutMs: request.timeoutMs,
     });
     let result: CommandResult;
@@ -137,7 +139,7 @@ async function sendOnce(
         cwd: request.cwd,
         timeoutMs: request.timeoutMs + 2_000,
         signal: request.signal,
-        input: request.body,
+        input: body,
         maxOutputBytes:
           (request.maxResponseBytes ?? DEFAULT_MAX_RESPONSE_BYTES) + 1024,
       });
@@ -157,7 +159,26 @@ async function sendOnce(
       if (hop >= MAX_REDIRECTS) {
         throw new Error(`too many redirects (> ${MAX_REDIRECTS})`);
       }
-      currentUrl = parseHttpUrl(response.redirectUrl);
+      const nextUrl = parseHttpUrl(response.redirectUrl);
+      const crossOrigin = currentUrl.origin !== nextUrl.origin;
+      if (
+        crossOrigin &&
+        (response.status === 307 || response.status === 308) &&
+        body !== undefined
+      ) {
+        throw new Error(
+          "search HTTP: refused to forward a request body across origins during redirect",
+        );
+      }
+      if (
+        response.status === 301 ||
+        response.status === 302 ||
+        response.status === 303
+      ) {
+        method = "GET";
+        body = undefined;
+      }
+      currentUrl = nextUrl;
       continue;
     }
     return {
@@ -170,6 +191,29 @@ async function sendOnce(
       retryAfter: response.retryAfter,
     };
   }
+}
+
+const SENSITIVE_REDIRECT_HEADERS = new Set([
+  "authorization",
+  "cookie",
+  "proxy-authorization",
+  "x-api-key",
+  "api-key",
+  "x-subscription-token",
+]);
+
+function headersForHop(
+  headers: Record<string, string>,
+  initialUrl: URL,
+  currentUrl: URL,
+): Record<string, string> {
+  if (currentUrl.origin === initialUrl.origin) return headers;
+  const filtered: Record<string, string> = {};
+  for (const [key, value] of Object.entries(headers)) {
+    if (SENSITIVE_REDIRECT_HEADERS.has(key.toLowerCase())) continue;
+    filtered[key] = value;
+  }
+  return filtered;
 }
 
 /**

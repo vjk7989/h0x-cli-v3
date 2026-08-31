@@ -22,6 +22,9 @@ function throwIfAborted(signal?: AbortSignal): void {
   }
 }
 
+const MAX_REDIRECTS = 5;
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
+
 /**
  * Download a file from `url` to `destPath` with optional progress tracking.
  * Writes to a `.tmp` file first, then renames atomically on success.
@@ -36,26 +39,7 @@ export async function downloadFile(
   },
 ): Promise<void> {
   throwIfAborted(opts?.signal);
-  const headers: Record<string, string> = {
-    "User-Agent": opts?.userAgent ?? "atomic-agent/local-llm",
-  };
-  const isGitHub =
-    url.includes("github.com") || url.includes("githubusercontent.com");
-  if (isGitHub) {
-    const token = (process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "").trim();
-    if (token) headers.Authorization = `Bearer ${token}`;
-  } else if (url.includes("huggingface.co")) {
-    // Gated repos answer 401 without this; public ones ignore it, so it
-    // costs nothing to send whenever the operator has a token exported.
-    const token = huggingFaceToken();
-    if (token) headers.Authorization = `Bearer ${token}`;
-  }
-
-  const res = await fetch(url, {
-    headers,
-    redirect: "follow",
-    signal: opts?.signal,
-  });
+  const res = await fetchDownload(url, opts);
   throwIfAborted(opts?.signal);
   if (!res.ok || !res.body) {
     throw new Error(`Download failed: HTTP ${res.status} ${res.statusText}`);
@@ -127,4 +111,70 @@ export async function downloadFile(
       /* ignore */
     }
   }
+}
+
+async function fetchDownload(
+  url: string,
+  opts?: {
+    userAgent?: string;
+    signal?: AbortSignal;
+  },
+): Promise<Response> {
+  let currentUrl = parseDownloadUrl(url);
+  for (let redirects = 0; ; redirects++) {
+    const res = await fetch(currentUrl, {
+      headers: buildDownloadHeaders(currentUrl, opts?.userAgent),
+      redirect: "manual",
+      signal: opts?.signal,
+    });
+    if (!REDIRECT_STATUSES.has(res.status)) return res;
+
+    const location = res.headers.get("location");
+    if (location === null || location.length === 0) return res;
+    if (redirects >= MAX_REDIRECTS) {
+      throw new Error(`Download failed: too many redirects (> ${MAX_REDIRECTS})`);
+    }
+    currentUrl = new URL(location, currentUrl);
+    if (currentUrl.protocol !== "https:") {
+      throw new Error("Download failed: redirect target must use HTTPS");
+    }
+    throwIfAborted(opts?.signal);
+  }
+}
+
+function buildDownloadHeaders(
+  url: URL,
+  userAgent: string | undefined,
+): Record<string, string> {
+  const headers: Record<string, string> = {
+    "User-Agent": userAgent ?? "atomic-agent/local-llm",
+  };
+  const token = tokenForDownloadUrl(url);
+  if (token !== null) headers.Authorization = `Bearer ${token}`;
+  return headers;
+}
+
+function tokenForDownloadUrl(url: URL): string | null {
+  if (url.protocol !== "https:") return null;
+  if (isTrustedDownloadHost(url.hostname, ["github.com", "githubusercontent.com"])) {
+    const token = (process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "").trim();
+    return token.length > 0 ? token : null;
+  }
+  if (isTrustedDownloadHost(url.hostname, ["huggingface.co"])) {
+    return huggingFaceToken();
+  }
+  return null;
+}
+
+function isTrustedDownloadHost(hostname: string, roots: readonly string[]): boolean {
+  const lower = hostname.toLowerCase();
+  return roots.some((root) => lower === root || lower.endsWith(`.${root}`));
+}
+
+function parseDownloadUrl(url: string): URL {
+  const parsed = new URL(url);
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new Error(`Download failed: unsupported URL protocol ${parsed.protocol}`);
+  }
+  return parsed;
 }

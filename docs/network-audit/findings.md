@@ -62,6 +62,8 @@ matrix for exact commands, evidence and untested lifecycle boundaries.
 
 ### F01 High: cross-origin HTTP/search redirects forward credentials
 
+Remediation status, 2026-09-01: **remediated in source with focused tests reported passing**. The original finding below is retained as historical audit evidence. Current source behavior applies destination policy on redirect hops, strips credential-like headers on cross-origin safe rewrites, refuses cross-origin `307`/`308` redirects that would forward a body, and applies the configured host allowlist to redirect destinations before issuing the next request. See [ADR remediation decisions](../rebrand/decisions.md#network-remediation-decisions-f01-f03).
+
 `src/tools/os/http-request-fetch.ts:290` rebuilds every hop with the original
 `args.headers`. Raw HTTP forwards Authorization, Cookie and API-key headers even
 when a redirect changes origin; 307 preserves the body. The configured hostname
@@ -76,12 +78,14 @@ passed, reproducing the behavior. No real origin, DNS lookup or curl process ran
 An authorized/configured initial server or intermediary must issue the redirect;
 the tests do not show an actual provider exploiting it.
 
-Required fix: validate destination policy on every hop; reject cross-origin
+Original required fix: validate destination policy on every hop; reject cross-origin
 credential-bearing redirects by default or use an explicitly approved policy;
 rebuild allowed headers per origin and apply correct method/body semantics.
 Test host changes, port/scheme changes, downgrade, retries, and allowlist boundaries.
 
 ### F02 High: download token selection uses URL substrings, not host ownership
+
+Remediation status, 2026-09-01: **remediated in source with focused tests reported passing**. The original finding below is retained as historical audit evidence. Current source behavior selects credentials from parsed trusted HTTPS origins, not substring matches; manual redirect handling re-evaluates every hop and drops or adds credentials according to the parsed destination origin. See [ADR remediation decisions](../rebrand/decisions.md#network-remediation-decisions-f01-f03).
 
 `src/local-llm/download-file.ts:42` attaches GitHub credentials when the complete URL
 contains `github.com`/`githubusercontent.com`, and Hugging Face credentials when it
@@ -96,11 +100,13 @@ string, intercept fetch before any network, and stop before filesystem writes.
 All three cases passed. This is a token-routing defect, not evidence
 that historical downloads leaked credentials or that upstream assets are malicious.
 
-Required fix: parse URL and allow credentials only for explicitly trusted HTTPS
+Original required fix: parse URL and allow credentials only for explicitly trusted HTTPS
 origins, with a deliberate redirect policy; test query/userinfo/lookalikes,
 subdomains, non-HTTPS URLs and credential aliases. Do not fix with another substring.
 
 ### F03 High: credential text survives tool diagnostics and MCP error handling
+
+Remediation status, 2026-09-01: **remediated in source with focused tests reported passing**. The original finding below is retained as historical audit evidence. Current source behavior redacts credential-like values at diagnostic boundaries including HTTP previews/results/errors, shell summaries/details, MCP error text, prompt rendering of tool args/results, and trace retention. Execution inputs are not redacted before the actual request or command. See [ADR remediation decisions](../rebrand/decisions.md#network-remediation-decisions-f01-f03).
 
 HTTP success and failure results expose complete curl header arguments in
 `details.command` (`src/tools/os/http-request.ts:139`, `:164`). The compressor
@@ -118,7 +124,7 @@ do not claim `details.command` is automatically sent to a cloud model. Original 
 arguments ARE serialized into conversation prompts (`src/session/conversation-turn.ts:155`),
 and error text may enter summaries. Downstream transmission depends on that flow.
 
-Required fix: avoid retaining credential argv; redact sensitive headers, URL
+Original required fix: avoid retaining credential argv; redact sensitive headers, URL
 userinfo/query credentials and error reflections before persistence/display.
 Handle original tool args separately. Add assertions at result, trace and prompt
 boundaries, not just a helper named scrub.
@@ -188,6 +194,9 @@ process-tree captures remain blocked on a network-isolated environment and, for
 authenticated checks, explicit authorization. Mock lifecycle coverage is recorded
 separately in verification. Existing key presence does not authorize using it.
 
-No production remediation, reporting-policy decision, release/push, account creation,
-or installation was performed. The next task should address high-priority credential
-findings before identity-only changes or any decision to collect customer reports.
+Production remediation for F01-F03 was later performed in source and documented in
+[the rebrand ADR](../rebrand/decisions.md#network-remediation-decisions-f01-f03).
+No reporting-policy decision, connector identity migration, release, account creation,
+authenticated live probe, packet-capture claim, or complete runtime verification is
+established by those focused fixes. Remaining network and ownership work should use
+the current endpoint ledger and verification records as the baseline.

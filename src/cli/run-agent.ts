@@ -14,6 +14,7 @@ import { resolveLlmConfig } from "../llm/provider/registry/provider-types.js";
 import { createAgentRuntime } from "../runtime/bootstrap.js";
 import type { AgentRuntime } from "../runtime/bootstrap.js";
 import type { AgentLoopEvent } from "../agent/agent-loop.js";
+import { redactSecretsDeep, redactSecretText } from "../security/redact-secrets.js";
 import {
   canGrantCategory,
   canGrantShape,
@@ -216,14 +217,15 @@ export function formatAgentEvent(
     case "llm_event": {
       const inner = event.event;
       if (inner.type === "tool_call_parsed") {
-        return `  → ${inner.call.tool}(${JSON.stringify(inner.call.args)})`;
+        return `  → ${inner.call.tool}(${JSON.stringify(redactSecretsDeep(inner.call.args))})`;
       }
       if (inner.type === "tool_call_executed") {
-        return `  ← ${inner.result.tool} ${inner.result.status}: ${inner.result.summary}${inner.result.truncated ? " (truncated)" : ""}`;
+        return `  ← ${inner.result.tool} ${inner.result.status}: ${redactSecretText(inner.result.summary)}${inner.result.truncated ? " (truncated)" : ""}`;
       }
       if (inner.type === "step_error") {
-        const base = `  ! [${inner.category}] ${inner.error.message}`;
-        return withLlamaHint(base, inner.category, inner.error.message, ctx);
+        const message = redactSecretText(inner.error.message);
+        const base = `  ! [${inner.category}] ${message}`;
+        return withLlamaHint(base, inner.category, message, ctx);
       }
       // assistant_reply / reasoning are emitted to stdout from the chat loop instead.
       return null;

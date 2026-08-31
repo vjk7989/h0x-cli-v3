@@ -74,47 +74,50 @@ afterEach(() => {
   expect(forbidden).not.toHaveBeenCalled();
 });
 
-// FINDING CHARACTERIZATION: passing assertions below reproduce unsafe current
-// behavior. They are audit evidence, not a security acceptance gate or a fix.
-describe("network audit findings: cross-origin redirects", () => {
-  it("FINDING: an allowed initial host redirects to a host outside the configured allowlist", async () => {
+describe("network audit remediation: cross-origin redirects", () => {
+  it("blocks redirects to hosts outside the configured allowlist", async () => {
     const mock = fixture([httpMeta(302, destination), httpMeta(200)]);
     const result = await httpTool(mock, ["origin.audit.invalid"]).run({ url: origin, headers }, context());
-    expect(result.status).toBe("ok");
-    expect(result.details.finalUrl).toBe(destination);
-    expect(mock.calls).toHaveLength(2);
-    expect(mock.calls[1]!.args.at(-1)).toBe(destination);
-    expect(result.details.command).toContain(`Authorization: ${headers.Authorization}`);
+    expect(result.status).toBe("error");
+    expect(result.summary).toContain("host destination.audit.invalid");
+    expect(mock.calls).toHaveLength(1);
   });
 
-  it.each([302, 307])("FINDING: HTTP %i forwards credentials to a different origin", async (status) => {
-    const mock = fixture([httpMeta(status, destination), httpMeta(200)]);
+  it("drops sensitive headers on a cross-origin HTTP 302 redirect", async () => {
+    const mock = fixture([httpMeta(302, destination), httpMeta(200)]);
     const result = await httpTool(mock).run({ url: origin, method: "POST", headers, body }, context());
     expect(result.status).toBe("ok");
     expect(mock.calls).toHaveLength(2);
     expect(mock.lookup.mock.calls.map(([host]) => host)).toEqual([
       "origin.audit.invalid", "destination.audit.invalid",
     ]);
-    expect(new URL(origin).origin).not.toBe(new URL(destination).origin);
+    const forwarded = mock.calls[1]!;
     for (const [key, value] of Object.entries(headers)) {
-      expect(mock.calls[1]!.args).toContain(`${key}: ${value}`);
+      expect(forwarded.args).not.toContain(`${key}: ${value}`);
     }
-    expect(mock.calls[1]!.input).toBe(status === 307 ? body : undefined);
+    expect(forwarded.input).toBeUndefined();
     expect(result.details.redirectChain).toEqual([origin, destination]);
-    expect(result.details.command).toContain(`Authorization: ${headers.Authorization}`);
   });
 
-  it.each([0, 7])("FINDING: curl exit %i exposes credentials in tool-result diagnostics", async (exitCode) => {
+  it.each([307, 308])("blocks HTTP %i cross-origin redirects that would preserve a request body", async (status) => {
+    const mock = fixture([httpMeta(status, destination), httpMeta(200)]);
+    const result = await httpTool(mock).run({ url: origin, method: "POST", headers, body }, context());
+    expect(result.status).toBe("error");
+    expect(result.summary).toContain("refused to forward a request body");
+    expect(mock.calls).toHaveLength(1);
+  });
+
+  it.each([0, 7])("redacts credentials in curl command diagnostics for exit %i", async (exitCode) => {
     const mock = fixture([httpMeta(200)], exitCode);
     const result = await httpTool(mock).run({ url: origin, headers }, context());
     expect(result.status).toBe(exitCode === 0 ? "ok" : "error");
     expect(mock.calls).toHaveLength(1);
     for (const [key, value] of Object.entries(headers)) {
-      expect(result.details.command).toContain(`${key}: ${value}`);
+      expect(result.details.command).not.toContain(`${key}: ${value}`);
     }
   });
 
-  it.each([302, 303, 307, 308])("FINDING: search HTTP %i replays credentials AND POST body across origins", async (status) => {
+  it.each([302, 303])("drops search credentials and body on HTTP %i cross-origin redirects", async (status) => {
     const mock = fixture([
       `\n__ATOMIC_WEB_SEARCH_META__${status}|text/plain|${destination}|0|__ATOMIC_WEB_SEARCH_HEADERS__`,
       "ok\n__ATOMIC_WEB_SEARCH_META__200|text/plain||2|__ATOMIC_WEB_SEARCH_HEADERS__",
@@ -132,10 +135,22 @@ describe("network audit findings: cross-origin redirects", () => {
     ]);
     const forwarded = mock.calls[1]!;
     for (const [key, value] of Object.entries(headers)) {
-      expect(forwarded.args).toContain(`${key}: ${value}`);
+      expect(forwarded.args).not.toContain(`${key}: ${value}`);
     }
-    expect(forwarded.args[forwarded.args.indexOf("-X") + 1]).toBe("POST");
-    expect(forwarded.args).toContain("--data-binary");
-    expect(forwarded.input).toBe(body);
+    expect(forwarded.args).not.toContain("--data-binary");
+    expect(forwarded.input).toBeUndefined();
+  });
+
+  it.each([307, 308])("blocks search HTTP %i cross-origin redirects that would preserve a request body", async (status) => {
+    const mock = fixture([
+      `\n__ATOMIC_WEB_SEARCH_META__${status}|text/plain|${destination}|0|__ATOMIC_WEB_SEARCH_HEADERS__`,
+      "ok\n__ATOMIC_WEB_SEARCH_META__200|text/plain||2|__ATOMIC_WEB_SEARCH_HEADERS__",
+    ]);
+    await expect(searchHttp({
+      ...mock, url: origin, method: "POST", headers, body, cwd,
+      signal: new AbortController().signal, timeoutMs: 1000,
+      retryPolicy: { maxRetries: 0, baseDelayMs: 0 },
+    })).rejects.toThrow("refused to forward a request body");
+    expect(mock.calls).toHaveLength(1);
   });
 });

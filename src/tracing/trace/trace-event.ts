@@ -12,9 +12,9 @@ import type { LlmFailureCategory } from "../../llm/reliability/index.js";
  *   single field.
  * - `session_started` / `trace_truncated` are the only events without a
  *   turn context; everything else carries `turnIndex`.
- * - Secret redaction is NOT applied here (NON-goal for this milestone).
- *   The sink writes payloads verbatim; consumers must treat traces as
- *   sensitive local artefacts.
+ * - Diagnostic secret redaction is applied by the recorder before events
+ *   reach the sink. Traces are still local artifacts and may include task
+ *   context, so consumers must continue to treat them as sensitive.
  */
 export type TraceEvent =
   | TraceSessionStarted

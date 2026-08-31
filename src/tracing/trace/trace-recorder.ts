@@ -1,6 +1,7 @@
 import type { AgentLoopEvent } from "../../agent/agent-loop.js";
 import type { StepEvent } from "../../agent/step-executor.js";
 import type { ToolCallPayload } from "../../llm/grammar/tool-call-grammar.js";
+import { redactDiagnosticPayload, redactSecretText } from "../../security/redact-secrets.js";
 
 import type { TraceEvent } from "./trace-event.js";
 import type { TraceSink } from "./trace-bus.js";
@@ -137,7 +138,7 @@ export function createTraceRecorder(
           turnIndex: currentTurnIndex,
           stepIndex: inner.stepIndex,
           stablePrefixHash: inner.stablePrefixHash,
-          tail: inner.tail,
+          tail: redactSecretText(inner.tail),
           tokens: inner.tokens,
           slotId: inner.slotId,
           cacheReused: inner.cacheReused,
@@ -158,8 +159,8 @@ export function createTraceRecorder(
           turnIndex: currentTurnIndex,
           stepIndex: inner.stepIndex,
           attempt: inner.attempt,
-          content: completion.content,
-          ...(reasoning !== undefined ? { reasoningContent: reasoning } : {}),
+          content: redactSecretText(completion.content),
+          ...(reasoning !== undefined ? { reasoningContent: redactSecretText(reasoning) } : {}),
           ...(completion.timing
             ? {
                 timing: {
@@ -191,11 +192,11 @@ export function createTraceRecorder(
           turnIndex: currentTurnIndex,
           stepIndex: currentStepIndex,
           tool: inner.result.tool,
-          args: call?.args ?? {},
+          args: redactDiagnosticPayload(call?.args ?? {}),
           status: inner.result.status,
-          summary: inner.result.summary,
+          summary: redactSecretText(inner.result.summary),
           ...(inner.result.details !== undefined
-            ? { details: inner.result.details }
+            ? { details: redactDiagnosticPayload(inner.result.details) }
             : {}),
           ...(inner.result.truncated ? { toolTruncated: true } : {}),
           ...(inner.batchSize > 1
@@ -224,8 +225,8 @@ export function createTraceRecorder(
           ts: now(),
           turnIndex: currentTurnIndex,
           stepIndex: currentStepIndex,
-          message: inner.error.message,
-          ...(inner.error.stack ? { stack: inner.error.stack } : {}),
+          message: redactSecretText(inner.error.message),
+          ...(inner.error.stack ? { stack: redactSecretText(inner.error.stack) } : {}),
           category: inner.category,
         });
         return;

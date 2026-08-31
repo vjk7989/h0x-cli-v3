@@ -62,4 +62,25 @@ describe("scrubErrorMessage", () => {
     const longMsg = "x".repeat(500);
     expect(scrubErrorMessage(longMsg).length).toBe(200);
   });
+
+  it("redacts credential-like values before returning user-facing errors", () => {
+    const out = scrubErrorMessage(
+      [
+        "Error: request failed",
+        "Authorization: Bearer synthetic-mcp-bearer-secret",
+        "Cookie: sid=synthetic-mcp-cookie-secret",
+        "x-api-key=synthetic-mcp-api-key-secret",
+        "https://user:synthetic-url-secret@example.com/path?token=synthetic-query-secret",
+        "request id public-request-id",
+      ].join("\n"),
+      500,
+    );
+
+    expect(out).not.toContain("synthetic-mcp-bearer-secret");
+    expect(out).not.toContain("synthetic-mcp-cookie-secret");
+    expect(out).not.toContain("synthetic-mcp-api-key-secret");
+    expect(out).not.toContain("synthetic-url-secret");
+    expect(out).not.toContain("synthetic-query-secret");
+    expect(out).toContain("public-request-id");
+  });
 });

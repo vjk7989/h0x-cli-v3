@@ -151,6 +151,120 @@ describe("parseCurlOutput", () => {
 });
 
 describe("os.http.request", () => {
+  it("redacts credential-like values from returned curl command diagnostics", async () => {
+    const capture: { cmd?: string; args?: string[]; opts?: CommandOptions } = {};
+    const tool = buildOsHttpRequestTool({
+      lookup: publicLookup,
+      approvals: approveAll(),
+      approvalRequired: true,
+      config: makeHttpConfig({ approvalMode: "never" }),
+      runCommand: fakeRun(capture, {
+        stdout: `ok\n${meta(200, "text/plain", 2)}`,
+      }),
+    });
+    const result = await tool.run(
+      {
+        url: "https://user:synthetic-url-secret@example.com/path?api_key=synthetic-query-secret&safe=1",
+        method: "POST",
+        headers: {
+          Authorization: "Bearer synthetic-authorization-secret",
+          Cookie: "sid=synthetic-cookie-secret",
+          "Proxy-Authorization": "Basic synthetic-proxy-secret",
+          "X-Api-Key": "synthetic-api-key-secret",
+          "X-Subscription-Token": "synthetic-subscription-secret",
+          "X-Trace-Id": "public-trace-id",
+        },
+        body: "synthetic-body-secret",
+      },
+      makeCtx(),
+    );
+
+    const serialized = JSON.stringify(result);
+    expect(serialized).not.toContain("synthetic-authorization-secret");
+    expect(serialized).not.toContain("synthetic-cookie-secret");
+    expect(serialized).not.toContain("synthetic-proxy-secret");
+    expect(serialized).not.toContain("synthetic-api-key-secret");
+    expect(serialized).not.toContain("synthetic-subscription-secret");
+    expect(serialized).not.toContain("synthetic-url-secret");
+    expect(serialized).not.toContain("synthetic-query-secret");
+    expect(serialized).not.toContain("synthetic-body-secret");
+    expect(serialized).toContain("public-trace-id");
+    expect(JSON.stringify(capture.args)).toContain("synthetic-authorization-secret");
+    expect(capture.opts?.input).toBe("synthetic-body-secret");
+  });
+
+  it("redacts credential-like values from curl transport error diagnostics", async () => {
+    const tool = buildOsHttpRequestTool({
+      lookup: publicLookup,
+      approvals: approveAll(),
+      approvalRequired: true,
+      config: makeHttpConfig({ approvalMode: "never" }),
+      runCommand: fakeRun(
+        {},
+        {
+          exitCode: 56,
+          stderr:
+            "curl: (56) upstream reflected Authorization: Bearer synthetic-stderr-secret",
+        },
+      ),
+    });
+    const result = await tool.run(
+      {
+        url: "https://example.com/path?token=synthetic-query-secret",
+        headers: { Authorization: "Bearer synthetic-header-secret" },
+      },
+      makeCtx(),
+    );
+
+    const serialized = JSON.stringify(result);
+    expect(result.status).toBe("error");
+    expect(serialized).not.toContain("synthetic-header-secret");
+    expect(serialized).not.toContain("synthetic-query-secret");
+    expect(serialized).not.toContain("synthetic-stderr-secret");
+  });
+
+  it("redacts credential-like values from approval previews", async () => {
+    let preview = "";
+    const gate = new ApprovalGate({
+      emit: (req) => {
+        preview = req.preview ?? "";
+        gate.reject(req.approvalId, "stop after preview capture");
+      },
+    });
+    const tool = buildOsHttpRequestTool({
+      lookup: publicLookup,
+      approvals: gate,
+      approvalRequired: true,
+      config: makeHttpConfig({ approvalMode: "always" }),
+      runCommand: fakeRun({}),
+    });
+
+    await expect(
+      tool.run(
+        {
+          url: "https://user:synthetic-url-secret@example.com/path?apikey=synthetic-query-secret",
+          method: "POST",
+          headers: {
+            authorization: "Bearer synthetic-lowercase-secret",
+            Cookie: "sid=synthetic-cookie-secret",
+            "X-Api-Key": "synthetic-api-key-secret",
+            "X-Request-Id": "public-request-id",
+          },
+          body: JSON.stringify({ token: "synthetic-body-secret" }),
+        },
+        makeCtx(),
+      ),
+    ).rejects.toThrow(/approval denied/);
+
+    expect(preview).not.toContain("synthetic-url-secret");
+    expect(preview).not.toContain("synthetic-query-secret");
+    expect(preview).not.toContain("synthetic-lowercase-secret");
+    expect(preview).not.toContain("synthetic-cookie-secret");
+    expect(preview).not.toContain("synthetic-api-key-secret");
+    expect(preview).not.toContain("synthetic-body-secret");
+    expect(preview).toContain("public-request-id");
+  });
+
   it("rejects when config.http.enabled is false", async () => {
     const tool = buildOsHttpRequestTool({
       lookup: publicLookup,

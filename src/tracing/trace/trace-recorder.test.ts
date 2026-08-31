@@ -90,6 +90,75 @@ describe("createTraceRecorder", () => {
     expect(invocation && "batchSize" in invocation).toBe(false);
   });
 
+  it("redacts credential-like args, summaries and details before trace emission", () => {
+    const { events, emit } = collector();
+    const rec = createTraceRecorder({ sessionId: "s-redact", emit, now });
+    rec.onAgentEvent({ type: "turn_started", turnIndex: 0 });
+    rec.onAgentEvent({ type: "step_started", stepIndex: 0 });
+    rec.onAgentEvent({
+      type: "llm_event",
+      event: {
+        type: "tool_call_parsed",
+        call: {
+          tool: "os.http.request",
+          args: {
+            url: "https://user:synthetic-url-secret@example.com/path?token=synthetic-query-secret",
+            headers: {
+              Authorization: "Bearer synthetic-authorization-secret",
+              Cookie: "sid=synthetic-cookie-secret",
+              "X-Api-Key": "synthetic-api-key-secret",
+              "X-Trace-Id": "public-trace-id",
+            },
+            body: "synthetic-body-secret",
+          },
+        },
+        batchIndex: 0,
+        batchSize: 1,
+      },
+    });
+    rec.onAgentEvent({
+      type: "llm_event",
+      event: {
+        type: "tool_call_executed",
+        result: {
+          tool: "os.http.request",
+          status: "error",
+          summary:
+            "curl failed with Authorization: Bearer synthetic-summary-secret for public-resource",
+          details: {
+            command: [
+              "curl",
+              "-H",
+              "Authorization: Bearer synthetic-command-secret",
+              "https://example.com/?apikey=synthetic-details-query-secret",
+            ],
+            stderr: "Cookie: sid=synthetic-stderr-secret",
+            requestId: "public-request-id",
+          },
+          truncated: false,
+        },
+        batchIndex: 0,
+        batchSize: 1,
+      },
+    });
+
+    const invocation = events.find((e) => e.type === "tool_invocation");
+    const serialized = JSON.stringify(invocation);
+    expect(serialized).not.toContain("synthetic-url-secret");
+    expect(serialized).not.toContain("synthetic-query-secret");
+    expect(serialized).not.toContain("synthetic-authorization-secret");
+    expect(serialized).not.toContain("synthetic-cookie-secret");
+    expect(serialized).not.toContain("synthetic-api-key-secret");
+    expect(serialized).not.toContain("synthetic-body-secret");
+    expect(serialized).not.toContain("synthetic-summary-secret");
+    expect(serialized).not.toContain("synthetic-command-secret");
+    expect(serialized).not.toContain("synthetic-details-query-secret");
+    expect(serialized).not.toContain("synthetic-stderr-secret");
+    expect(serialized).toContain("public-trace-id");
+    expect(serialized).toContain("public-resource");
+    expect(serialized).toContain("public-request-id");
+  });
+
   it("emits N tool_invocation events per stepIndex with monotonic batchIndex", () => {
     const { events, emit } = collector();
     const rec = createTraceRecorder({ sessionId: "s-batch", emit, now });

@@ -50,6 +50,10 @@ const INVITED_RETRY_STATUSES = new Set([429, 503]);
 /** curl's "operation timed out" exit. The other exits are not transient. */
 const CURL_EXIT_TIMEOUT = 28;
 
+export class RedirectPolicyError extends Error {
+  override readonly name = "RedirectPolicyError";
+}
+
 /**
  * Methods that are safe to replay. A GET carries no side effect, so a repeat
  * is free. A POST may already have been processed by the origin even when the
@@ -102,6 +106,7 @@ export interface GuardedCurlResponse {
 export interface ExecuteGuardedHttpOptions {
   runCommand?: typeof defaultRunCommand;
   lookup?: HostLookup;
+  isHostAllowed?: (hostname: string) => boolean;
   cwd: string;
   signal: AbortSignal;
   maxResponseBytes: number;
@@ -129,6 +134,7 @@ export async function executeGuardedHttpRequest(
   // a retryable status or a timeout — resumes at the hop that actually failed
   // instead of re-walking redirects the origin has already served.
   const state: RequestWalkState = {
+    initialUrl: rawUrl,
     url: rawUrl,
     method: args.method,
     body: args.body,
@@ -250,6 +256,8 @@ function defaultSleep(ms: number, signal: AbortSignal): Promise<void> {
  * failure left `url`/`method` stale and rewound the retry to the caller's URL.
  */
 interface RequestWalkState {
+  /** Original caller URL, used to decide which redirects can keep credentials. */
+  initialUrl: string;
   /** Where the next attempt starts: the last hop actually reached. */
   url: string;
   /** Method of that hop. A 307/308 keeps a POST; a 301/302/303 drops to GET. */
@@ -280,6 +288,11 @@ async function sendGuardedRequestOnce(
   let lastCommand: string[] = [];
 
   for (;;) {
+    if (opts.isHostAllowed !== undefined && !opts.isHostAllowed(currentUrl.hostname)) {
+      throw new RedirectPolicyError(
+        `os.http.request: redirect host ${currentUrl.hostname} is not in config.http.hostAllowlist`,
+      );
+    }
     const pinnedIps = await assertHostAllowed(currentUrl, {
       lookup: opts.lookup,
     });
@@ -287,7 +300,7 @@ async function sendGuardedRequestOnce(
       url: currentUrl,
       pinnedIps,
       method,
-      headers: args.headers,
+      headers: headersForHop(args.headers, parseHttpUrl(state.initialUrl), currentUrl),
       body,
       timeoutMs: args.timeoutMs,
     });
@@ -343,12 +356,23 @@ async function sendGuardedRequestOnce(
         );
       }
       state.redirects += 1;
+      const nextUrl = parseHttpUrl(parsed.redirectUrl);
+      const crossOrigin = currentUrl.origin !== nextUrl.origin;
+      if (
+        crossOrigin &&
+        (parsed.status === 307 || parsed.status === 308) &&
+        body !== undefined
+      ) {
+        throw new RedirectPolicyError(
+          "os.http.request: refused to forward a request body across origins during redirect",
+        );
+      }
       // Curl -L semantics: 301/302/303 drop to GET without body; 307/308 keep method+body.
       if (parsed.status === 301 || parsed.status === 302 || parsed.status === 303) {
         method = "GET";
         body = undefined;
       }
-      currentUrl = parseHttpUrl(parsed.redirectUrl);
+      currentUrl = nextUrl;
       continue;
     }
 
@@ -382,6 +406,29 @@ export function isCurlTransportError(
 }
 
 export { SsrfBlockedError };
+
+const SENSITIVE_REDIRECT_HEADERS = new Set([
+  "authorization",
+  "cookie",
+  "proxy-authorization",
+  "x-api-key",
+  "api-key",
+  "x-subscription-token",
+]);
+
+function headersForHop(
+  headers: Record<string, string>,
+  initialUrl: URL,
+  currentUrl: URL,
+): Record<string, string> {
+  if (currentUrl.origin === initialUrl.origin) return headers;
+  const filtered: Record<string, string> = {};
+  for (const [key, value] of Object.entries(headers)) {
+    if (SENSITIVE_REDIRECT_HEADERS.has(key.toLowerCase())) continue;
+    filtered[key] = value;
+  }
+  return filtered;
+}
 
 interface BuildPinnedCurlArgs {
   url: URL;

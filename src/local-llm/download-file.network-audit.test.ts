@@ -23,19 +23,16 @@ afterEach(() => {
   expect(forbiddenWrite).not.toHaveBeenCalled();
 });
 
-// FINDING CHARACTERIZATION: a pass confirms current credential disclosure;
-// these expectations must change when a separately approved fix is implemented.
-describe("network audit: download URL substring authentication", () => {
+describe("network audit: download URL origin authentication", () => {
   it.each([
-    ["github.com", "synthetic-github-token"],
-    ["githubusercontent.com", "synthetic-github-token"],
-    ["huggingface.co", "synthetic-hf-token"],
-  ])("FINDING: %s in a query attaches its token to an unrelated host", async (marker, token) => {
-    const url = `https://download.audit.invalid/model?mirror=${marker}`;
+    ["GitHub", "https://github.com/pavii/h0x-cli/releases/download/v0.0.0/model.gguf", "synthetic-github-token"],
+    ["GitHub raw content", "https://raw.githubusercontent.com/pavii/h0x-cli/main/model.gguf", "synthetic-github-token"],
+    ["Hugging Face", "https://huggingface.co/pavii/model/resolve/main/model.gguf", "synthetic-hf-token"],
+  ])("attaches the %s token only for its trusted HTTPS origin", async (_label, url, token) => {
     const fetchMock = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
       expect(String(input)).toBe(url);
-      expect(new URL(String(input)).hostname).toBe("download.audit.invalid");
       expect(new Headers(init?.headers).get("authorization")).toBe(`Bearer ${token}`);
+      expect(init?.redirect).toBe("manual");
       // Rejected before streaming starts; even a regression cannot write a file.
       return new Response(null, { status: 401, statusText: "Synthetic Unauthorized" });
     });
@@ -43,5 +40,103 @@ describe("network audit: download URL substring authentication", () => {
     await expect(downloadFile(url, "G:/h0xi/atomic-agent/.local/network-audit/never-written.bin"))
       .rejects.toThrow("Download failed: HTTP 401");
     expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    ["GitHub query marker", "https://download.audit.invalid/model?mirror=github.com"],
+    ["GitHub raw query marker", "https://download.audit.invalid/model?mirror=raw.githubusercontent.com"],
+    ["Hugging Face query marker", "https://download.audit.invalid/model?mirror=huggingface.co"],
+    ["GitHub path marker", "https://download.audit.invalid/github.com/model.gguf"],
+    ["Hugging Face path marker", "https://download.audit.invalid/huggingface.co/model.gguf"],
+    ["GitHub userinfo marker", "https://github.com@download.audit.invalid/model.gguf"],
+    ["Hugging Face userinfo marker", "https://huggingface.co@download.audit.invalid/model.gguf"],
+    ["GitHub host lookalike", "https://github.com.download.audit.invalid/model.gguf"],
+    ["GitHub raw host lookalike", "https://raw.githubusercontent.com.download.audit.invalid/model.gguf"],
+    ["Hugging Face host lookalike", "https://huggingface.co.download.audit.invalid/model.gguf"],
+    ["insecure GitHub origin", "http://github.com/pavii/h0x-cli/releases/download/v0.0.0/model.gguf"],
+    ["insecure Hugging Face origin", "http://huggingface.co/pavii/model/resolve/main/model.gguf"],
+  ])("does not attach a token for %s", async (_label, url) => {
+    const fetchMock = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      expect(String(input)).toBe(url);
+      expect(new Headers(init?.headers).get("authorization")).toBeNull();
+      expect(init?.redirect).toBe("manual");
+      return new Response(null, { status: 401, statusText: "Synthetic Unauthorized" });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(downloadFile(url, "G:/h0xi/atomic-agent/.local/network-audit/never-written.bin"))
+      .rejects.toThrow("Download failed: HTTP 401");
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it("does not select credentials from redirect-looking query parameters before evaluating the next hop", async () => {
+    const firstUrl = "https://download.audit.invalid/model?redirect=https%3A%2F%2Fhuggingface.co%2Fpavii%2Fmodel";
+    const secondUrl = "https://huggingface.co/pavii/model/resolve/main/model.gguf";
+    const fetchMock = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      expect(init?.redirect).toBe("manual");
+      const requestUrl = String(input);
+      if (requestUrl === firstUrl) {
+        expect(new Headers(init?.headers).get("authorization")).toBeNull();
+        return new Response(null, {
+          headers: { location: secondUrl },
+          status: 302,
+          statusText: "Synthetic Redirect",
+        });
+      }
+      expect(requestUrl).toBe(secondUrl);
+      expect(new Headers(init?.headers).get("authorization")).toBe("Bearer synthetic-hf-token");
+      return new Response(null, { status: 401, statusText: "Synthetic Unauthorized" });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(downloadFile(firstUrl, "G:/h0xi/atomic-agent/.local/network-audit/never-written.bin"))
+      .rejects.toThrow("Download failed: HTTP 401");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("evaluates token selection from the parsed trusted redirect destination", async () => {
+    const firstUrl = "https://download.audit.invalid/model.gguf";
+    const secondUrl = "https://huggingface.co/pavii/model/resolve/main/model.gguf";
+    const fetchMock = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      expect(init?.redirect).toBe("manual");
+      const requestUrl = String(input);
+      if (requestUrl === firstUrl) {
+        expect(new Headers(init?.headers).get("authorization")).toBeNull();
+        return new Response(null, {
+          headers: { location: secondUrl },
+          status: 302,
+          statusText: "Synthetic Redirect",
+        });
+      }
+      expect(requestUrl).toBe(secondUrl);
+      expect(new Headers(init?.headers).get("authorization")).toBe("Bearer synthetic-hf-token");
+      return new Response(null, { status: 401, statusText: "Synthetic Unauthorized" });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(downloadFile(firstUrl, "G:/h0xi/atomic-agent/.local/network-audit/never-written.bin"))
+      .rejects.toThrow("Download failed: HTTP 401");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("drops a trusted-origin token when a redirect moves to an untrusted destination", async () => {
+    const firstUrl = "https://github.com/pavii/h0x-cli/releases/download/v0.0.0/model.gguf";
+    const secondUrl = "https://download.audit.invalid/model.gguf";
+    const fetchMock = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      expect(init?.redirect).toBe("manual");
+      const requestUrl = String(input);
+      if (requestUrl === firstUrl) {
+        expect(new Headers(init?.headers).get("authorization")).toBe("Bearer synthetic-github-token");
+        return new Response(null, {
+          headers: { location: secondUrl },
+          status: 302,
+          statusText: "Synthetic Redirect",
+        });
+      }
+      expect(requestUrl).toBe(secondUrl);
+      expect(new Headers(init?.headers).get("authorization")).toBeNull();
+      return new Response(null, { status: 401, statusText: "Synthetic Unauthorized" });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(downloadFile(firstUrl, "G:/h0xi/atomic-agent/.local/network-audit/never-written.bin"))
+      .rejects.toThrow("Download failed: HTTP 401");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

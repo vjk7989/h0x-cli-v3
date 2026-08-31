@@ -11,6 +11,25 @@ open vulnerabilities and upstream attribution.** Source and existing-dist
 telemetry and provider loopback cases ran in separate processes. All 19 runner processes exited 0,
 without timeout, and completed; final process checks are recorded below.
 
+## Remediation follow-up, F01-F03
+
+Remediation agents reported focused source-level fixes for F01-F03 on
+2026-09-01. This documentation update did not rerun the commands below and made
+no external service calls; it records the received results so the architecture
+record and audit docs point at the current source state.
+
+| Area | Reported focused result | Scope |
+| --- | --- | --- |
+| F01 redirect credentials and allowlists | `src/tools/os/http-redirect-remediation.test.ts` passed 16 tests after expectation alignment. The broader F01 focused command was reported with expectation mismatches first; failure analysis recommended keeping stricter cross-origin `307`/`308` body rejection and applying allowlist checks before the next redirect request. | Raw HTTP and search HTTP redirect behavior, credential header stripping, same-origin preservation, body-forwarding refusal, and redirect-destination allowlists. |
+| F02 download token routing | `src/local-llm/download-file.test.ts` plus `src/local-llm/download-file.network-audit.test.ts` passed 22 tests. | Parsed trusted HTTPS origins, query/path/userinfo/lookalike rejection, insecure URL rejection, and manual per-hop redirect token selection. |
+| F03 diagnostics redaction | Nine focused files passed 149 tests: MCP errors, trace recorder/sink, approval gate, Telegram approval bridge, HTTP request, HTTP redirect audit, conversation-turn prompt rendering, and shell diagnostics. | Credential-like text redaction at diagnostic/prompt/trace boundaries while preserving execution inputs. |
+
+These remediation passes do not establish a clean full-suite run, build/install
+verification, real TUI lifecycle packet capture, authenticated service receipt,
+or historical-traffic absence. They also do not close remaining audit items such
+as MCP environment inheritance, connector identity migration, automatic
+background checks, release packaging, and reporting policy.
+
 ## Final relocated verification
 
 After analyst approval, the writer moved the two dist-dependent files to

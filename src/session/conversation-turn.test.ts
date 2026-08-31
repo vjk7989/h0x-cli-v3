@@ -409,6 +409,50 @@ describe("packConversation memoisation (issue #121)", () => {
     expect(second.visibleTurns).toEqual(first.visibleTurns);
   });
 
+  it("redacts credential-like assistant tool args before prompt rendering", () => {
+    const rendered = renderTurnForPrompt(
+      assistantToolCallTurn({
+        tool: "os.http.request",
+        args: {
+          url: "https://user:synthetic-url-secret@example.com/path?api_key=synthetic-query-secret",
+          method: "POST",
+          headers: {
+            Authorization: "Bearer synthetic-authorization-secret",
+            Cookie: "sid=synthetic-cookie-secret",
+            "Proxy-Authorization": "Basic synthetic-proxy-secret",
+            "X-Api-Key": "synthetic-api-key-secret",
+            "X-Trace-Id": "public-trace-id",
+          },
+          body: { token: "synthetic-body-secret", label: "public-body-label" },
+        },
+      }),
+    );
+
+    expect(rendered).not.toContain("synthetic-url-secret");
+    expect(rendered).not.toContain("synthetic-query-secret");
+    expect(rendered).not.toContain("synthetic-authorization-secret");
+    expect(rendered).not.toContain("synthetic-cookie-secret");
+    expect(rendered).not.toContain("synthetic-proxy-secret");
+    expect(rendered).not.toContain("synthetic-api-key-secret");
+    expect(rendered).not.toContain("synthetic-body-secret");
+    expect(rendered).toContain("public-trace-id");
+    expect(rendered).toContain("public-body-label");
+  });
+
+  it("redacts credential-like tool result summaries before prompt rendering", () => {
+    const rendered = renderTurnForPrompt(
+      toolResultTurn({
+        tool: "mcp.github.create_issue",
+        status: "error",
+        summary:
+          "request failed with Authorization: Bearer synthetic-result-secret\npublic-resource",
+      }),
+    );
+
+    expect(rendered).not.toContain("synthetic-result-secret");
+    expect(rendered).toContain("public-resource");
+  });
+
   it("keeps the fresh/aged distinction — a turn cached as fresh is not reused when aged", () => {
     // `os.http.request` renders uncapped while fresh and capped once aged,
     // so the same turn object has two different costs. Caching must key on

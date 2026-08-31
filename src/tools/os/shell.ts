@@ -9,6 +9,7 @@ import {
   requireApproval,
   type DangerousToolOptions,
 } from "../../approval/dangerous-tool.js";
+import { redactSecretsDeep, redactSecretText } from "../../security/redact-secrets.js";
 import { resolveUserPath } from "./expand-home.js";
 import { expandShellGlobArgs } from "./expand-shell-glob-args.js";
 import {
@@ -282,7 +283,7 @@ export function buildOsShellTool(options: DangerousToolOptions): ToolDefinition 
             tool: "os.shell.run",
             category: "shell",
             reason: `${guardVerdict.reason} in ${cwd}`,
-            preview: commandLine,
+            preview: redactSecretText(commandLine),
             affectedResources: [cwd],
             ...(commandShape !== undefined ? { commandShape } : {}),
           },
@@ -318,19 +319,20 @@ export function buildOsShellTool(options: DangerousToolOptions): ToolDefinition 
               : {}),
           });
       const status = result.exitCode === 0 ? "ok" : "error";
-      const header = `$ ${commandLine}\nexit: ${result.exitCode ?? "signal:" + result.signal}${result.timedOut ? " (timed out)" : ""}`;
+      const header = `$ ${redactSecretText(commandLine)}\nexit: ${result.exitCode ?? "signal:" + result.signal}${result.timedOut ? " (timed out)" : ""}`;
       const body = [result.stdout, result.stderr]
         .filter((s) => s.trim().length > 0)
         .join("\n---\n");
+      const redactedArgs = redactSecretsDeep(execArgs);
       return compressToolResult(
         {
           tool: "os.shell.run",
           status,
-          output: `${header}\n${body}`,
+          output: `${header}\n${redactSecretText(body)}`,
           details: {
-            cmd,
-            args: execArgs,
-            rawArgs: rawArgList,
+            cmd: redactSecretText(cmd),
+            args: redactedArgs,
+            rawArgs: redactSecretsDeep(rawArgList),
             cwd,
             shell: useShell,
             exitCode: result.exitCode,

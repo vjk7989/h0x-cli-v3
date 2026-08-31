@@ -4,6 +4,8 @@
  * and future non-interactive renderers can reuse them.
  */
 
+import { redactSecretsDeep } from "../security/redact-secrets.js";
+
 export type FeedLineInput =
   | { type: "step_started"; stepIndex: number }
   | { type: "step_finished"; stepIndex: number; summary: string; durationMs: number }
@@ -58,7 +60,7 @@ export function formatFeedLine(input: FeedLineInput): string {
     case "parse_retry":
       return `[step ${input.stepIndex}] repair retry ${input.attempt}: ${clip(input.reason, SUMMARY_PREVIEW_LIMIT)}`;
     case "tool_call_parsed":
-      return `  → ${formatBatch(input)}${input.tool}(${clip(safeStringify(input.args), ARGS_PREVIEW_LIMIT)})`;
+      return `  → ${formatBatch(input)}${input.tool}(${clip(safeStringify(redactSecretsDeep(input.args)), ARGS_PREVIEW_LIMIT)})`;
     case "tool_call_executed": {
       const suffix = input.truncated ? " (truncated)" : "";
       return `  ← ${formatBatch(input)}${input.tool} ${input.status}: ${clip(input.summary, SUMMARY_PREVIEW_LIMIT)}${suffix}`;

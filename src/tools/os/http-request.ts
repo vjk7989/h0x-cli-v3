@@ -4,6 +4,7 @@ import {
   type CommandOptions,
   type CommandResult,
 } from "../../sandbox/command-runner.js";
+import { redactSecretsDeep, redactSecretText } from "../../security/redact-secrets.js";
 import {
   requireApproval,
   type DangerousToolOptions,
@@ -17,6 +18,7 @@ import { CurlUnavailableError } from "./ensure-curl.js";
 import {
   executeGuardedHttpRequest,
   isCurlTransportError,
+  RedirectPolicyError,
   type HttpMethod,
   SsrfBlockedError,
 } from "./http-request-fetch.js";
@@ -99,6 +101,8 @@ export function buildOsHttpRequestTool(
           {
             runCommand,
             lookup: options.lookup,
+            isHostAllowed: (hostname) =>
+              hostAllowed(hostname, httpCfg.hostAllowlist),
             cwd: ctx.workingDir,
             signal: ctx.signal,
             maxResponseBytes: httpCfg.maxResponseBytes,
@@ -126,17 +130,29 @@ export function buildOsHttpRequestTool(
             },
           });
         }
-        if (isCurlTransportError(err)) {
+        if (err instanceof RedirectPolicyError) {
           return compressToolResult({
             tool: "os.http.request",
             status: "error",
             output: err.message,
             details: {
-              exitCode: err.exitCode,
-              stderr: err.stderr,
               url: args.url,
               method: args.method,
-              command: err.command,
+              blocked: true,
+            },
+          });
+        }
+        if (isCurlTransportError(err)) {
+          return compressToolResult({
+            tool: "os.http.request",
+            status: "error",
+            output: redactSecretText(err.message),
+            details: {
+              exitCode: err.exitCode,
+              stderr: redactSecretText(err.stderr),
+              url: redactSecretText(args.url),
+              method: args.method,
+              command: redactSecretsDeep(err.command),
             },
           });
         }
@@ -149,20 +165,20 @@ export function buildOsHttpRequestTool(
           tool: "os.http.request",
           status: isHttpError ? "error" : "ok",
           output: isHttpError
-            ? `HTTP ${guarded.status} ${args.method} ${guarded.finalUrl}`
+            ? redactSecretText(`HTTP ${guarded.status} ${args.method} ${guarded.finalUrl}`)
             : guarded.body,
           details: {
-            url: args.url,
-            finalUrl: guarded.finalUrl,
+            url: redactSecretText(args.url),
+            finalUrl: redactSecretText(guarded.finalUrl),
             method: args.method,
             status: guarded.status,
             contentType: guarded.contentType,
             sizeDownload: guarded.sizeDownload,
             timeTotalSeconds: guarded.timeTotal,
             truncated: guarded.truncated,
-            redirectChain: guarded.redirectChain,
-            command: guarded.command,
-            ...(isHttpError ? { body: guarded.body } : {}),
+            redirectChain: redactSecretsDeep(guarded.redirectChain),
+            command: redactSecretsDeep(guarded.command),
+            ...(isHttpError ? { body: redactSecretText(guarded.body) } : {}),
           },
         },
         {
@@ -324,9 +340,9 @@ export function hostAllowed(
 }
 
 function buildApprovalPreview(args: HttpArgs): string {
-  const lines: string[] = [`${args.method} ${args.url}`];
+  const lines: string[] = [`${args.method} ${redactSecretText(args.url)}`];
   for (const [k, v] of Object.entries(args.headers)) {
-    lines.push(`${k}: ${v}`);
+    lines.push(redactSecretText(`${k}: ${v}`));
   }
   if (args.body !== undefined) {
     const snippet =
@@ -334,7 +350,7 @@ function buildApprovalPreview(args: HttpArgs): string {
         ? `${args.body.slice(0, 400)}… [${args.body.length} bytes]`
         : args.body;
     lines.push("");
-    lines.push(snippet);
+    lines.push(redactSecretText(snippet));
   }
   return lines.join("\n");
 }

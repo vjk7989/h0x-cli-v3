@@ -1,4 +1,5 @@
 import { estimateTokens } from "../prompt/token-budget.js";
+import { redactSecretsDeep, redactSecretText } from "../security/redact-secrets.js";
 
 /**
  * A single entry in the chat transcript. We use the every-step layout:
@@ -153,7 +154,7 @@ export function renderTurnForPrompt(
     case "user":
       return `user: ${turn.text}`;
     case "assistant_tool_call": {
-      const argsJson = JSON.stringify(turn.args);
+      const argsJson = JSON.stringify(redactSecretsDeep(turn.args));
       return `assistant_tool_call: ${turn.tool} ${argsJson}`;
     }
     case "tool_result": {
@@ -171,13 +172,13 @@ function renderToolResultBody(
   options: RenderTurnOptions,
 ): string {
   if (isFreshGogShellResult(turn, options)) {
-    return capSummary(turn.summary, GOG_TOOL_RESULT_RENDER_CAP_CHARS);
+    return redactSecretText(capSummary(turn.summary, GOG_TOOL_RESULT_RENDER_CAP_CHARS));
   }
   if (TOOLS_FULL_BODY_WHEN_FRESH.has(turn.tool)) {
-    if (options.inCurrentMacroTurn === true) return turn.summary;
-    return capSummary(turn.summary, TOOL_RESULT_HISTORY_CAP_CHARS);
+    if (options.inCurrentMacroTurn === true) return redactSecretText(turn.summary);
+    return redactSecretText(capSummary(turn.summary, TOOL_RESULT_HISTORY_CAP_CHARS));
   }
-  return capSummary(turn.summary, TOOL_RESULT_RENDER_CAP_CHARS);
+  return redactSecretText(capSummary(turn.summary, TOOL_RESULT_RENDER_CAP_CHARS));
 }
 
 function isFreshGogShellResult(

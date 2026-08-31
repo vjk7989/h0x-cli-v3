@@ -4,6 +4,8 @@
  * categories from string messages.
  */
 
+import { redactSecretText } from "../security/redact-secrets.js";
+
 /** Base class. Carries the offending server name. */
 export class McpError extends Error {
   constructor(
@@ -52,7 +54,7 @@ export type McpFailureCategory =
 export function scrubErrorMessage(err: unknown, maxLength = 200): string {
   if (err === null || err === undefined) return "(no error)";
   const raw = err instanceof Error ? err.message : String(err);
-  const stripped = raw.replace(/^Error:\s*/i, "").trim();
+  const stripped = redactSecretText(raw.replace(/^Error:\s*/i, "").trim());
   return stripped.length > maxLength
     ? `${stripped.slice(0, maxLength - 1)}…`
     : stripped;

@@ -6,6 +6,7 @@ import { StdioProtocol } from "./stdio-protocol.js";
 import { getConfig } from "../config/index.js";
 import { checkLlamaServer } from "../llm/llama-server-health.js";
 import { createAgentRuntime } from "../runtime/bootstrap.js";
+import { redactSecretsDeep, redactSecretText } from "../security/redact-secrets.js";
 import type { AgentRuntime } from "../runtime/bootstrap.js";
 import type { AgentLoopEvent } from "../agent/agent-loop.js";
 import type {
@@ -91,7 +92,7 @@ export async function bootstrapSidecar(): Promise<{
               sessionId,
               stepIndex: -1,
               tool: inner.call.tool,
-              args: inner.call.args,
+              args: redactSecretsDeep(inner.call.args),
               ...(inner.batchSize > 1
                 ? {
                     batchIndex: inner.batchIndex,
@@ -105,7 +106,7 @@ export async function bootstrapSidecar(): Promise<{
               stepIndex: -1,
               tool: inner.result.tool,
               status: inner.result.status,
-              summary: inner.result.summary,
+              summary: redactSecretText(inner.result.summary),
               truncated: inner.result.truncated,
               ...(inner.batchSize > 1
                 ? {

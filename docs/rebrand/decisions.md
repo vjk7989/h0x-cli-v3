@@ -116,6 +116,41 @@ Use separate test-design, test-running, and failure-analysis agents where availa
 
 Core identifier/environment/storage migrations, fork distribution/installers and release infrastructure, public launch, and original features remain deferred. Replace the temporary docs URL before launch. Apply YAGNI and keep this stage scoped; do not turn a surface rebrand into a runtime rewrite.
 
+## Network Remediation Decisions: F01-F03
+
+Date: 2026-09-01. Status: **source remediation complete with focused test evidence; broader runtime capture and release clearance remain open**. This entry records the design decisions for the first security-remediation pass after the deep network audit. It does not replace the endpoint ledger or the detailed findings in [network-audit/findings.md](../network-audit/findings.md).
+
+### F01 Redirect Credential and Allowlist Policy
+
+Decision: every redirect hop now has its own destination policy. The raw HTTP tool and search HTTP transport rebuild request headers per hop, strip credential-like headers when a redirect crosses origin, and refuse cross-origin `307`/`308` redirects that would forward a request body. Same-origin `307`/`308` redirects may preserve body and credentials. `301`/`302`/`303` redirects may cross origin only with sensitive headers stripped and POST body/method dropped according to the existing transport semantics. Configured HTTP host allowlists apply to redirect destinations as well as the initial URL; disallowed redirect hosts are rejected before issuing the next request.
+
+Entry points: `src/tools/os/http-request-fetch.ts`, `src/tools/os/http-request.ts`, and `src/tools/os/web-search/transport/search-http.ts`. Focused coverage is in `src/tools/os/http-redirect-remediation.test.ts`, `src/tools/os/http-redirect.network-audit.test.ts`, `src/tools/os/http-request.test.ts`, `src/tools/os/http-request-retry.test.ts`, and `src/tools/os/web-search/transport/search-http.test.ts`.
+
+Verification note from the remediation agents: after expectation fixes, the focused F01 suites were reported passing for the intended stricter behavior. Compatibility risk remains for any provider that depends on cross-origin `307`/`308` POST redirects; that is accepted for this remediation stage because forwarding bodies across origins is the risky behavior being removed.
+
+### F02 Download Token Routing Policy
+
+Decision: download credentials are selected from the parsed URL origin, not by substring search over the full URL. GitHub and Hugging Face tokens are attached only to trusted HTTPS origins. Trusted-domain strings in query strings, paths, userinfo, insecure `http:` URLs, and lookalike hosts do not select credentials. Redirect handling is manual: each hop is parsed independently, trusted-to-untrusted redirects drop credentials, and untrusted-to-trusted redirects may add the destination token only after the trusted redirected origin is parsed.
+
+Entry points: `src/local-llm/download-file.ts`, with focused coverage in `src/local-llm/download-file.network-audit.test.ts` and regression coverage in `src/local-llm/download-file.test.ts`.
+
+Verification note from the remediation agents: the focused downloader suite was reported passing with 22 tests across the base and network-audit downloader files. This validates credential routing and redirect behavior in the mocked downloader path; it does not prove historical downloads were safe or that provider/CDN behavior is fully characterized.
+
+### F03 Diagnostics Redaction Policy
+
+Decision: execution inputs remain intact for the actual HTTP request, shell invocation, MCP request, and trace construction flow, but values crossing diagnostic boundaries are redacted. Sensitive header values, bearer/basic credentials, cookies, API keys, URL userinfo, secret-like query parameters, credential-like JSON/object fields, reflected stderr/token text, shell argv/details, MCP error text, prompt-rendered tool args/results, and trace tool args/summaries/details are sanitized before display, persistence, prompt rendering, or trace retention.
+
+Entry points: shared redaction helpers under `src/security/`, plus call sites in `src/tools/os/http-request.ts`, `src/tools/os/shell.ts`, `src/mcp/mcp-errors.ts`, `src/session/conversation-turn.ts`, `src/tracing/trace/trace-recorder.ts`, `src/tracing/trace/trace-event.ts`, `src/tui/format-event.ts`, `src/cli/run-agent.ts`, and `src/sidecar/main.ts`.
+
+Focused coverage is in `src/tools/os/http-request.test.ts`, `src/tools/os/shell.test.ts`, `src/mcp/mcp-errors.test.ts`, `src/session/conversation-turn.test.ts`, `src/tracing/trace/trace-recorder.test.ts`, plus the existing approval, Telegram, trace-sink, and HTTP redirect audit suites. The remediation runner reported 149 tests passing across nine files. Redaction is a diagnostic boundary, not a transport-denial feature; configured providers, tools, MCP servers, and child processes can still send their intended payloads.
+
+### Remaining Boundaries
+
+- The previous full-suite blocker remains separate and is not cleared by F01-F03 focused remediation.
+- Runtime PostHog/Sentry reporting remains disabled pending an explicit reporting policy.
+- MCP environment inheritance, connector identity migration, automatic catalog/backend checks, release packaging, source-map upload settings, and live process-tree packet capture are still later tasks.
+- Update [network-audit/verification.md](../network-audit/verification.md) when parent-owned final commands, type checking, build, install, or full-suite results are available; this architecture record intentionally stores decisions and navigation only.
+
 ## Deep Network Audit: Scope and Evidence
 
 Date: 2026-08-31. Status: **final controlled verification complete; security findings remain open**. All five audit documents below exist and were read; the verification record now includes final relocated-suite results. This status covers the documented controlled audit, not complete runtime/network coverage or release clearance. Earlier rebrand and visual-follow-up results above remain historical evidence with their original limits.
