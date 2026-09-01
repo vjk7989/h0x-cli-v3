@@ -75,7 +75,7 @@ describe.each(["openrouter", "aimlapi"])("network audit: %s factory payload and 
         expect(sent.headers.get("x-openrouter-title")).toBe("h0x-cli by PAVii.Ai");
         // Backward-compatible attribution for older OpenRouter integrations.
         expect(sent.headers.get("x-title")).toBe("h0x-cli by PAVii.Ai");
-        expect(sent.headers.get("x-openrouter-categories")).toBe("cli-agent,personal-agent");
+        expect(sent.headers.get("x-openrouter-categories")).toBe("cli-agent");
         expect(sent.headers.get("x-aimlapi-source")).toBeNull();
       } else {
         expect(sent.headers.get("x-aimlapi-source")).toBe("agent/h0x-cli");

@@ -13,7 +13,7 @@ export const DEFAULT_OPENROUTER_BASE = "https://openrouter.ai/api";
  */
 export const OPENROUTER_APP_REFERER = APP_WEBSITE;
 export const OPENROUTER_APP_TITLE = APP_DISPLAY_NAME;
-export const OPENROUTER_APP_CATEGORIES = "cli-agent,personal-agent";
+export const OPENROUTER_APP_CATEGORIES = "cli-agent";
 
 /** Strips a trailing `/v1` so paths are not doubled (`/api/v1/v1/...`). */
 export { normalizeOpenAiBaseUrl as normalizeOpenRouterBaseUrl } from "../openai/normalize-openai-base-url.js";
@@ -22,7 +22,7 @@ export type OpenRouterProviderOptions = Omit<OpenAiProviderOptions, "baseUrl"> &
   baseUrl?: string;
   httpReferer?: string;
   xTitle?: string;
-  /** Comma-separated marketplace categories, e.g. `cli-agent,personal-agent`. */
+  /** Comma-separated marketplace categories, e.g. `cli-agent`. */
   categories?: string;
 };
 

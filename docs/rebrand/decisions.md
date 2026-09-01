@@ -218,7 +218,7 @@ Date: 2026-09-01. Status: **source implementation in progress; verification reco
 
 Decision: use `src/brand/identity.ts` as the small first-party identity source for machine name `h0x-cli`, display name `h0x-cli by PAVii.Ai`, website `https://pavii.tech`, repository `https://github.com/vjk7989/h0x-cli-v3`, and the versioned `h0x-cli/<version>` User-Agent token. Connector code imports these constants/helpers rather than duplicating literals.
 
-OpenRouter attribution now follows the documented contract in source: `HTTP-Referer` is `https://pavii.tech`, `X-OpenRouter-Title` is `h0x-cli by PAVii.Ai`, and `X-Title` remains as the existing compatibility header. Categories remain `cli-agent,personal-agent`. This applies through the chat provider, embedding provider, registry defaults, and provider-wizard verification headers. OpenRouter remains the real provider and its API endpoint is unchanged.
+OpenRouter attribution now follows the documented contract in source: `HTTP-Referer` is `https://pavii.tech`, `X-OpenRouter-Title` is `h0x-cli by PAVii.Ai`, and `X-Title` remains as the existing compatibility header. Categories remain `cli-agent`. This applies through the chat provider, embedding provider, registry defaults, and provider-wizard verification headers. OpenRouter remains the real provider and its API endpoint is unchanged.
 
 AI/ML API source attribution now sends `X-AIMLAPI-Source: agent/h0x-cli` and does not restore a partner or referral header. MCP initialize now advertises `clientInfo.name: h0x-cli` and uses `getAppVersion()` for the runtime/package version instead of the old hardcoded `0.1.0`. Server names, tool namespaces, resource names, prompt names, and MCP protocol fields are intentionally preserved.
 

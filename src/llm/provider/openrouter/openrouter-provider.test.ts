@@ -41,7 +41,7 @@ describe("OpenRouterProvider", () => {
       requestTimeoutMs: 5000,
       httpReferer: "https://example.com",
       xTitle: "Example App",
-      categories: "cli-agent,personal-agent",
+      categories: "cli-agent",
     });
 
     await provider.complete({ prompt: "hi", maxTokens: 16, temperature: 0 });
@@ -49,7 +49,7 @@ describe("OpenRouterProvider", () => {
     expect(sent?.get("HTTP-Referer")).toBe("https://example.com");
     expect(sent?.get("X-OpenRouter-Title")).toBe("Example App");
     expect(sent?.get("X-Title")).toBe("Example App");
-    expect(sent?.get("X-OpenRouter-Categories")).toBe("cli-agent,personal-agent");
+    expect(sent?.get("X-OpenRouter-Categories")).toBe("cli-agent");
   });
 
   it("posts chat completions to /api/v1/chat/completions (not double /v1)", async () => {
