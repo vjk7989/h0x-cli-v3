@@ -307,6 +307,9 @@ Backend fork prep remains outside the monorepo at
 `G:\h0xi\h0x-llama-cpp-turboquant-nightly`. The backend workflows were further
 gated so dry-run artifact builds are manual, and release upload happens only
 with `publish=true`; the main release workflow creates a draft release when
-publishing is explicitly enabled. The CLI must still not switch
+publishing is explicitly enabled. The fork repository was created at
+`https://github.com/vjk7989/h0x-llama-cpp-turboquant-nightly`, and commit
+`7e43729` (`Rebrand backend release surfaces`) was pushed to
+`feature/turboquant-kv-cache`. The CLI must still not switch
 `src/local-llm/backend-installer.ts` away from the upstream backend repo until
 PAVii backend assets exist and their names match the CLI resolver.
