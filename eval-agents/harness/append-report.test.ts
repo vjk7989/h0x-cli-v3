@@ -291,6 +291,61 @@ describe("GAIA report appending", () => {
     );
   });
 
+  it("keeps web and computation metadata while scrubbing benchmark content", () => {
+    const dir = join(TMP_ROOT, `${Date.now()}-web-computation-metadata`);
+    mkdirSync(dir, { recursive: true });
+    tempDirs.push(dir);
+    const jsonlPath = join(dir, "matrix.jsonl");
+    const row: GaiaRow = {
+      task_id: "synthetic-web-computation",
+      Question: "SENSITIVE_WEB_PROMPT_SHOULD_NOT_BE_WRITTEN",
+      Level: 1,
+      "Final answer": "SENSITIVE_WEB_GOLD_SHOULD_NOT_BE_WRITTEN",
+      file_name: "",
+      file_path: "",
+    };
+    const metrics = {
+      stepCount: 4,
+      promptTokens: 800,
+      predictedTokens: 40,
+      toolErrors: 0,
+      webSearchUsed: true,
+      webFetchUsed: true,
+      searchOnlyFinalAnswer: false,
+      deterministicComputationUsed: true,
+      wallClockMs: 42,
+      timedOut: false,
+      exitCode: 0,
+    } satisfies GaiaAgentRunResult["metrics"] & {
+      webSearchUsed: boolean;
+      webFetchUsed: boolean;
+      searchOnlyFinalAnswer: boolean;
+      deterministicComputationUsed: boolean;
+    };
+    const result: GaiaAgentRunResult = {
+      agentId: "h0x-cli",
+      taskId: row.task_id,
+      rawReply: "SENSITIVE_WEB_RAW_REPLY_SHOULD_NOT_BE_WRITTEN",
+      extractedAnswer: "public result",
+      correct: false,
+      metrics,
+      skipped: false,
+      skipReason: null,
+      error: null,
+    };
+
+    appendJsonlRow(jsonlPath, row, result);
+
+    const jsonl = readFileSync(jsonlPath, "utf8");
+    expect(jsonl).toContain('"webSearchUsed":true');
+    expect(jsonl).toContain('"webFetchUsed":true');
+    expect(jsonl).toContain('"searchOnlyFinalAnswer":false');
+    expect(jsonl).toContain('"deterministicComputationUsed":true');
+    expect(jsonl).not.toContain("SENSITIVE_WEB_PROMPT_SHOULD_NOT_BE_WRITTEN");
+    expect(jsonl).not.toContain("SENSITIVE_WEB_GOLD_SHOULD_NOT_BE_WRITTEN");
+    expect(jsonl).not.toContain("SENSITIVE_WEB_RAW_REPLY_SHOULD_NOT_BE_WRITTEN");
+  });
+
   it("classifies launcher crashes separately from wrong benchmark answers", () => {
     const dir = join(TMP_ROOT, `${Date.now()}-process-exit`);
     mkdirSync(dir, { recursive: true });

@@ -85,6 +85,12 @@ export async function runGaiaCase(opts: RunGaiaCaseOptions): Promise<GaiaAgentRu
       attachmentToolUsed: attachmentHint !== null
         ? await detectAttachmentToolUse(workspace.stateDir)
         : false,
+      webSearchUsed: await detectToolUse(workspace.stateDir, (tool) => tool === "os.web.search"),
+      webFetchUsed: await detectToolUse(workspace.stateDir, (tool) => tool === "os.web.fetch"),
+      deterministicComputationUsed: await detectToolUse(
+        workspace.stateDir,
+        (tool) => tool === "os.shell.run",
+      ),
       imageEvidenceProvided: isImageAttachment(opts.row.file_name),
       imageToolUsed: isImageAttachment(opts.row.file_name)
         ? await detectToolUse(workspace.stateDir, (tool) => tool === "vision.describe")
@@ -106,7 +112,10 @@ export async function runGaiaCase(opts: RunGaiaCaseOptions): Promise<GaiaAgentRu
       rawReply: raw.rawReply,
       extractedAnswer: extracted,
       correct,
-      metrics,
+      metrics: {
+        ...metrics,
+        searchOnlyFinalAnswer: metrics.webSearchUsed === true && metrics.webFetchUsed !== true,
+      },
       skipped: false,
       skipReason: null,
       error: raw.error ?? formatError,

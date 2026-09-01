@@ -58,7 +58,6 @@ export function buildGaiaUserPrompt(question: string, attachmentHint: string | n
     "after one unavailable tool or decoder attempt, use another source or answer best-effort.",
     "For .xlsx files, `os.fs.read_document` may include `[fill=...]` markers; use those before writing scripts.",
   ];
-
   const attachment = attachmentHint
     ? [
         "Attachment evidence is required for this question.",

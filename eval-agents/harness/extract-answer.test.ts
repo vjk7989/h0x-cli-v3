@@ -81,4 +81,5 @@ describe("buildGaiaUserPrompt", () => {
     expect(questionIndex).toBeGreaterThan(summaryIndex);
     expect(prompt).toMatch(/inspect the file or use the pre-extracted attachment evidence/i);
   });
+
 });

@@ -347,6 +347,181 @@ describe("runGaiaCase", () => {
     expect(result.metrics.chessValidationUsed).toBe(true);
   });
 
+  it("marks web search and fetch usage metadata from traces", async () => {
+    const row: GaiaRow = {
+      task_id: "synthetic-web-metadata",
+      Question: "What public page confirms this synthetic fact?",
+      Level: 1,
+      "Final answer": "ok",
+      file_name: "",
+      file_path: "",
+    };
+    const adapter: AgentAdapter = {
+      id: "h0x-cli",
+      label: "h0x-cli",
+      probeRequirements: () => [],
+      runQuestion: async (ctx) => {
+        await mkdir(join(ctx.stateDir, "traces"), { recursive: true });
+        await writeFile(
+          join(ctx.stateDir, "traces", "s-test.ndjson"),
+          [
+            JSON.stringify({ type: "tool_invocation", tool: "os.web.search", status: "ok" }),
+            JSON.stringify({ type: "tool_invocation", tool: "os.web.fetch", status: "ok" }),
+          ].join("\n"),
+          "utf8",
+        );
+        return {
+          rawReply: "FINAL ANSWER: ok",
+          exitCode: 0,
+          timedOut: false,
+          error: null,
+          metrics: {
+            stepCount: 2,
+            promptTokens: 20,
+            predictedTokens: 1,
+            toolErrors: 0,
+            wallClockMs: 5,
+            timedOut: false,
+            exitCode: 0,
+          },
+        };
+      },
+    };
+
+    const result = await runGaiaCase({
+      adapter,
+      row,
+      chatUrl: "",
+      embedUrl: null,
+      maxSteps: 2,
+      timeoutMs: 1000,
+    });
+    const metrics = result.metrics as typeof result.metrics & {
+      webSearchUsed?: boolean;
+      webFetchUsed?: boolean;
+      searchOnlyFinalAnswer?: boolean;
+    };
+
+    expect(metrics.webSearchUsed).toBe(true);
+    expect(metrics.webFetchUsed).toBe(true);
+    expect(metrics.searchOnlyFinalAnswer).toBe(false);
+  });
+
+  it("marks search-only final answers when no page fetch was traced", async () => {
+    const row: GaiaRow = {
+      task_id: "synthetic-search-only-metadata",
+      Question: "What public source has this synthetic answer?",
+      Level: 1,
+      "Final answer": "ok",
+      file_name: "",
+      file_path: "",
+    };
+    const adapter: AgentAdapter = {
+      id: "h0x-cli",
+      label: "h0x-cli",
+      probeRequirements: () => [],
+      runQuestion: async (ctx) => {
+        await mkdir(join(ctx.stateDir, "traces"), { recursive: true });
+        await writeFile(
+          join(ctx.stateDir, "traces", "s-test.ndjson"),
+          `${JSON.stringify({ type: "tool_invocation", tool: "os.web.search", status: "ok" })}\n`,
+          "utf8",
+        );
+        return {
+          rawReply: "FINAL ANSWER: ok",
+          exitCode: 0,
+          timedOut: false,
+          error: null,
+          metrics: {
+            stepCount: 1,
+            promptTokens: 20,
+            predictedTokens: 1,
+            toolErrors: 0,
+            wallClockMs: 5,
+            timedOut: false,
+            exitCode: 0,
+          },
+        };
+      },
+    };
+
+    const result = await runGaiaCase({
+      adapter,
+      row,
+      chatUrl: "",
+      embedUrl: null,
+      maxSteps: 2,
+      timeoutMs: 1000,
+    });
+    const metrics = result.metrics as typeof result.metrics & {
+      webSearchUsed?: boolean;
+      webFetchUsed?: boolean;
+      searchOnlyFinalAnswer?: boolean;
+    };
+
+    expect(metrics.webSearchUsed).toBe(true);
+    expect(metrics.webFetchUsed).toBe(false);
+    expect(metrics.searchOnlyFinalAnswer).toBe(true);
+  });
+
+  it("marks deterministic computation usage from shell traces", async () => {
+    const row: GaiaRow = {
+      task_id: "synthetic-deterministic-computation",
+      Question: "Sort these dates and compute the difference.",
+      Level: 1,
+      "Final answer": "ok",
+      file_name: "",
+      file_path: "",
+    };
+    const adapter: AgentAdapter = {
+      id: "h0x-cli",
+      label: "h0x-cli",
+      probeRequirements: () => [],
+      runQuestion: async (ctx) => {
+        await mkdir(join(ctx.stateDir, "traces"), { recursive: true });
+        await writeFile(
+          join(ctx.stateDir, "traces", "s-test.ndjson"),
+          `${JSON.stringify({
+            type: "tool_invocation",
+            tool: "os.shell.run",
+            args: { cmd: "node", args: ["-e", "console.log(new Date('2026-01-02') > new Date('2026-01-01'))"] },
+            status: "ok",
+          })}\n`,
+          "utf8",
+        );
+        return {
+          rawReply: "FINAL ANSWER: ok",
+          exitCode: 0,
+          timedOut: false,
+          error: null,
+          metrics: {
+            stepCount: 1,
+            promptTokens: 20,
+            predictedTokens: 1,
+            toolErrors: 0,
+            wallClockMs: 5,
+            timedOut: false,
+            exitCode: 0,
+          },
+        };
+      },
+    };
+
+    const result = await runGaiaCase({
+      adapter,
+      row,
+      chatUrl: "",
+      embedUrl: null,
+      maxSteps: 2,
+      timeoutMs: 1000,
+    });
+    const metrics = result.metrics as typeof result.metrics & {
+      deterministicComputationUsed?: boolean;
+    };
+
+    expect(metrics.deterministicComputationUsed).toBe(true);
+  });
+
   it("does not mark image/chess flags for xlsx-only rows", async () => {
     const dir = resolve("G:\\h0xi\\atomic-agent", "tmp", "gaia-run-case-tests");
     await rm(dir, { recursive: true, force: true });

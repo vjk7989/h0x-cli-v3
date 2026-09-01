@@ -34,6 +34,10 @@ export interface GaiaRunMetrics {
   imageEvidenceProvided?: boolean;
   imageToolUsed?: boolean;
   chessValidationUsed?: boolean;
+  webSearchUsed?: boolean;
+  webFetchUsed?: boolean;
+  searchOnlyFinalAnswer?: boolean;
+  deterministicComputationUsed?: boolean;
   wallClockMs: number;
   timedOut: boolean;
   exitCode: number | null;
