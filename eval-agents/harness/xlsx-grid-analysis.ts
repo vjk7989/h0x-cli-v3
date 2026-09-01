@@ -41,7 +41,11 @@ export async function buildXlsxGridAnalysis(
     if (adjacentPath) parts.push(`adjacent path ${formatPath(adjacentPath)}`);
     if (exactTwoStepPath) parts.push(`exact two-cell path ${formatPath(exactTwoStepPath)}`);
     else if (/\btwo\b|\b2\b/i.test(question)) parts.push("exact two-cell path not found");
-    const turnLanding = inferTurnLanding(question, adjacentPath ?? exactTwoStepPath);
+    const turnLanding = inferTurnLanding(grid, question, {
+      adjacentPath,
+      exactStridePath: exactTwoStepPath,
+      stride: 2,
+    });
     if (turnLanding) parts.push(turnLanding);
     lines.push(parts.join("; "));
   }
@@ -178,14 +182,28 @@ function colorDistance(argb: string, target: "blue" | "green" | "pink" | "yellow
   return Math.hypot(r - tr, g - tg, b - tb);
 }
 
-function inferTurnLanding(question: string, path: string[] | null): string | null {
-  if (!path) return null;
+function inferTurnLanding(
+  grid: Grid,
+  question: string,
+  paths: { adjacentPath: string[] | null; exactStridePath: string[] | null; stride: number },
+): string | null {
   const match = /\b(?:after|on)\s+the\s+(\w+)\s+turn\b/i.exec(question);
   if (!match?.[1]) return null;
   const turn = parseOrdinal(match[1]);
-  if (turn === null || turn < 0 || turn >= path.length) return null;
-  const landing = path[turn];
-  return landing ? `turn ${turn} landing ${landing}` : null;
+  if (turn === null || turn < 0) return null;
+
+  const strideMentioned = new RegExp(`\\b${paths.stride}\\b|\\btwo\\b`, "i").test(question);
+  const landing = paths.exactStridePath && turn < paths.exactStridePath.length
+    ? paths.exactStridePath[turn]
+    : strideMentioned && paths.adjacentPath && turn * paths.stride < paths.adjacentPath.length
+      ? paths.adjacentPath[turn * paths.stride]
+      : paths.adjacentPath && turn < paths.adjacentPath.length
+        ? paths.adjacentPath[turn]
+        : null;
+  if (!landing) return null;
+  const cell = grid.cells.get(landing);
+  const fill = cell?.fill ? cell.fill.slice(-6).toUpperCase() : null;
+  return fill ? `turn ${turn} landing ${landing} fill ${fill}` : `turn ${turn} landing ${landing}`;
 }
 
 function parseOrdinal(value: string): number | null {

@@ -66,4 +66,19 @@ describe("buildGaiaUserPrompt", () => {
     expect(prompt).toMatch(/\[fill=\.\.\.\]/i);
     expect(prompt).toContain("sample.mp3, workbook.xlsx");
   });
+
+  it("places required attachment evidence before the question", () => {
+    const prompt = buildGaiaUserPrompt(
+      "Which cell is reached?",
+      "map.xlsx. Pre-extracted workbook summary: START A1 [fill=FFFFCC00]",
+    );
+
+    const evidenceIndex = prompt.indexOf("Attachment evidence is required");
+    const summaryIndex = prompt.indexOf("Pre-extracted workbook summary");
+    const questionIndex = prompt.indexOf("Question:");
+    expect(evidenceIndex).toBeGreaterThan(-1);
+    expect(summaryIndex).toBeGreaterThan(evidenceIndex);
+    expect(questionIndex).toBeGreaterThan(summaryIndex);
+    expect(prompt).toMatch(/inspect the file or use the pre-extracted attachment evidence/i);
+  });
 });

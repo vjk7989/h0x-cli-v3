@@ -45,7 +45,7 @@ function stripWrappingQuotes(s: string): string {
 }
 
 export function buildGaiaUserPrompt(question: string, attachmentHint: string | null): string {
-  const prefix = [
+  const prefixParts = [
     "You are solving a GAIA benchmark question.",
     "Use tools as needed (filesystem, web, documents).",
     "When finished, your last line MUST be exactly:",
@@ -57,16 +57,22 @@ export function buildGaiaUserPrompt(question: string, attachmentHint: string | n
     "Do not install packages or repair optional tools during the benchmark;",
     "after one unavailable tool or decoder attempt, use another source or answer best-effort.",
     "For .xlsx files, `os.fs.read_document` may include `[fill=...]` markers; use those before writing scripts.",
-  ].join(" ");
+  ];
 
   const attachment = attachmentHint
-    ? ` Attached file(s) are in the workspace: ${attachmentHint}.`
+    ? [
+        "Attachment evidence is required for this question.",
+        `Attached file(s) are in the workspace: ${attachmentHint}.`,
+        "Inspect the file or use the pre-extracted attachment evidence before answering.",
+      ].join(" ")
     : "";
 
   // The agent CLI reads a single line from stdin (spawnAgentRun writes
   // `${prompt}\n`), so the whole prompt MUST stay on one line — any
   // embedded newline truncates the question and the agent never sees it.
-  const oneLine = `${prefix}${attachment} Question: ${collapseWhitespace(question)}`;
+  const oneLine = [prefixParts.join(" "), attachment, `Question: ${collapseWhitespace(question)}`]
+    .filter(Boolean)
+    .join(" ");
   return collapseWhitespace(oneLine);
 }
 

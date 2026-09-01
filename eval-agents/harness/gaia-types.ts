@@ -28,6 +28,9 @@ export interface GaiaRunMetrics {
   recoveredFromMaxSteps?: boolean;
   finalizationAttempted?: boolean;
   finalizationFailed?: boolean;
+  formatRetryAttempted?: boolean;
+  attachmentEvidenceProvided?: boolean;
+  attachmentToolUsed?: boolean;
   wallClockMs: number;
   timedOut: boolean;
   exitCode: number | null;

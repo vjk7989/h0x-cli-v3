@@ -132,6 +132,8 @@ describe("GAIA report appending", () => {
         promptTokens: 1200,
         predictedTokens: 100,
         toolErrors: 4,
+        attachmentEvidenceProvided: true,
+        attachmentToolUsed: false,
         wallClockMs: 42000,
         timedOut: false,
         exitCode: 1,
@@ -146,9 +148,54 @@ describe("GAIA report appending", () => {
     const jsonl = readFileSync(jsonlPath, "utf8");
     expect(jsonl).toContain('"file_name":"sample.mp3"');
     expect(jsonl).toContain('"file_path":"level1/sample.mp3"');
+    expect(jsonl).toContain('"attachmentEvidenceProvided":true');
+    expect(jsonl).toContain('"attachmentToolUsed":false');
     expect(jsonl).not.toContain("SENSITIVE_AUDIO_PROMPT_SHOULD_NOT_BE_WRITTEN");
     expect(jsonl).not.toContain("SENSITIVE_AUDIO_GOLD_SHOULD_NOT_BE_WRITTEN");
     expect(jsonl).not.toContain("SENSITIVE_RAW_REPLY_SHOULD_NOT_BE_WRITTEN");
+  });
+
+  it("keeps the CSV header stable when attachment metadata is present", () => {
+    const dir = join(TMP_ROOT, `${Date.now()}-csv-header`);
+    mkdirSync(dir, { recursive: true });
+    tempDirs.push(dir);
+    const csvPath = join(dir, "matrix.csv");
+    const row: GaiaRow = {
+      task_id: "synthetic-csv-header",
+      Question: "Synthetic prompt",
+      Level: 1,
+      "Final answer": "Synthetic answer",
+      file_name: "fixture.xlsx",
+      file_path: "fixture.xlsx",
+    };
+    const result: GaiaAgentRunResult = {
+      agentId: "h0x-cli",
+      taskId: row.task_id,
+      rawReply: "FINAL ANSWER: Synthetic answer",
+      extractedAnswer: "Synthetic answer",
+      correct: true,
+      metrics: {
+        stepCount: 1,
+        promptTokens: 100,
+        predictedTokens: 5,
+        toolErrors: 0,
+        attachmentEvidenceProvided: true,
+        attachmentToolUsed: true,
+        wallClockMs: 200,
+        timedOut: false,
+        exitCode: 0,
+      },
+      skipped: false,
+      skipReason: null,
+      error: null,
+    };
+
+    appendCsvRow(csvPath, row, result);
+
+    const header = readFileSync(csvPath, "utf8").split(/\r?\n/)[0];
+    expect(header).toBe(
+      "timestamp,agent_id,task_id,level,correct,skipped,skip_reason,wall_clock_ms,steps,prompt_tokens,predicted_tokens,tool_errors,extracted_answer,gold_answer",
+    );
   });
 
   it("classifies launcher crashes separately from wrong benchmark answers", () => {

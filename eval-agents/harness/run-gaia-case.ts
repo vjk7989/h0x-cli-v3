@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 
 import type { AgentAdapter } from "./agent-adapter.js";
@@ -44,7 +44,7 @@ export async function runGaiaCase(opts: RunGaiaCaseOptions): Promise<GaiaAgentRu
   try {
     const attachmentHint = await buildAttachmentHint(workspace.workingDir, opts.row);
     const prompt = buildGaiaUserPrompt(opts.row.Question, attachmentHint);
-    const raw = await opts.adapter.runQuestion({
+    let raw = await opts.adapter.runQuestion({
       row: opts.row,
       workingDir: workspace.workingDir,
       stateDir: workspace.stateDir,
@@ -54,6 +54,32 @@ export async function runGaiaCase(opts: RunGaiaCaseOptions): Promise<GaiaAgentRu
       chatUrl: opts.chatUrl,
       embedUrl: opts.embedUrl,
     });
+    if (shouldRetryForFinalFormat(raw.rawReply, raw.error)) {
+      const retry = await opts.adapter.runQuestion({
+        row: opts.row,
+        workingDir: workspace.workingDir,
+        stateDir: workspace.stateDir,
+        prompt: buildFinalFormatRetryPrompt(prompt),
+        maxSteps: Math.min(opts.maxSteps ?? 30, 6),
+        timeoutMs: opts.timeoutMs ?? 600_000,
+        chatUrl: opts.chatUrl,
+        embedUrl: opts.embedUrl,
+      });
+      raw = {
+        ...retry,
+        metrics: {
+          ...retry.metrics,
+          formatRetryAttempted: true,
+        },
+      };
+    }
+    const metrics = {
+      ...raw.metrics,
+      attachmentEvidenceProvided: attachmentHint !== null,
+      attachmentToolUsed: attachmentHint !== null
+        ? await detectAttachmentToolUse(workspace.stateDir)
+        : false,
+    };
 
     const extracted = extractFinalAnswer(raw.rawReply);
     const correct = questionScorer(extracted, opts.row["Final answer"]);
@@ -67,7 +93,7 @@ export async function runGaiaCase(opts: RunGaiaCaseOptions): Promise<GaiaAgentRu
       rawReply: raw.rawReply,
       extractedAnswer: extracted,
       correct,
-      metrics: raw.metrics,
+      metrics,
       skipped: false,
       skipReason: null,
       error: raw.error ?? formatError,
@@ -80,6 +106,25 @@ export async function runGaiaCase(opts: RunGaiaCaseOptions): Promise<GaiaAgentRu
   }
 }
 
+function shouldRetryForFinalFormat(rawReply: string, error: string | null): boolean {
+  if (error) return false;
+  const trimmed = rawReply.trim();
+  if (!trimmed) return true;
+  const extracted = extractFinalAnswer(rawReply);
+  return isInvalidFinalFormat(rawReply, extracted);
+}
+
+function buildFinalFormatRetryPrompt(originalPrompt: string): string {
+  return collapseWhitespace(
+    [
+      originalPrompt,
+      "Your previous response was missing the required final-answer format.",
+      "Do not use correctness feedback or assume any gold answer.",
+      "Use the same evidence rules and reply with exactly one final line: FINAL ANSWER: <your answer>",
+    ].join(" "),
+  );
+}
+
 function isInvalidFinalFormat(rawReply: string, extractedAnswer: string): boolean {
   if (rawReply.trim().length === 0) return false;
   if (/FINAL\s+ANSWER\s*:/i.test(rawReply)) return false;
@@ -89,6 +134,41 @@ function isInvalidFinalFormat(rawReply: string, extractedAnswer: string): boolea
   if (/^\[?\s*\{\s*"tool"\s*:/i.test(answer)) return true;
   if (/^json\s+\[?\s*\{\s*"tool"\s*:/i.test(answer)) return true;
   return false;
+}
+
+async function detectAttachmentToolUse(stateDir: string): Promise<boolean> {
+  const traceDir = join(stateDir, "traces");
+  let entries: string[];
+  try {
+    entries = await readdir(traceDir);
+  } catch {
+    return false;
+  }
+
+  for (const entry of entries) {
+    if (!entry.endsWith(".ndjson")) continue;
+    const text = await readFile(join(traceDir, entry), "utf8");
+    for (const line of text.split(/\r?\n/)) {
+      if (!line.trim()) continue;
+      try {
+        const event = JSON.parse(line) as { type?: unknown; tool?: unknown };
+        if (
+          event.type === "tool_invocation" &&
+          typeof event.tool === "string" &&
+          isAttachmentEvidenceTool(event.tool)
+        ) {
+          return true;
+        }
+      } catch {
+        // Ignore malformed trace lines; traces are best-effort metadata.
+      }
+    }
+  }
+  return false;
+}
+
+function isAttachmentEvidenceTool(tool: string): boolean {
+  return tool === "os.fs.read_document" || tool === "os.fs.read" || tool === "os.shell.run";
 }
 
 export async function buildAttachmentHint(workingDir: string, row: GaiaRow): Promise<string | null> {

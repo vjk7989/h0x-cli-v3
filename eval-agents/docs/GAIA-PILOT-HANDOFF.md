@@ -15,6 +15,12 @@ The current full scored Gemini Level 1 report is `eval-agents/reports/run-2026-0
 
 Fresh full GAIA validation Level 1 score is now the clean Azure run at 46/53, 86.8%, from `eval-agents/reports/run-2026-09-01T10-22-08-966Z`. It completed all 53 rows with 0 skipped, 0 max-step rows, 0 process exits, 0 provider rate limits, 0 timeouts, 7.5% tool-failure row rate, and 0.0% formatting-failure rate. No max-step finalization was needed in that run.
 
+A follow-up cleanup pass fixed the spreadsheet miss from that baseline without using the gold answer in the agent run. The XLSX grid analyzer now reports the fill hex for turn-based landing cells, including two-cell movement derived from adjacent paths when direct stride jumps are blocked. Isolated report `eval-agents/reports/run-2026-09-01T17-16-15-685Z` scored 1/1 for `65afbc8a-89ca-4ad5-8d62-355bb401f61d` with extracted answer `F478A7`. The six-row target rerun `eval-agents/reports/run-2026-09-01T17-16-50-950Z` scored 1/6, so the five web/reasoning misses remain unresolved.
+
+Do not reintroduce broad web-prompt requirements. A hard or semi-hard "fetch authoritative pages" prompt increased tool failures and lowered a full Level 1 rerun to 41/53 in report `eval-agents/reports/run-2026-09-01T15-54-51-202Z`. Future web work should be tool-level/source-extraction improvements or targeted eval adapters, not global prompt pressure.
+
+A later full rerun with the spreadsheet fix finished all rows but hit one transient Azure provider no-response error. Report `eval-agents/reports/run-2026-09-01T17-25-32-345Z` scored 42/53 with one run error; rerunning that single provider-error row in `eval-agents/reports/run-2026-09-01T18-33-51-169Z` scored correct, for a stitched 43/53 with 0 errors. Keep the official local headline at the prior clean 46/53 until a fresh uninterrupted run beats it.
+
 Recent hardening:
 
 - `eval/harness/spawn-agent.ts` pins both `H0X_CLI_STATE_DIR` and `ATOMIC_AGENT_STATE_DIR` to each per-case state directory.
@@ -27,6 +33,7 @@ Recent hardening:
 - `src/tools/os/read-document/extractors/xlsx-extractor.ts` renders styled empty cells plus grid bounds, START/END landmarks, and coordinate-based fill summaries for spreadsheets.
 - `eval-agents/harness/run-gaia-case.ts` pre-extracts `.xlsx` summaries into prompt hints and classifies tool-call/code-block final replies as `invalid_final_format`.
 - `eval-agents/harness/xlsx-grid-analysis.ts` adds eval-only precomputed path candidates for movement-style workbook questions.
+- `eval-agents/harness/xlsx-grid-analysis.ts` also reports turn landing fill hex for turn-based workbook questions.
 - `src/cli/run-agent.ts` now uses async line iteration for non-TTY piped input, drains stdout/stderr writes, and supports eval-only durable session-save suppression.
 - `eval-agents/adapters/h0x-cli-adapter.ts` disables analytics in per-case GAIA config so benchmark child processes do not open PostHog handles or send product telemetry.
 - `eval-agents/adapters/h0x-cli-adapter.ts` also has an eval-only Azure max-step finalizer that runs one tools-disabled completion from the latest trace tail and records recovery flags. It is a safety net and was not used by the final clean full run.
