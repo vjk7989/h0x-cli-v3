@@ -240,13 +240,21 @@ blocker remains separate and is not cleared by the Stage 1 focused gate.
 
 ## Package/release preparation update
 
-Updated on 2026-09-01 for Stage 2 of the rebrand roadmap. Release defaults now
-target `vjk7989/h0x-cli-v3`, bundle archives/binaries use `h0x-cli`, installers
-install `h0x-cli` while preserving the intentional `atomic-agent` and `atag`
-aliases, and bundle README text includes TEAM PAVii.Ai, `https://pavii.tech`,
-and the h0x GitHub repo. The dormant self-update invocation path uses h0x
-environment names and h0x installer URLs, but update checks and update actions
-remain disabled until real h0x artifacts exist and are explicitly approved.
+Updated on 2026-09-02 for Stage 2 of the rebrand roadmap. Source repository
+metadata remains `vjk7989/h0x-cli-v3`, but release/update asset defaults now
+target the standalone mirror `buckleson/Pavii-cli-releases`. Bundle
+archives/binaries use `h0x-cli`, installers install `h0x-cli` while preserving
+the intentional `atomic-agent` and `atag` aliases, and bundle README text
+includes TEAM PAVii.Ai, `https://pavii.tech`, and the h0x GitHub repo. The
+dormant self-update invocation path uses h0x environment names and h0x
+installer URLs, but update checks and update actions remain disabled until real
+h0x artifacts exist and are explicitly approved.
+
+Mirror publication is manual-only through `.github/workflows/release.yml` with
+`publish=true` and a `PAVII_RELEASES_TOKEN` repository secret that can write to
+`buckleson/Pavii-cli-releases`. NPM publication is not configured yet; confirm
+the final package name and store the token only as a CI `NPM_TOKEN` secret
+before adding a publish step. Never commit or document pasted npm tokens.
 
 Sentry source-map upload is disabled for release prep: the workflow no longer
 passes `SENTRY_AUTH_TOKEN`, and `scripts/bundle-sea.ts` no longer configures

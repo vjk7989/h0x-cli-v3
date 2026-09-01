@@ -127,9 +127,19 @@ From a published release (or `latest`):
 curl -fsSL "https://raw.githubusercontent.com/vjk7989/h0x-cli-v3/BRANCH/scripts/install.sh" | sh
 ```
 
-Set `H0X_CLI_REPO=vjk7989/h0x-cli-v3` if the default in
-[scripts/install.sh](../scripts/install.sh) does not match your fork.
-Optional: `H0X_CLI_VERSION`, `H0X_CLI_INSTALL_DIR`.
+The script is fetched from the source repository, but released archives are
+downloaded from the PAVii release mirror by default:
+`buckleson/Pavii-cli-releases`. Set `H0X_CLI_REPO=owner/repo` only when testing
+another release-asset repository. Optional: `H0X_CLI_VERSION`,
+`H0X_CLI_INSTALL_DIR`.
+
+Draft GitHub Releases are uploaded to the mirror only from a manual release
+workflow run with `publish=true`, using a `PAVII_RELEASES_TOKEN` secret that has
+access to `buckleson/Pavii-cli-releases`.
+
+NPM publishing is not enabled in this stage. When package publication is
+approved, store the npm automation token as `NPM_TOKEN` in CI and confirm the
+package name before adding a publish step. Do not commit npm tokens.
 
 ## Signing / notarisation (local / manual)
 

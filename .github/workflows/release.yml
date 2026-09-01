@@ -1,4 +1,6 @@
-# SEA release: build per-target h0x-cli Node SEA CLI, sign+notarize macOS, sign Windows, upload draft GitHub Release.
+# SEA release: build per-target h0x-cli Node SEA CLI, sign+notarize macOS,
+# sign Windows, and upload a draft GitHub Release to the PAVii release mirror
+# only on explicit manual publish.
 # macOS signing/notarization secrets must be PAVii-owned before production signing:
 # MACOS_CSC_LINK, MACOS_CSC_KEY_PASSWORD,
 # NOTARYTOOL_KEY, NOTARYTOOL_KEY_ID, NOTARYTOOL_ISSUER
@@ -53,6 +55,7 @@ jobs:
         shell: bash
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      RELEASE_REPO: buckleson/Pavii-cli-releases
 
     steps:
       - name: Checkout
@@ -244,12 +247,14 @@ jobs:
           retention-days: 14
 
   release:
-    name: publish draft release
+    name: publish draft release to mirror
     needs: build
-    if: success() && (github.ref_type == 'tag' || (github.event_name == 'workflow_dispatch' && inputs.publish == true))
+    if: success() && github.event_name == 'workflow_dispatch' && inputs.publish == true
     runs-on: ubuntu-22.04
     permissions:
-      contents: write
+      contents: read
+    env:
+      RELEASE_REPO: buckleson/Pavii-cli-releases
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -272,17 +277,22 @@ jobs:
 
       - name: Create draft release and upload assets
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAVII_RELEASES_TOKEN }}
         run: |
           set -euo pipefail
+          if [[ -z "${GH_TOKEN:-}" ]]; then
+            echo "PAVII_RELEASES_TOKEN is required to publish draft releases to ${RELEASE_REPO}" >&2
+            exit 1
+          fi
           TAG="${{ steps.tag.outputs.tag }}"
           cd release-assets
           ls -la
-          gh release create "$TAG" --draft --title "$TAG" --generate-notes 2>/dev/null || true
+          gh release create "$TAG" --repo "$RELEASE_REPO" --draft --title "$TAG" \
+            --notes "h0x-cli release artifacts built from source repository vjk7989/h0x-cli-v3." 2>/dev/null || true
           for f in *; do
             if [[ -f "$f" ]]; then
               echo "Uploading: $f"
-              gh release upload "$TAG" "$f" --clobber
+              gh release upload "$TAG" "$f" --repo "$RELEASE_REPO" --clobber
             fi
           done
-          echo "Draft release: $TAG (review and publish on GitHub)"
+          echo "Draft release: ${RELEASE_REPO}@${TAG} (review and publish on GitHub)"

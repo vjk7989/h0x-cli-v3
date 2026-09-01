@@ -13,7 +13,7 @@
 
 .NOTES
   Environment overrides (mirrors install.sh):
-    H0X_CLI_REPO              owner/repo           (default: vjk7989/h0x-cli-v3)
+    H0X_CLI_REPO              owner/repo           (default: buckleson/Pavii-cli-releases)
     H0X_CLI_VERSION           v0.1.0               (optional: pin a tag; default: latest)
     H0X_CLI_INSTALL_DIR       path                 (default: %LOCALAPPDATA%\h0x-cli)
     H0X_CLI_NO_PATH           1                    (optional: skip user PATH update)
@@ -34,7 +34,7 @@ try {
   # Older frameworks may not expose Tls12 by name — best effort.
 }
 
-$RepoDefault = "vjk7989/h0x-cli-v3"
+$RepoDefault = "buckleson/Pavii-cli-releases"
 $Repo = if ($env:H0X_CLI_REPO) { $env:H0X_CLI_REPO } elseif ($env:ATOMIC_AGENT_REPO) { $env:ATOMIC_AGENT_REPO } else { $RepoDefault }
 $Version = if ($env:H0X_CLI_VERSION) { $env:H0X_CLI_VERSION } else { $env:ATOMIC_AGENT_VERSION }
 $InstallDir = if ($env:H0X_CLI_INSTALL_DIR) {

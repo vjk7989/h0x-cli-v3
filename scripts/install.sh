@@ -5,7 +5,7 @@
 #   curl -fsSL https://pavii.tech/install.sh | sh
 #
 # Environment:
-#   H0X_CLI_REPO=owner/repo                (default: vjk7989/h0x-cli-v3)
+#   H0X_CLI_REPO=owner/repo                (default: buckleson/Pavii-cli-releases)
 #   H0X_CLI_VERSION=v0.1.0                 (optional: pin a tag; default: latest)
 #   H0X_CLI_INSTALL_DIR=path               (default: $HOME/.local/bin)
 #   H0X_CLI_NO_PATH=1                      (optional: skip rc-file PATH update)
@@ -17,7 +17,7 @@ set -eu
 # shellcheck disable=SC3043
 # POSIX sh: local may not exist; we avoid local for dash compatibility.
 
-REPO_DEFAULT="vjk7989/h0x-cli-v3"
+REPO_DEFAULT="buckleson/Pavii-cli-releases"
 REPO="${H0X_CLI_REPO:-${ATOMIC_AGENT_REPO:-$REPO_DEFAULT}}"
 VERSION="${H0X_CLI_VERSION:-${ATOMIC_AGENT_VERSION:-}}"
 INSTALL_DIR="${H0X_CLI_INSTALL_DIR:-${ATOMIC_AGENT_INSTALL_DIR:-$HOME/.local/bin}}"

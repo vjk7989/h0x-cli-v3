@@ -64,6 +64,16 @@ describe("release matrix alignment", () => {
     expect(yml).not.toContain("bundle/atomic-agent-${{ matrix.slug }}*");
   });
 
+  it("publishes draft release assets only to the PAVii release mirror", () => {
+    const yml = readFileSync(RELEASE_YML, "utf8");
+    expect(yml).toContain("RELEASE_REPO: buckleson/Pavii-cli-releases");
+    expect(yml).toContain("GH_TOKEN: ${{ secrets.PAVII_RELEASES_TOKEN }}");
+    expect(yml).toContain('gh release create "$TAG" --repo "$RELEASE_REPO"');
+    expect(yml).toContain('gh release upload "$TAG" "$f" --repo "$RELEASE_REPO"');
+    expect(yml).not.toContain("GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}");
+    expect(yml).not.toContain('gh release create "$TAG" --draft');
+  });
+
   it("packages archives and bundle readmes with h0x-cli identity", () => {
     const script = readFileSync(PACKAGE_BUNDLE_TS, "utf8");
     expect(script).toContain("`h0x-cli-${target.slug}.${target.archiveExt}`");

@@ -30,8 +30,8 @@ describe("fork update checks", () => {
     expect(EXPORTED_MESSAGE).toBe(APP_UPDATE_UNAVAILABLE);
   });
 
-  it("pins the dormant update repository to h0x releases, not upstream", () => {
-    expect(ENV_DEFAULTS.UPDATE_REPO).toBe("vjk7989/h0x-cli-v3");
+  it("pins the dormant update repository to the PAVii release mirror, not upstream", () => {
+    expect(ENV_DEFAULTS.UPDATE_REPO).toBe("buckleson/Pavii-cli-releases");
   });
 
   it.each([

@@ -2055,8 +2055,8 @@ export const ENV_DEFAULTS = {
   TASKS_MIN_INTERVAL_MS: 1_000,
   /** Fire the TUI startup version check against GitHub Releases. */
   UPDATE_CHECK_ON_STARTUP: true,
-  /** GitHub `owner/repo` for self-update release lookups + install.sh. */
-  UPDATE_REPO: "vjk7989/h0x-cli-v3",
+  /** GitHub `owner/repo` mirror for self-update release assets. */
+  UPDATE_REPO: "buckleson/Pavii-cli-releases",
   /** Max rare-tool schema entries kept in `session.loadedTools` (LRU). */
   LOADED_TOOLS_CAP: 8,
   /** Safety cap (estimated tokens) for the `### loaded-tools` section. */

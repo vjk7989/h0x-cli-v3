@@ -43,7 +43,7 @@ describe("CLI package and compatibility aliases", () => {
     // Relative link target, so moving the install dir does not break it.
     expect(script).toContain('ln -sfn "$1" "$2"');
     expect(script).toContain("https://pavii.tech");
-    expect(script).toContain("vjk7989/h0x-cli-v3");
+    expect(script).toContain("buckleson/Pavii-cli-releases");
   });
 
   it("the Windows installer writes h0x-cli and legacy command shims", () => {
@@ -55,6 +55,6 @@ describe("CLI package and compatibility aliases", () => {
     // %~dp0 keeps the shim pointed at the binary beside it.
     expect(script).toContain('"`"%~dp0h0x-cli.exe`" %*"');
     expect(script).toContain("https://pavii.tech");
-    expect(script).toContain("vjk7989/h0x-cli-v3");
+    expect(script).toContain("buckleson/Pavii-cli-releases");
   });
 });

@@ -15,8 +15,8 @@ describe("environment defaults (h0x deep rebrand)", () => {
     expect(ENV_DEFAULTS.STABLE_PREFIX_SALT).toBe("h0x-cli-v1");
   });
 
-  it("defaults release/update lookups to the h0x GitHub repository", () => {
-    expect(ENV_DEFAULTS.UPDATE_REPO).toBe("vjk7989/h0x-cli-v3");
+  it("defaults release/update lookups to the PAVii release mirror repository", () => {
+    expect(ENV_DEFAULTS.UPDATE_REPO).toBe("buckleson/Pavii-cli-releases");
   });
 });
 

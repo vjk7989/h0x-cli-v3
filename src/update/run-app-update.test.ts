@@ -8,6 +8,8 @@ import {
 } from "./run-app-update.js";
 import { APP_UPDATE_UNAVAILABLE } from "./check-app-update.js";
 
+const RELEASE_MIRROR_REPO = "buckleson/Pavii-cli-releases";
+
 const spawn = vi.hoisted(() => vi.fn(() => { throw new Error("Unexpected installer spawn"); }));
 vi.mock("node:child_process", async (importOriginal) => ({
   ...(await importOriginal<typeof import("node:child_process")>()), spawn,
@@ -57,7 +59,7 @@ describe("fork installer execution", () => {
       const fetch = vi.fn().mockRejectedValue(new Error("Unexpected installer fetch"));
       vi.stubGlobal("fetch", fetch);
       vi.stubEnv("ATOMIC_AGENT_REPO", "AtomicBot-ai/atomic-agent");
-      vi.stubEnv("H0X_CLI_REPO", "vjk7989/h0x-cli-v3");
+      vi.stubEnv("H0X_CLI_REPO", RELEASE_MIRROR_REPO);
       const failure = await runAppUpdate(options).catch((error: unknown) => error);
       expect(failure).toBeInstanceOf(AppUpdateError);
       expect(failure).toMatchObject({ message: APP_UPDATE_UNAVAILABLE });
@@ -81,7 +83,7 @@ describe("buildUpdateInvocation", () => {
   it("builds a POSIX sh invocation against install.sh", () => {
     const inv = buildUpdateInvocation({
       platform: "linux",
-      repo: "vjk7989/h0x-cli-v3",
+      repo: RELEASE_MIRROR_REPO,
       installDir: "/home/u/.local/bin",
       baseEnv: {},
     });
@@ -92,7 +94,7 @@ describe("buildUpdateInvocation", () => {
     expect(inv.args[1]).toContain("| sh");
     expect(inv.env.H0X_CLI_INSTALL_DIR).toBe("/home/u/.local/bin");
     expect(inv.env.H0X_CLI_NO_PATH).toBe("1");
-    expect(inv.env.H0X_CLI_REPO).toBe("vjk7989/h0x-cli-v3");
+    expect(inv.env.H0X_CLI_REPO).toBe(RELEASE_MIRROR_REPO);
     expect(inv.env.H0X_CLI_VERSION).toBeUndefined();
     expect(inv.env.ATOMIC_AGENT_REPO).toBeUndefined();
   });
@@ -100,7 +102,7 @@ describe("buildUpdateInvocation", () => {
   it("builds a Windows powershell invocation against install.ps1", () => {
     const inv = buildUpdateInvocation({
       platform: "win32",
-      repo: "vjk7989/h0x-cli-v3",
+      repo: RELEASE_MIRROR_REPO,
       installDir: "C:\\Users\\u\\AppData\\Local\\h0x-cli",
       baseEnv: {},
     });
@@ -124,7 +126,7 @@ describe("buildUpdateInvocation", () => {
   it("runs the system PowerShell by absolute path when SystemRoot is set", () => {
     const inv = buildUpdateInvocation({
       platform: "win32",
-      repo: "vjk7989/h0x-cli-v3",
+      repo: RELEASE_MIRROR_REPO,
       installDir: "C:\\Users\\u\\AppData\\Local\\h0x-cli",
       baseEnv: { SystemRoot: "C:\\Windows" },
     });
@@ -138,7 +140,7 @@ describe("buildUpdateInvocation", () => {
   it("accepts an upper-case SYSTEMROOT spelling", () => {
     const inv = buildUpdateInvocation({
       platform: "win32",
-      repo: "vjk7989/h0x-cli-v3",
+      repo: RELEASE_MIRROR_REPO,
       installDir: "C:\\x",
       baseEnv: { SYSTEMROOT: "D:\\Windows" },
     });
@@ -150,7 +152,7 @@ describe("buildUpdateInvocation", () => {
   it("leaves the POSIX invocation untouched when SystemRoot is present", () => {
     const inv = buildUpdateInvocation({
       platform: "darwin",
-      repo: "vjk7989/h0x-cli-v3",
+      repo: RELEASE_MIRROR_REPO,
       installDir: "/usr/local/bin",
       baseEnv: { SystemRoot: "C:\\Windows" },
     });
@@ -160,7 +162,7 @@ describe("buildUpdateInvocation", () => {
   it("pins a version when provided", () => {
     const inv = buildUpdateInvocation({
       platform: "win32",
-      repo: "vjk7989/h0x-cli-v3",
+      repo: RELEASE_MIRROR_REPO,
       installDir: "C:\\x",
       version: "v0.1.60",
       baseEnv: {},
@@ -184,7 +186,7 @@ describe("buildUpdateInvocation", () => {
 describe("formatInstallFailure", () => {
   it("should attach the installer's own reason to the exit code", () => {
     const message = formatInstallFailure(1, [
-      "downloading h0x-cli-win32-x64.zip from vjk7989/h0x-cli-v3 ...",
+      `downloading h0x-cli-win32-x64.zip from ${RELEASE_MIRROR_REPO} ...`,
       "error: download failed: https://github.com/o/r/releases/latest/download/a.zip",
     ]);
     expect(message).toContain("install script exited with code 1");
