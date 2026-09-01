@@ -294,3 +294,19 @@ verification also passed: the full suite reported 627 passing test files, 6653
 passing tests, and 5 skips. `git diff --check` passed for both repos with
 line-ending warnings only. Do not point h0x-cli managed backend downloads at
 the PAVii backend fork until dry-run artifacts exist and are verified.
+
+## 2026-09-02 connector/backend checkpoint
+
+OpenRouter attribution categories were narrowed to `cli-agent` in
+`src/llm/provider/openrouter/openrouter-provider.ts`, with matching chat,
+embedding, and provider-registry tests. The change was committed and pushed to
+`origin/main` as `4f77de2` (`Align OpenRouter category attribution`). The
+PAVii website/display-name headers and provider endpoints remain unchanged.
+
+Backend fork prep remains outside the monorepo at
+`G:\h0xi\h0x-llama-cpp-turboquant-nightly`. The backend workflows were further
+gated so dry-run artifact builds are manual, and release upload happens only
+with `publish=true`; the main release workflow creates a draft release when
+publishing is explicitly enabled. The CLI must still not switch
+`src/local-llm/backend-installer.ts` away from the upstream backend repo until
+PAVii backend assets exist and their names match the CLI resolver.
