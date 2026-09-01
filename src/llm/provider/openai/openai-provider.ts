@@ -231,6 +231,8 @@ export class OpenAiProvider implements LlmProvider {
       this.defaultChatModel,
       request,
       this.apiPathPrefix,
+      this.maxTokensField,
+      this.omitTemperature,
     );
   }
 

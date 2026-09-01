@@ -250,6 +250,158 @@ describe("runGaiaCase", () => {
     }
   });
 
+  it("adds chess guidance only for chess image attachments", async () => {
+    const dir = resolve("G:\\h0xi\\atomic-agent", "tmp", "gaia-run-case-tests");
+    await rm(dir, { recursive: true, force: true });
+    await mkdir(dir, { recursive: true });
+    try {
+      const hint = await buildAttachmentHint(dir, {
+        task_id: "synthetic-chess-image",
+        Question: "What is the best chess move in algebraic notation?",
+        Level: 1,
+        "Final answer": "Synthetic answer",
+        file_name: "board.png",
+        file_path: "board.png",
+      });
+
+      expect(hint).toContain("Chess image guidance");
+      expect(hint).toContain("FEN");
+      expect(hint).toContain("gaia-chess-validator.mjs");
+      expect(hint).not.toContain("Synthetic answer");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("does not add chess guidance for non-chess image attachments", async () => {
+    const hint = await buildAttachmentHint("G:\\h0xi\\atomic-agent\\tmp", {
+      task_id: "synthetic-non-chess-image",
+      Question: "What color is the object in this photo?",
+      Level: 1,
+      "Final answer": "Synthetic answer",
+      file_name: "photo.png",
+      file_path: "photo.png",
+    });
+
+    expect(hint).toBe("photo.png");
+  });
+
+  it("marks image and chess usage metadata from traces", async () => {
+    const row: GaiaRow = {
+      task_id: "synthetic-chess-metadata",
+      Question: "What is the best chess move?",
+      Level: 1,
+      "Final answer": "ok",
+      file_name: "board.png",
+      file_path: "board.png",
+      fixture_file_text: "not-real-image",
+    };
+    const adapter: AgentAdapter = {
+      id: "h0x-cli",
+      label: "h0x-cli",
+      probeRequirements: () => [],
+      runQuestion: async (ctx) => {
+        await mkdir(join(ctx.stateDir, "traces"), { recursive: true });
+        await writeFile(
+          join(ctx.stateDir, "traces", "s-test.ndjson"),
+          [
+            JSON.stringify({ type: "tool_invocation", tool: "vision.describe", status: "ok" }),
+            JSON.stringify({
+              type: "tool_invocation",
+              tool: "os.shell.run",
+              args: { cmd: "node", args: ["gaia-chess-validator.mjs", "fen"] },
+              status: "ok",
+            }),
+          ].join("\n"),
+          "utf8",
+        );
+        return {
+          rawReply: "FINAL ANSWER: ok",
+          exitCode: 0,
+          timedOut: false,
+          error: null,
+          metrics: {
+            stepCount: 2,
+            promptTokens: 20,
+            predictedTokens: 1,
+            toolErrors: 0,
+            wallClockMs: 5,
+            timedOut: false,
+            exitCode: 0,
+          },
+        };
+      },
+    };
+
+    const result = await runGaiaCase({
+      adapter,
+      row,
+      chatUrl: "",
+      embedUrl: null,
+      maxSteps: 2,
+      timeoutMs: 1000,
+    });
+
+    expect(result.metrics.imageEvidenceProvided).toBe(true);
+    expect(result.metrics.imageToolUsed).toBe(true);
+    expect(result.metrics.chessValidationUsed).toBe(true);
+  });
+
+  it("does not mark image/chess flags for xlsx-only rows", async () => {
+    const dir = resolve("G:\\h0xi\\atomic-agent", "tmp", "gaia-run-case-tests");
+    await rm(dir, { recursive: true, force: true });
+    await mkdir(dir, { recursive: true });
+    try {
+      const workbook = new ExcelJS.Workbook();
+      workbook.addWorksheet("Sheet").getCell("A1").value = "hello";
+      await writeFile(join(dir, "plain.xlsx"), Buffer.from(await workbook.xlsx.writeBuffer()));
+
+      const row: GaiaRow = {
+        task_id: "synthetic-xlsx-metadata",
+        Question: "Use the spreadsheet.",
+        Level: 1,
+        "Final answer": "ok",
+        file_name: "plain.xlsx",
+        file_path: "plain.xlsx",
+      };
+      const adapter: AgentAdapter = {
+        id: "h0x-cli",
+        label: "h0x-cli",
+        probeRequirements: () => [],
+        runQuestion: async () => ({
+          rawReply: "FINAL ANSWER: ok",
+          exitCode: 0,
+          timedOut: false,
+          error: null,
+          metrics: {
+            stepCount: 1,
+            promptTokens: 10,
+            predictedTokens: 1,
+            toolErrors: 0,
+            wallClockMs: 5,
+            timedOut: false,
+            exitCode: 0,
+          },
+        }),
+      };
+
+      const result = await runGaiaCase({
+        adapter,
+        row,
+        chatUrl: "",
+        embedUrl: null,
+        maxSteps: 2,
+        timeoutMs: 1000,
+      });
+
+      expect(result.metrics.imageEvidenceProvided).toBe(false);
+      expect(result.metrics.imageToolUsed).toBe(false);
+      expect(result.metrics.chessValidationUsed).toBe(false);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it("adds deterministic xlsx path candidates when the question describes grid movement rules", async () => {
     const dir = resolve("G:\\h0xi\\atomic-agent", "tmp", "gaia-run-case-tests");
     await rm(dir, { recursive: true, force: true });

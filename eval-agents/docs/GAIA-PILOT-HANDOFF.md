@@ -21,6 +21,31 @@ Do not reintroduce broad web-prompt requirements. A hard or semi-hard "fetch aut
 
 A later full rerun with the spreadsheet fix finished all rows but hit one transient Azure provider no-response error. Report `eval-agents/reports/run-2026-09-01T17-25-32-345Z` scored 42/53 with one run error; rerunning that single provider-error row in `eval-agents/reports/run-2026-09-01T18-33-51-169Z` scored correct, for a stitched 43/53 with 0 errors. Keep the official local headline at the prior clean 46/53 until a fresh uninterrupted run beats it.
 
+Agent-Reach has been audited as a reference only. The scratch clone is
+`G:\h0xi\agent-reach-audit` at revision
+`da5044d26fc6adddb6554d5679c94ac22e76e428`; the sanitized audit record is
+`eval-agents/docs/AGENT-REACH-AUDIT.md`. The recommendation is not to vendor or
+enable it by default. Its most relevant ideas are Jina Reader routing, Exa via
+mcporter, and platform-specific upstream CLIs, but the remaining GAIA L1 web
+misses look more like source-selection, long-page extraction, JSON/API evidence
+compression, and deterministic reasoning failures than missing connector
+failures.
+
+The separate image/chess miss has been investigated without changing the web or
+spreadsheet path. Azure vision request shaping is fixed for image descriptions,
+and chess image rows now get eval-only guidance plus a generated
+`gaia-chess-validator.mjs` helper using `chess.js`. The helper can build FEN from
+a color-grouped piece list and emits compact legal/checkmate/best/tactical
+candidate metadata. Targeted reruns of
+`cca530fc-4052-43b2-b130-b30968d8aa44` were infrastructure-clean but still
+wrong, so do not run a full Level 1 rerun just for this change. Current relevant
+reports are `eval-agents/reports/run-2026-09-01T19-14-09-545Z`,
+`eval-agents/reports/run-2026-09-01T19-31-17-682Z`, and
+`eval-agents/reports/run-2026-09-01T19-37-04-490Z`. The optional local Stockfish
+experiment timed out and was not kept as a source dependency; avoid enabling
+engine use unless a later stage explicitly accepts and documents that dependency
+boundary.
+
 Recent hardening:
 
 - `eval/harness/spawn-agent.ts` pins both `H0X_CLI_STATE_DIR` and `ATOMIC_AGENT_STATE_DIR` to each per-case state directory.
@@ -34,13 +59,18 @@ Recent hardening:
 - `eval-agents/harness/run-gaia-case.ts` pre-extracts `.xlsx` summaries into prompt hints and classifies tool-call/code-block final replies as `invalid_final_format`.
 - `eval-agents/harness/xlsx-grid-analysis.ts` adds eval-only precomputed path candidates for movement-style workbook questions.
 - `eval-agents/harness/xlsx-grid-analysis.ts` also reports turn landing fill hex for turn-based workbook questions.
+- `src/llm/provider/openai/openai-describe-image.ts` now honors provider-specific `maxTokensField` and `omitTemperature` for vision requests.
+- `eval-agents/harness/chess-validation.ts` owns the eval-only chess image validator and piece-list-to-FEN helper.
+- `eval-agents/harness/run-gaia-case.ts` injects chess guidance only for image-backed chess rows and records sanitized image/chess evidence flags.
 - `src/cli/run-agent.ts` now uses async line iteration for non-TTY piped input, drains stdout/stderr writes, and supports eval-only durable session-save suppression.
 - `eval-agents/adapters/h0x-cli-adapter.ts` disables analytics in per-case GAIA config so benchmark child processes do not open PostHog handles or send product telemetry.
 - `eval-agents/adapters/h0x-cli-adapter.ts` also has an eval-only Azure max-step finalizer that runs one tools-disabled completion from the latest trace tail and records recovery flags. It is a safety net and was not used by the final clean full run.
 
-Current blocker:
+Current blockers:
 
-- No current GAIA Level 1 infrastructure blocker is open. Remaining work is score improvement, full Level 2/3 validation if desired, and official test-split submission preparation.
+- No current GAIA Level 1 infrastructure blocker is open for the clean 46/53 baseline.
+- The image/chess row remains an answer-quality miss after targeted cleanup; avoid broad prompt changes that might disturb the existing 46/53 baseline.
+- Remaining work is score improvement, full Level 2/3 validation if desired, and official test-split submission preparation.
 
 ## Next Commands
 

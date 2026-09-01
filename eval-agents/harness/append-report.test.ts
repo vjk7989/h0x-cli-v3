@@ -198,6 +198,99 @@ describe("GAIA report appending", () => {
     );
   });
 
+  it("keeps image and chess metadata while scrubbing benchmark content", () => {
+    const dir = join(TMP_ROOT, `${Date.now()}-image-chess-metadata`);
+    mkdirSync(dir, { recursive: true });
+    tempDirs.push(dir);
+    const jsonlPath = join(dir, "matrix.jsonl");
+    const row: GaiaRow = {
+      task_id: "synthetic-image-chess",
+      Question: "SENSITIVE_IMAGE_PROMPT_SHOULD_NOT_BE_WRITTEN",
+      Level: 1,
+      "Final answer": "SENSITIVE_IMAGE_GOLD_SHOULD_NOT_BE_WRITTEN",
+      file_name: "board.png",
+      file_path: "level1/board.png",
+    };
+    const result: GaiaAgentRunResult = {
+      agentId: "h0x-cli",
+      taskId: row.task_id,
+      rawReply: "SENSITIVE_IMAGE_RAW_REPLY_SHOULD_NOT_BE_WRITTEN",
+      extractedAnswer: "Qb1+",
+      correct: false,
+      metrics: {
+        stepCount: 19,
+        promptTokens: 1000,
+        predictedTokens: 20,
+        toolErrors: 1,
+        attachmentEvidenceProvided: true,
+        attachmentToolUsed: true,
+        imageEvidenceProvided: true,
+        imageToolUsed: true,
+        chessValidationUsed: true,
+        wallClockMs: 42,
+        timedOut: false,
+        exitCode: 0,
+      },
+      skipped: false,
+      skipReason: null,
+      error: null,
+    };
+
+    appendJsonlRow(jsonlPath, row, result);
+
+    const jsonl = readFileSync(jsonlPath, "utf8");
+    expect(jsonl).toContain('"imageEvidenceProvided":true');
+    expect(jsonl).toContain('"imageToolUsed":true');
+    expect(jsonl).toContain('"chessValidationUsed":true');
+    expect(jsonl).not.toContain("SENSITIVE_IMAGE_PROMPT_SHOULD_NOT_BE_WRITTEN");
+    expect(jsonl).not.toContain("SENSITIVE_IMAGE_GOLD_SHOULD_NOT_BE_WRITTEN");
+    expect(jsonl).not.toContain("SENSITIVE_IMAGE_RAW_REPLY_SHOULD_NOT_BE_WRITTEN");
+  });
+
+  it("keeps the CSV header stable when image/chess metadata is present", () => {
+    const dir = join(TMP_ROOT, `${Date.now()}-image-csv-header`);
+    mkdirSync(dir, { recursive: true });
+    tempDirs.push(dir);
+    const csvPath = join(dir, "matrix.csv");
+    const row: GaiaRow = {
+      task_id: "synthetic-image-csv-header",
+      Question: "Synthetic prompt",
+      Level: 1,
+      "Final answer": "Synthetic answer",
+      file_name: "board.png",
+      file_path: "board.png",
+    };
+    const result: GaiaAgentRunResult = {
+      agentId: "h0x-cli",
+      taskId: row.task_id,
+      rawReply: "FINAL ANSWER: Synthetic answer",
+      extractedAnswer: "Synthetic answer",
+      correct: true,
+      metrics: {
+        stepCount: 1,
+        promptTokens: 100,
+        predictedTokens: 5,
+        toolErrors: 0,
+        imageEvidenceProvided: true,
+        imageToolUsed: true,
+        chessValidationUsed: true,
+        wallClockMs: 200,
+        timedOut: false,
+        exitCode: 0,
+      },
+      skipped: false,
+      skipReason: null,
+      error: null,
+    };
+
+    appendCsvRow(csvPath, row, result);
+
+    const header = readFileSync(csvPath, "utf8").split(/\r?\n/)[0];
+    expect(header).toBe(
+      "timestamp,agent_id,task_id,level,correct,skipped,skip_reason,wall_clock_ms,steps,prompt_tokens,predicted_tokens,tool_errors,extracted_answer,gold_answer",
+    );
+  });
+
   it("classifies launcher crashes separately from wrong benchmark answers", () => {
     const dir = join(TMP_ROOT, `${Date.now()}-process-exit`);
     mkdirSync(dir, { recursive: true });

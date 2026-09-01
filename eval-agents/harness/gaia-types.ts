@@ -31,6 +31,9 @@ export interface GaiaRunMetrics {
   formatRetryAttempted?: boolean;
   attachmentEvidenceProvided?: boolean;
   attachmentToolUsed?: boolean;
+  imageEvidenceProvided?: boolean;
+  imageToolUsed?: boolean;
+  chessValidationUsed?: boolean;
   wallClockMs: number;
   timedOut: boolean;
   exitCode: number | null;

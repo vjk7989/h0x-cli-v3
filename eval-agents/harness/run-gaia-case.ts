@@ -8,6 +8,11 @@ import { questionScorer } from "./score-gaia.js";
 import { createGaiaWorkspace } from "./temp-workspace.js";
 import { preserveTraceFiles } from "./preserve-traces.js";
 import { buildXlsxGridAnalysis } from "./xlsx-grid-analysis.js";
+import {
+  buildChessImageHint,
+  isChessImageQuestion,
+  writeChessValidatorScript,
+} from "./chess-validation.js";
 
 export interface RunGaiaCaseOptions {
   adapter: AgentAdapter;
@@ -43,6 +48,7 @@ export async function runGaiaCase(opts: RunGaiaCaseOptions): Promise<GaiaAgentRu
   const workspace = createGaiaWorkspace(opts.row.task_id, opts.row, opts.split ?? "validation");
   try {
     const attachmentHint = await buildAttachmentHint(workspace.workingDir, opts.row);
+    const chessImage = isChessImageQuestion(opts.row.file_name, opts.row.Question);
     const prompt = buildGaiaUserPrompt(opts.row.Question, attachmentHint);
     let raw = await opts.adapter.runQuestion({
       row: opts.row,
@@ -78,6 +84,13 @@ export async function runGaiaCase(opts: RunGaiaCaseOptions): Promise<GaiaAgentRu
       attachmentEvidenceProvided: attachmentHint !== null,
       attachmentToolUsed: attachmentHint !== null
         ? await detectAttachmentToolUse(workspace.stateDir)
+        : false,
+      imageEvidenceProvided: isImageAttachment(opts.row.file_name),
+      imageToolUsed: isImageAttachment(opts.row.file_name)
+        ? await detectToolUse(workspace.stateDir, (tool) => tool === "vision.describe")
+        : false,
+      chessValidationUsed: chessImage
+        ? await detectChessValidationUse(workspace.stateDir)
         : false,
     };
 
@@ -137,6 +150,13 @@ function isInvalidFinalFormat(rawReply: string, extractedAnswer: string): boolea
 }
 
 async function detectAttachmentToolUse(stateDir: string): Promise<boolean> {
+  return detectToolUse(stateDir, isAttachmentEvidenceTool);
+}
+
+async function detectToolUse(
+  stateDir: string,
+  predicate: (tool: string, event: Record<string, unknown>) => boolean,
+): Promise<boolean> {
   const traceDir = join(stateDir, "traces");
   let entries: string[];
   try {
@@ -151,11 +171,14 @@ async function detectAttachmentToolUse(stateDir: string): Promise<boolean> {
     for (const line of text.split(/\r?\n/)) {
       if (!line.trim()) continue;
       try {
-        const event = JSON.parse(line) as { type?: unknown; tool?: unknown };
+        const event = JSON.parse(line) as Record<string, unknown> & {
+          type?: unknown;
+          tool?: unknown;
+        };
         if (
           event.type === "tool_invocation" &&
           typeof event.tool === "string" &&
-          isAttachmentEvidenceTool(event.tool)
+          predicate(event.tool, event)
         ) {
           return true;
         }
@@ -171,8 +194,24 @@ function isAttachmentEvidenceTool(tool: string): boolean {
   return tool === "os.fs.read_document" || tool === "os.fs.read" || tool === "os.shell.run";
 }
 
+function isImageAttachment(fileName: string): boolean {
+  return /\.(png|jpe?g|webp|gif)$/i.test(fileName);
+}
+
+function detectChessValidationUse(stateDir: string): Promise<boolean> {
+  return detectToolUse(stateDir, (tool, event) => {
+    if (tool !== "os.shell.run") return false;
+    const args = event.args;
+    return JSON.stringify(args ?? {}).includes("gaia-chess-validator.mjs");
+  });
+}
+
 export async function buildAttachmentHint(workingDir: string, row: GaiaRow): Promise<string | null> {
   if (!row.file_name) return null;
+  if (isChessImageQuestion(row.file_name, row.Question)) {
+    const scriptName = await writeChessValidatorScript(workingDir);
+    return buildChessImageHint(row.file_name, scriptName);
+  }
   if (!row.file_name.toLowerCase().endsWith(".xlsx")) return row.file_name;
 
   try {

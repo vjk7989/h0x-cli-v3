@@ -8,6 +8,8 @@ export async function describeImageViaOpenAi(
   defaultChatModel: string,
   request: VisionRequest,
   apiPathPrefix = "/v1",
+  maxTokensField: "max_tokens" | "max_completion_tokens" = "max_tokens",
+  omitTemperature = false,
 ): Promise<VisionResult> {
   const userContent: Array<
     | { type: "image_url"; image_url: { url: string } }
@@ -21,7 +23,7 @@ export async function describeImageViaOpenAi(
     });
   }
   userContent.push({ type: "text", text: request.prompt });
-  const body = {
+  const body: Record<string, unknown> = {
     model: defaultChatModel,
     messages: [{ role: "user", content: userContent }],
     // Reasoning models (Qwen3.8, DeepSeek-R1) spend completion tokens on
@@ -29,10 +31,10 @@ export async function describeImageViaOpenAi(
     // cap left them truncating mid-thought and returning empty or
     // clipped descriptions, which sent the agent loop into re-crop
     // spirals. 4096 leaves room for thinking plus a detailed answer.
-    max_tokens: request.maxTokens ?? 4096,
-    temperature: request.temperature ?? 0.1,
     stream: false,
   };
+  body[maxTokensField] = request.maxTokens ?? 4096;
+  if (!omitTemperature) body.temperature = request.temperature ?? 0.1;
   const start = Date.now();
   const json = await openAiPostJson(
     deps,

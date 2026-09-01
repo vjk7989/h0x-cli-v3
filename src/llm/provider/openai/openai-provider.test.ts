@@ -89,6 +89,32 @@ describe("OpenAiProvider qwen tagged-tool compatibility", () => {
     ]);
   });
 
+  it("passes maxTokensField and omitTemperature into describeImage", async () => {
+    const fetchImpl = fakeFetch({ role: "assistant", content: "image" });
+    const p = new OpenAiProvider({
+      id: "azure",
+      baseUrl: "https://example.invalid/openai/v1",
+      apiKey: "",
+      defaultChatModel: "deployment",
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+      maxTokensField: "max_completion_tokens",
+      omitTemperature: true,
+      supportsVision: true,
+    });
+
+    await p.describeImage({
+      prompt: "describe",
+      maxTokens: 321,
+      images: [{ id: 1, bytes: new Uint8Array([1]), mimeType: "image/png" }],
+    });
+
+    const init = fetchImpl.mock.calls[0]?.[1] as RequestInit;
+    const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+    expect(body.max_completion_tokens).toBe(321);
+    expect(body.max_tokens).toBeUndefined();
+    expect(body.temperature).toBeUndefined();
+  });
+
   it("leaves the existing OpenAI provider path unchanged by default", async () => {
     const tagged =
       "<tool_call><function=os.fs.read><parameter=path>/tmp/a</parameter></function></tool_call>";
