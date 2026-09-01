@@ -58,6 +58,8 @@ export type UserLlmProviderEntry = {
   supportsTools?: boolean;
   supportsVision?: boolean;
   requestTimeoutMs?: number;
+  maxTokensField?: "max_tokens" | "max_completion_tokens";
+  omitTemperature?: boolean;
   /**
    * Prompt-caching policy for this provider. Declared in the config
    * schema and on `LlmProviderConfigEntry`; no provider reads it yet,
@@ -276,6 +278,20 @@ export function parseLlmProviderEntry(
                 "expected positive number",
               );
             })(),
+    maxTokensField: parseOptionalEnum<
+      NonNullable<UserLlmProviderEntry["maxTokensField"]>
+    >(obj.maxTokensField, `${field}.maxTokensField`, MAX_TOKENS_FIELDS),
+    omitTemperature:
+      obj.omitTemperature === undefined
+        ? undefined
+        : typeof obj.omitTemperature === "boolean"
+          ? obj.omitTemperature
+          : (() => {
+              throw new ConfigValidationError(
+                `${field}.omitTemperature`,
+                "expected boolean",
+              );
+            })(),
     promptCache: parseOptionalEnum<
       NonNullable<UserLlmProviderEntry["promptCache"]>
     >(obj.promptCache, `${field}.promptCache`, PROMPT_CACHE_MODES),
@@ -365,6 +381,7 @@ function parseOptionalPlainObject(
 }
 
 const PROMPT_CACHE_MODES = new Set(["auto", "off", "explicit-markers"]);
+const MAX_TOKENS_FIELDS = new Set(["max_tokens", "max_completion_tokens"]);
 const TOOLS_SUPPORT_LEVELS = new Set(["none", "basic", "parallel", "strict"]);
 const REASONING_FORMATS = new Set([
   "none",

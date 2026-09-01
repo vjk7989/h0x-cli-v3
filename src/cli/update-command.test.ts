@@ -55,7 +55,7 @@ describe("h0x-cli update", () => {
       checkForAppUpdate: check,
       runAppUpdate: runInstaller,
       canSelfUpdate,
-      getRepo: () => "AtomicBot-ai/atomic-agent",
+      getRepo: () => "vjk7989/h0x-cli-v3",
       isTTY: () => false,
       confirm: async () => true,
     };
@@ -148,7 +148,7 @@ describe("h0x-cli update", () => {
     expect(runInstaller).toHaveBeenCalledTimes(1);
     expect(runInstaller).toHaveBeenCalledWith(
       expect.objectContaining({
-        repo: "AtomicBot-ai/atomic-agent",
+        repo: "vjk7989/h0x-cli-v3",
         version: undefined,
       }),
     );
@@ -158,14 +158,14 @@ describe("h0x-cli update", () => {
   it("streams installer lines prefixed with [update]", async () => {
     runInstaller.mockImplementation(
       async (opts?: { onLine?: (line: string) => void }) => {
-        opts?.onLine?.("downloading atomic-agent");
-        opts?.onLine?.("installed atomic-agent to /tmp/install");
+        opts?.onLine?.("downloading h0x-cli");
+        opts?.onLine?.("installed h0x-cli to /tmp/install");
         return { ok: true, installDir: "/tmp/install" };
       },
     );
     expect(await updateCommand([], deps)).toBe(0);
-    expect(stdout()).toMatch(/\[update\] downloading atomic-agent/);
-    expect(stdout()).toMatch(/\[update\] installed atomic-agent/);
+    expect(stdout()).toMatch(/\[update\] downloading h0x-cli/);
+    expect(stdout()).toMatch(/\[update\] installed h0x-cli/);
   });
 
   it("prompts in an interactive terminal and cancels on 'no'", async () => {

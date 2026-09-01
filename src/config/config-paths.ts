@@ -4,7 +4,7 @@ import { dirname } from "node:path";
 import { USER_CONFIG_DEFAULTS } from "./config-schema.js";
 
 /**
- * Dotted-key addressing for `atomic-agent config get|set|unset|list`.
+ * Dotted-key addressing for `h0x-cli config get|set|unset|list`.
  *
  * The shape of the config is derived from `USER_CONFIG_DEFAULTS` at
  * module load rather than hand-listed, so a new block in the schema

@@ -292,7 +292,7 @@ export class PlaywrightBackend implements BrowserBackend {
     if (!executable) {
       throw new Error(
         "Could not find a Chromium-family browser (Chrome, Edge, Brave, or Chromium). " +
-          "Install one, or set ATOMIC_AGENT_BROWSER_EXECUTABLE_PATH to the binary path.",
+          "Install one, or set H0X_CLI_BROWSER_EXECUTABLE_PATH (or legacy ATOMIC_AGENT_BROWSER_EXECUTABLE_PATH) to the binary path.",
       );
     }
     // Drop locks left by a previous hard kill / SIGINT so Chromium can

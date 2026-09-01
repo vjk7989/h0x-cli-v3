@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import type { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js";
 import { McpClient } from "./mcp-client.js";
 import { McpRequestError } from "./mcp-errors.js";
@@ -90,6 +92,9 @@ afterEach(() => {
 
 describe("network audit: MCP real SDK handshake over an in-memory transport", () => {
   it.each([false, true])("records identity/capabilities and ambient env inheritance (sampling=%s)", async (sampling) => {
+    const manifest = JSON.parse(
+      readFileSync(resolve(process.cwd(), "package.json"), "utf8"),
+    ) as { version: string };
     const client = new McpClient(server(), sampling ? {
       samplingHandler: async () => ({
         role: "assistant", model: "synthetic-model", content: { type: "text", text: "synthetic" },
@@ -106,7 +111,7 @@ describe("network audit: MCP real SDK handshake over an in-memory transport", ()
       expect(process.env.AUDIT_OVERRIDE === "synthetic-parent-override").toBe(true);
       const initialize = fixture.messages.find((message) => "method" in message && message.method === "initialize");
       expect(initialize).toMatchObject({ params: {
-        clientInfo: { name: "atomic-agent", version: "0.1.0" },
+        clientInfo: { name: "h0x-cli", version: manifest.version },
         capabilities: sampling ? { sampling: {} } : {},
       } });
       expect(fixture.messages.map((message) => "method" in message ? message.method : "response")).toEqual([
@@ -114,13 +119,15 @@ describe("network audit: MCP real SDK handshake over an in-memory transport", ()
       ]);
       // Environment inheritance is local; the initialize message does not carry it.
       expect(JSON.stringify(initialize).includes("synthetic-parent-secret")).toBe(false);
+      // Server identity and MCP tool namespace stay provider-owned/protocol-owned.
+      expect(server().name).toBe("audit");
     } finally {
       await client.close();
     }
     expect(client.isConnected).toBe(false);
   });
 
-  it.each([false, true])("FINDING: credential-like text survives MCP errors (isError response=%s)", async (toolError) => {
+  it.each([false, true])("characterizes credential-like text in MCP errors (isError response=%s)", async (toolError) => {
     fixture.state.toolError = toolError;
     const client = new McpClient(server());
     try {
@@ -128,9 +135,15 @@ describe("network audit: MCP real SDK handshake over an in-memory transport", ()
       const failure = await client.callTool("synthetic-tool", {}, new AbortController().signal)
         .then(() => null, (error: unknown) => error);
       expect(failure).toBeInstanceOf(McpRequestError);
-      // Both RPC exceptions (scrubErrorMessage) and isError tool responses retain
-      // credential text. Passing is finding reproduction, not successful redaction.
-      expect((failure as Error).message).toContain("Bearer synthetic-error-secret");
+      if (toolError) {
+        // Current boundary: MCP isError tool text is promoted directly by the
+        // client and remains a diagnostics-redaction follow-up, not connector
+        // identity work.
+        expect((failure as Error).message).toContain("Bearer synthetic-error-secret");
+      } else {
+        expect((failure as Error).message).toContain("Bearer <redacted>");
+        expect((failure as Error).message).not.toContain("synthetic-error-secret");
+      }
     } finally {
       await client.close();
     }

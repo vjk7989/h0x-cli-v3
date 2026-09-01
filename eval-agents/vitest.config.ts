@@ -1,13 +1,22 @@
 import { defineConfig } from "vitest/config";
 import { resolve } from "node:path";
 
-// The per-case adapter wall-clock cap (ATOMIC_AGENT_GAIA_TIMEOUT_MS, set by
+function readEvalEnv(h0xName: string, legacyName: string): string | undefined {
+  const h0x = process.env[h0xName]?.trim();
+  if (h0x) return h0x;
+  const legacy = process.env[legacyName]?.trim();
+  return legacy || undefined;
+}
+
+// The per-case adapter wall-clock cap (H0X_CLI_GAIA_TIMEOUT_MS, set by
 // the orchestrator scripts) must fire BEFORE vitest's own testTimeout so a
 // slow case resolves as a graceful `timeout` result instead of vitest
 // hard-killing the worker (which corrupts the report and mis-attributes the
 // failure). We derive testTimeout = adapterTimeout + margin so it is always
 // strictly greater, with headroom for the SIGKILL/close + scoring tail.
-const ADAPTER_TIMEOUT_MS = Number(process.env.ATOMIC_AGENT_GAIA_TIMEOUT_MS ?? "600000");
+const ADAPTER_TIMEOUT_MS = Number(
+  readEvalEnv("H0X_CLI_GAIA_TIMEOUT_MS", "ATOMIC_AGENT_GAIA_TIMEOUT_MS") ?? "600000",
+);
 const TEST_TIMEOUT_MARGIN_MS = 220_000;
 
 export default defineConfig({

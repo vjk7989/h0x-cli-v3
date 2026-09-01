@@ -9,13 +9,13 @@ import type {
 const PREVIEW: UninstallPreview = {
   rows: [
     {
-      path: "/Users/op/.atomic-agent",
+      path: "/Users/op/.h0x-cli",
       label: "state",
       size: "1.7 GB",
       group: "data",
     },
     {
-      path: "/Users/op/.local/bin/atomic-agent",
+      path: "/Users/op/.local/bin/h0x-cli",
       label: "the binary",
       size: "135 MB",
       group: "program",
@@ -44,7 +44,7 @@ const text = (state: UninstallFlowState): string =>
 describe("uninstall modal copy", () => {
   it("names every path with its size before asking anything", () => {
     const rendered = text(flow());
-    expect(rendered).toContain("/Users/op/.atomic-agent");
+    expect(rendered).toContain("/Users/op/.h0x-cli");
     expect(rendered).toContain("1.7 GB");
     expect(rendered).toContain("total: 1.8 GB");
   });

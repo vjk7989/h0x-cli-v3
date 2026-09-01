@@ -17,6 +17,7 @@ export type {
 } from "./config-schema.js";
 export {
   ConfigValidationError,
+  ENV_DEFAULTS,
   USER_CONFIG_DEFAULTS,
   USER_CONFIG_VERSION,
   parseOnboardingState,
@@ -26,6 +27,7 @@ export {
 export type { ConfigNoticeSink } from "./config-file.js";
 export {
   ensureUserConfigFileSync,
+  emitConfigNotice,
   setConfigNoticeSink,
   getDotenvPath,
   getTrustConfigPaths,

@@ -22,7 +22,7 @@ export interface UpdateCommandDeps {
   /**
    * Whether an interactive answer is possible. Defaults to **stdin**
    * being a TTY, not stdout: the prompt is printed to stdout but the
-   * answer is read from stdin, and `atomic-agent update < /dev/null`
+   * answer is read from stdin, and `h0x-cli update < /dev/null`
    * (or any wrapper that gives stdout a pty and stdin a pipe) would
    * otherwise print the question and hang on a stream already at EOF.
    */
@@ -99,7 +99,7 @@ async function defaultConfirm(prompt: string): Promise<boolean> {
 }
 
 /**
- * `atomic-agent update` — check GitHub Releases and re-run the canonical
+ * `h0x-cli update` — check GitHub Releases and re-run the canonical
  * installer in place when a newer version exists. Mirrors the TUI's
  * in-app update for headless / `run` / sidecar users who never see it.
  *

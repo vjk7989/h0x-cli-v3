@@ -29,7 +29,7 @@ describe("AimlapiProvider", () => {
       expect(headers.get("authorization")).toBe("Bearer test-key");
       expect(headers.get("http-referer")).toBeNull();
       expect(headers.get("x-title")).toBeNull();
-      expect(headers.get("x-aimlapi-source")).toBe("agent/atomic-agent");
+      expect(headers.get("x-aimlapi-source")).toBe("agent/h0x-cli");
       // No partner / referral id: the operator's own key must not carry
       // an attribution tag they never chose.
       expect(headers.get("x-aimlapi-partner-id")).toBeNull();
@@ -76,7 +76,7 @@ describe("AimlapiProvider", () => {
     try {
       const headers = buildAimlapiAttributionHeaders();
       expect(headers["X-AIMLAPI-Partner-ID"]).toBeUndefined();
-      expect(headers).toEqual({ "X-AIMLAPI-Source": "agent/atomic-agent" });
+      expect(headers).toEqual({ "X-AIMLAPI-Source": "agent/h0x-cli" });
     } finally {
       if (previous === undefined) {
         delete process.env.AIMLAPI_PARTNER_ID;

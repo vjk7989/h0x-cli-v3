@@ -127,7 +127,7 @@ async function defaultAsk(prompt: string): Promise<string> {
 }
 
 /**
- * `atomic-agent uninstall` — the one command that undoes the install,
+ * `h0x-cli uninstall` — the one command that undoes the install,
  * so nobody has to reconstruct an `rm -rf` from the README and get the
  * paths wrong in either direction.
  *

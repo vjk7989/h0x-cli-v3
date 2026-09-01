@@ -48,7 +48,7 @@ export function isLoopbackBaseUrl(url: string): boolean {
 /**
  * True when `url` resolves to the managed daemon's own loopback address.
  * Pointing external mode at the managed port is legal — it is how you
- * drive a daemon you started yourself with `atomic-agent models start` —
+ * drive a daemon you started yourself with `h0x-cli models start` —
  * so callers that tear the managed daemon down on a switch to external
  * must skip it here, or they would kill the server they just pointed at.
  */

@@ -80,7 +80,7 @@ export function writeUserConfigFileSync(path: string, data: UserConfigFile): voi
   const version = raised ? (onDisk as number) : data.version;
   if (raised) {
     process.stderr.write(
-      `[atomic-agent] kept config version ${onDisk} (this build writes v${data.version}) at ${path}\n`,
+      `[h0x-cli] kept config version ${onDisk} (this build writes v${data.version}) at ${path}\n`,
     );
   }
   const payload =
@@ -130,7 +130,7 @@ export function setConfigNoticeSink(sink: ConfigNoticeSink | null): void {
   configNoticeSink = sink;
 }
 
-function emitConfigNotice(line: string): void {
+export function emitConfigNotice(line: string): void {
   if (configNoticeSink) {
     configNoticeSink(line);
     return;
@@ -142,7 +142,7 @@ export function ensureUserConfigFileSync(path: string): UserConfigFile {
   const raw = readRawUserConfigFileSync(path);
   if (!raw) {
     writeUserConfigFileSync(path, USER_CONFIG_DEFAULTS);
-    emitConfigNotice(`[atomic-agent] created default config at ${path}`);
+    emitConfigNotice(`[h0x-cli] created default config at ${path}`);
     return USER_CONFIG_DEFAULTS;
   }
   const parsed = withConfigPathInError(path, () => parseUserConfigFile(raw.parsed));
@@ -153,7 +153,7 @@ export function ensureUserConfigFileSync(path: string): UserConfigFile {
   if (raw.originalVersion === null || raw.originalVersion < USER_CONFIG_VERSION) {
     writeUserConfigFileSync(path, parsed);
     emitConfigNotice(
-      `[atomic-agent] migrated config v${raw.originalVersion} → v${USER_CONFIG_VERSION} at ${path}`,
+      `[h0x-cli] migrated config v${raw.originalVersion} → v${USER_CONFIG_VERSION} at ${path}`,
     );
   }
   return parsed;
@@ -173,7 +173,7 @@ function withConfigPathInError<T>(path: string, read: () => T): T {
     if (!(err instanceof ConfigValidationError)) throw err;
     throw new ConfigValidationError(
       err.field,
-      `${err.reason} (in ${path}) — edit or delete that file to start from defaults, or point ATOMIC_AGENT_STATE_DIR elsewhere`,
+      `${err.reason} (in ${path}) — edit or delete that file to start from defaults, or point H0X_CLI_STATE_DIR (or legacy ATOMIC_AGENT_STATE_DIR) elsewhere`,
     );
   }
 }

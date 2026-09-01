@@ -623,7 +623,7 @@ export const MENU: readonly MenuNode[] = [
     slash: {
       name: "dump",
       description:
-        "write debug zip (TUI snapshot + recent trace NDJSON) to ~/Documents/atomic-agent-debug",
+        "write debug zip (TUI snapshot + recent trace NDJSON) to ~/Documents/h0x-cli-debug",
       rank: 0,
     },
   },

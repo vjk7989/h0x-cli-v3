@@ -26,7 +26,8 @@
  * a stdin something else is reading, and the fallback is exactly the
  * behaviour we have today.
  *
- * `ATOMIC_AGENT_NO_SYNC_OUTPUT=1` turns it off for anyone who finds a
+ * `H0X_CLI_NO_SYNC_OUTPUT=1` (or legacy `ATOMIC_AGENT_NO_SYNC_OUTPUT=1`)
+ * turns it off for anyone who finds a
  * terminal that mishandles it.
  */
 import { registerTerminalRestore } from "./terminal-restore.js";
@@ -79,7 +80,11 @@ export function enableSynchronizedOutput(
 ): SynchronizedOutputController {
   const stdout = options.stdout ?? process.stdout;
   const env = options.env ?? process.env;
-  if (!stdout.isTTY || env.ATOMIC_AGENT_NO_SYNC_OUTPUT === "1") {
+  if (
+    !stdout.isTTY ||
+    env.H0X_CLI_NO_SYNC_OUTPUT === "1" ||
+    env.ATOMIC_AGENT_NO_SYNC_OUTPUT === "1"
+  ) {
     return { restore: () => {} };
   }
   const original = stdout.write.bind(stdout) as (

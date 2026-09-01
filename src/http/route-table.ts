@@ -38,7 +38,7 @@ import {
 import { createWebhookHandler } from "./route-webhooks.js";
 
 /**
- * Build the full atomic-agent HTTP route table. All handlers are
+ * Build the full h0x-cli HTTP route table. All handlers are
  * instantiated here so the serve command only needs to hand the
  * runtime to `createHttpServer`. Unauthenticated routes are the
  * minimum set an OpenAI SDK probes before attempting auth: `/health`

@@ -1,9 +1,12 @@
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync, copyFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import type { GaiaRow } from "./gaia-types.js";
 import { resolveAttachmentPath } from "./load-gaia-rows.js";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const DEFAULT_EVAL_TMP_ROOT = resolve(HERE, "..", "..", "tmp", "eval-agents");
 
 export interface GaiaWorkspace {
   workingDir: string;
@@ -16,7 +19,13 @@ export function createGaiaWorkspace(
   row: GaiaRow,
   split: "validation" | "test" = "validation",
 ): GaiaWorkspace {
-  const base = mkdtempSync(join(tmpdir(), `eval-agents-${taskId}-`));
+  const tempRoot =
+    process.env.H0X_CLI_EVAL_TMP_DIR ??
+    process.env.ATOMIC_AGENT_EVAL_TMP_DIR ??
+    DEFAULT_EVAL_TMP_ROOT;
+  mkdirSync(tempRoot, { recursive: true });
+
+  const base = mkdtempSync(join(tempRoot, `eval-agents-${sanitizePathPart(taskId)}-`));
   const workingDir = join(base, "cwd");
   const stateDir = join(base, "state");
   mkdirSync(workingDir, { recursive: true });
@@ -42,4 +51,8 @@ export function createGaiaWorkspace(
       }
     },
   };
+}
+
+function sanitizePathPart(value: string): string {
+  return value.replace(/[^A-Za-z0-9_.-]/g, "_");
 }

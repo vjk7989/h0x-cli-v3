@@ -31,10 +31,11 @@ export function loadGaiaRows(opts: LoadGaiaOptions = {}): GaiaRow[] {
   const limit = opts.limit ?? null;
 
   let rows: GaiaRow[] = [];
-  if (source === "fixtures" || (source === "auto" && !hasHfMetadata())) {
+  const split = opts.split ?? "validation";
+  if (source === "fixtures" || (source === "auto" && !hasHfMetadata(split))) {
     rows = loadFixtureRows();
   } else {
-    rows = loadHfRows(opts.split ?? "validation");
+    rows = loadHfRows(split);
   }
 
   if (level !== null) {
@@ -50,8 +51,8 @@ export function loadGaiaRows(opts: LoadGaiaOptions = {}): GaiaRow[] {
   return rows;
 }
 
-function hasHfMetadata(): boolean {
-  return existsSync(join(resolveGaiaHfRoot(), "2023", "validation", "metadata.jsonl"));
+function hasHfMetadata(split: "validation" | "test"): boolean {
+  return existsSync(join(resolveGaiaHfRoot(), "2023", split, "metadata.jsonl"));
 }
 
 function loadFixtureRows(): GaiaRow[] {

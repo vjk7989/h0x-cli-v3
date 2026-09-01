@@ -10,15 +10,22 @@ import {
 const API = "https://api.github.com";
 const RAW = "https://raw.githubusercontent.com";
 
+interface FakeRequest {
+  url: string;
+  headers: Headers;
+}
+
 interface FakeRoutes {
   defaultBranch?: string;
   tree?: Array<{ path: string; type: "blob" | "tree" }>;
   files?: Record<string, string>;
   rateLimited?: boolean;
+  requests?: FakeRequest[];
 }
 
 function makeFetch(routes: FakeRoutes): typeof fetch {
-  return (async (url: string) => {
+  return (async (url: string, init?: RequestInit) => {
+    routes.requests?.push({ url, headers: new Headers(init?.headers) });
     if (routes.rateLimited) {
       return new Response("", {
         status: 403,
@@ -128,5 +135,25 @@ describe("GithubSkillClient", () => {
     await expect(
       client.resolveDefaultBranch("o", "r"),
     ).rejects.toMatchObject({ code: "rate_limited" });
+  });
+
+  it("identifies h0x-cli on GitHub API and raw content requests", async () => {
+    const requests: FakeRequest[] = [];
+    const client = new GithubSkillClient({
+      fetchImpl: makeFetch({
+        requests,
+        tree: [{ path: "pdf/SKILL.md", type: "blob" }],
+        files: { "pdf/SKILL.md": "# pdf" },
+      }),
+    });
+
+    await client.resolveDefaultBranch("o", "r");
+    await client.downloadSkillDir("o", "r", "main", "pdf", dest);
+
+    expect(requests.map((request) => request.url)).toContain(`${API}/repos/o/r`);
+    expect(requests.some((request) => request.url.startsWith(`${RAW}/o/r/main/`))).toBe(true);
+    expect(requests.every((request) =>
+      /^h0x-cli(?:\/|$)/.test(request.headers.get("user-agent") ?? ""),
+    )).toBe(true);
   });
 });

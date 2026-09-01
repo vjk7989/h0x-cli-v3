@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  ENV_DEFAULTS,
+} from "../config/config-schema.js";
+import {
   APP_UPDATE_UNAVAILABLE,
   AppUpdateCheckError,
   checkForAppUpdate,
@@ -25,6 +28,10 @@ describe("fork update checks", () => {
       "Updates are unavailable in this h0x-cli development build; release packaging is not ready.",
     );
     expect(EXPORTED_MESSAGE).toBe(APP_UPDATE_UNAVAILABLE);
+  });
+
+  it("pins the dormant update repository to h0x releases, not upstream", () => {
+    expect(ENV_DEFAULTS.UPDATE_REPO).toBe("vjk7989/h0x-cli-v3");
   });
 
   it.each([

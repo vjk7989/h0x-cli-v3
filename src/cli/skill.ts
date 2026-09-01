@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import {
   ensureUserConfigFileSync,
+  ENV_DEFAULTS,
   getConfig,
   resetConfigCache,
   writeUserConfigFileSync,
@@ -226,10 +227,9 @@ async function handleUninstall(args: string[]): Promise<number> {
 
 async function handleList(): Promise<number> {
   const config = getConfig();
-  const projectDir = resolve(process.cwd(), config.paths.projectSkillsDirName);
   const { skills, errors } = await loadSkills({
     globalDir: config.paths.globalSkillsDir,
-    projectDir,
+    projectDir: projectSkillDirs(config.paths.projectSkillsDirName),
   });
   const disabled = new Set(config.skills.disabled);
   if (skills.length === 0) {
@@ -263,10 +263,9 @@ async function handleShow(args: string[]): Promise<number> {
     return 2;
   }
   const config = getConfig();
-  const projectDir = resolve(process.cwd(), config.paths.projectSkillsDirName);
   const { skills } = await loadSkills({
     globalDir: config.paths.globalSkillsDir,
-    projectDir,
+    projectDir: projectSkillDirs(config.paths.projectSkillsDirName),
   });
   const record = skills.find((s) => s.manifest.name === name);
   if (!record) {
@@ -317,10 +316,9 @@ async function handleDisable(args: string[]): Promise<number> {
   // we still persist the entry (users may share config.json across
   // machines), but make the disconnect visible.
   const config = getConfig();
-  const projectDir = resolve(process.cwd(), config.paths.projectSkillsDirName);
   const { skills } = await loadSkills({
     globalDir: config.paths.globalSkillsDir,
-    projectDir,
+    projectDir: projectSkillDirs(config.paths.projectSkillsDirName),
   });
   if (!skills.some((s) => s.manifest.name === name)) {
     process.stderr.write(
@@ -329,6 +327,13 @@ async function handleDisable(args: string[]): Promise<number> {
   }
   process.stdout.write(`disabled: ${name}\n`);
   return 0;
+}
+
+function projectSkillDirs(projectSkillsDirName: string): readonly string[] {
+  return [
+    resolve(process.cwd(), projectSkillsDirName),
+    resolve(process.cwd(), ENV_DEFAULTS.LEGACY_PROJECT_SKILLS_DIR),
+  ];
 }
 
 function configuredTaps(restrictTo?: string): SkillTap[] {

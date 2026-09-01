@@ -86,7 +86,10 @@ export class OpenRouterEmbeddingProvider extends OpenAiEmbeddingProvider {
   ) {
     const headers: Record<string, string> = { ...options.headers };
     if (options.httpReferer) headers["HTTP-Referer"] = options.httpReferer;
-    if (options.xTitle) headers["X-Title"] = options.xTitle;
+    if (options.xTitle) {
+      headers["X-OpenRouter-Title"] = options.xTitle;
+      headers["X-Title"] = options.xTitle;
+    }
     if (options.categories) headers["X-OpenRouter-Categories"] = options.categories;
     super({
       ...options,

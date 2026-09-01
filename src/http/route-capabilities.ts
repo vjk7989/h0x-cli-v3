@@ -10,7 +10,7 @@ export function createCapabilitiesHandler(): HttpHandler {
   return async (_req, res, ctx) => {
     const { runtime } = ctx;
     sendJson(res, 200, {
-      runtime: "atomic-agent",
+      runtime: "h0x-cli",
       capabilities: runtime.capabilities,
       paths: {
         stateDir: runtime.config.paths.stateDir,

@@ -8,6 +8,8 @@
  * live on every call instead of caching to dodge a 60/hour cap.
  */
 
+import { appUserAgent } from "../../brand/index.js";
+
 export type ClawHubScanStatus = "clean" | "suspicious" | "malicious" | "unknown";
 
 export type ClawHubSkillSort =
@@ -240,7 +242,7 @@ export class ClawHubClient {
   private async apiFetch(path: string): Promise<Response> {
     const headers: Record<string, string> = {
       Accept: "application/json",
-      "User-Agent": "atomic-agent",
+      "User-Agent": appUserAgent(),
     };
     if (this.token) headers.Authorization = `Bearer ${this.token}`;
     const url = `${this.apiBase}${path}`;

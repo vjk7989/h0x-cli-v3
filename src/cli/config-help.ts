@@ -30,8 +30,8 @@ export const HELP =
   [
     "h0x-cli config — manage the user config file",
     "",
-    "Location: <stateDir>/config.json (stateDir comes from ATOMIC_AGENT_STATE_DIR",
-    "or defaults to ~/.atomic-agent).",
+    "Location: <stateDir>/config.json (stateDir comes from H0X_CLI_STATE_DIR,",
+    "legacy ATOMIC_AGENT_STATE_DIR, or defaults to ~/.h0x-cli).",
     "",
     "Subcommands:",
     "  get                       Print the whole config file as JSON",

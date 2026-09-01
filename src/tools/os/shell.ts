@@ -39,7 +39,7 @@ const GOG_COMPRESS_OPTIONS = {
 function coerceShellArgs(value: unknown): string[] | null {
   if (value === undefined || value === null) return [];
   if (Array.isArray(value)) {
-    return value.map((v) => String(v));
+    return flattenShellArgs(value);
   }
   if (typeof value === "string") {
     const trimmed = value.trim();
@@ -48,7 +48,7 @@ function coerceShellArgs(value: unknown): string[] | null {
       try {
         const parsed = JSON.parse(trimmed) as unknown;
         if (Array.isArray(parsed)) {
-          return parsed.map((v) => String(v));
+          return flattenShellArgs(parsed);
         }
       } catch {
         // fall through to error
@@ -56,6 +56,18 @@ function coerceShellArgs(value: unknown): string[] | null {
     }
   }
   return null;
+}
+
+function flattenShellArgs(values: readonly unknown[]): string[] {
+  const out: string[] = [];
+  for (const value of values) {
+    if (Array.isArray(value)) {
+      out.push(...flattenShellArgs(value));
+    } else {
+      out.push(String(value));
+    }
+  }
+  return out;
 }
 
 function describeArgsShape(value: unknown): string {
@@ -126,6 +138,18 @@ function isWindowsCmdBuiltin(cmd: string): boolean {
   return WINDOWS_CMD_BUILTINS.has(cmd.trim().toLowerCase());
 }
 
+function isEvalPackageInstall(commandLine: string): boolean {
+  if (process.env.H0X_CLI_EVAL_DISABLE_PACKAGE_INSTALLS !== "1") return false;
+  const text = commandLine.toLowerCase();
+  return (
+    /\b(python|py|python3)\s+-m\s+pip\s+install\b/.test(text) ||
+    /\bpip3?\s+install\b/.test(text) ||
+    /\bnpm\s+(install|i|add)\b/.test(text) ||
+    /\byarn\s+add\b/.test(text) ||
+    /\bpnpm\s+(install|add)\b/.test(text)
+  );
+}
+
 /**
  * Decide whether `cmd` must be run through the OS subshell (`sh -c` /
  * `cmd.exe /c`) instead of a direct `spawn(cmd, args)`. Models routinely
@@ -190,11 +214,17 @@ export function buildOsShellTool(options: DangerousToolOptions): ToolDefinition 
       "Run an OS command in the session working directory. Prefer the structured form `{cmd, args:[...]}` (argv globs `*`/`?` are expanded). Shell metacharacters (`|`, `&&`, `;`, `>`, `<`, `$`, backticks) are interpreted via the OS subshell (`sh -c` on macOS/Linux, `cmd.exe /c` on Windows) — a full command line passed as `cmd` (e.g. `\"ffprobe -v quiet … f.mp3\"` or `\"pip3 list | grep foo\"`) runs as written. Do not use for deleting user files — use `os.fs.trash` unless the user explicitly requests permanent shell deletion. Runs through a pre-exec guard: safe commands run directly, risky commands require approval, catastrophic commands are blocked without execution. By default there is no timeout (the command runs until it exits or the turn is cancelled); pass `timeoutMs` to set an explicit limit.",
     readonly: false,
     async run(rawArgs, ctx) {
-      const cmd = rawArgs.cmd;
+      let cmd = rawArgs.cmd;
+      let recoveredMissingCmd = false;
+      if (typeof cmd !== "string" && Array.isArray(rawArgs.args) && rawArgs.args.length > 0) {
+        cmd = rawArgs.args[0];
+        rawArgs = { ...rawArgs, args: rawArgs.args.slice(1) };
+        recoveredMissingCmd = true;
+      }
       if (typeof cmd !== "string" || cmd.length === 0) {
         throw new Error("os.shell.run: `cmd` must be a non-empty string");
       }
-      const rawArgList = coerceShellArgs(rawArgs.args);
+      let rawArgList = coerceShellArgs(rawArgs.args);
       if (rawArgList === null) {
         // Some models (notably cloud `native_tools` providers under
         // tool_choice="auto") double-serialise array arguments into a
@@ -213,6 +243,9 @@ export function buildOsShellTool(options: DangerousToolOptions): ToolDefinition 
             rawArgsType: describeArgsShape(rawArgs.args),
           },
         });
+      }
+      if (rawArgList[0] === cmd) {
+        rawArgList = rawArgList.slice(1);
       }
       const cwd =
         typeof rawArgs.cwd === "string" && rawArgs.cwd.length > 0
@@ -239,6 +272,25 @@ export function buildOsShellTool(options: DangerousToolOptions): ToolDefinition 
         ? rawArgList
         : expandShellGlobArgs(cmd, rawArgList, cwd);
       const commandLine = [cmd, ...execArgs].join(" ");
+      if (isEvalPackageInstall(commandLine)) {
+        return compressToolResult({
+          tool: "os.shell.run",
+          status: "error",
+          output:
+            "blocked by eval guard: package installation is disabled during benchmark runs; use existing tools or answer best-effort.",
+          details: {
+            cmd: redactSecretText(cmd),
+            args: redactSecretsDeep(execArgs),
+            rawArgs: redactSecretsDeep(rawArgList),
+            cwd,
+            shell: useShell,
+            guardVerdict: "block",
+            guardRule: "eval.package_install_disabled",
+            guardReason: "package installation is disabled during benchmark runs",
+            recoveredMissingCmd,
+          },
+        });
+      }
       const guardTokens = useShell
         ? commandLine.split(/\s+/).filter((t) => t.length > 0)
         : null;
@@ -343,6 +395,7 @@ export function buildOsShellTool(options: DangerousToolOptions): ToolDefinition 
             guardVerdict: guardVerdict.action,
             guardRule: guardVerdict.rule,
             guardReason: guardVerdict.reason,
+            recoveredMissingCmd,
           },
         },
         isGogCommand(gogProbe) ? GOG_COMPRESS_OPTIONS : {},

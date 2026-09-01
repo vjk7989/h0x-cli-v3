@@ -255,8 +255,8 @@ export async function bootstrapSidecar(): Promise<{
       if (!health.reachable) {
         const hint =
           config.localModels.mode === "managed"
-            ? "run atomic-agent models start"
-            : "check localModels.url or ATOMIC_AGENT_LLAMA_URL";
+            ? "run h0x-cli models start"
+            : "check localModels.url or H0X_CLI_LLAMA_URL (or legacy ATOMIC_AGENT_LLAMA_URL)";
         protocol.emitEvent("llm_unavailable", {
           url: config.localModels.url,
           error: health.error,
@@ -312,10 +312,14 @@ export async function bootstrapSidecar(): Promise<{
             `active session changed during queued send_message for ${sessionId}`,
           );
         }
-        return runtime.executeTurn(active.session, request.payload.text, {
+        const result = await runtime.executeTurn(active.session, request.payload.text, {
           maxSteps: request.payload.maxSteps ?? runtime.config.agent.maxSteps,
           signal: active.controller.signal,
         });
+        if (active && active.session.id === sessionId) {
+          active = { ...active, session: result.session };
+        }
+        return result;
       },
     });
     active = { ...active, session: result.session };
@@ -430,7 +434,7 @@ export async function bootstrapSidecar(): Promise<{
 
   protocol.emitEvent("log", {
     level: "info",
-    message: "atomic-agent sidecar booted",
+    message: "h0x-cli sidecar booted",
     context: { llamaUrl: config.localModels.url, stateDir: config.paths.stateDir },
   });
 

@@ -1,26 +1,35 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const forbidden = vi.hoisted(() => vi.fn(() => {
-  throw new Error("Audit isolation: telemetry transport must never be constructed or called");
+const posthogConstructor = vi.hoisted(() =>
+  vi.fn(function () {
+    return {
+      capture: vi.fn(),
+      shutdown: vi.fn().mockResolvedValue(undefined),
+    };
+  }),
+);
+const forbiddenFetch = vi.hoisted(() => vi.fn(() => {
+  throw new Error("Audit isolation: telemetry fetch must never be called");
 }));
-vi.mock("posthog-node", () => ({ PostHog: forbidden }));
+vi.mock("posthog-node", () => ({ PostHog: posthogConstructor }));
 
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
   vi.resetModules();
-  expect(forbidden).not.toHaveBeenCalled();
-  forbidden.mockClear();
+  expect(forbiddenFetch).not.toHaveBeenCalled();
+  forbiddenFetch.mockClear();
+  posthogConstructor.mockClear();
 });
 
-// The existing source tests cover individual sentinels. This audit compares the
-// source factories with the already-built distribution under production flags.
-// Missing/stale dist is a failing audit precondition; never build or skip here.
+// Compares the source factories with the already-built distribution under
+// production flags. Missing/stale dist is a failing audit precondition; never
+// build or skip here.
 describe.each(["source", "existing-dist"] as const)("network audit: production telemetry %s", (artifact) => {
-  it.each([false, true])("remains inert with analytics.enabled=%s", async (enabled) => {
+  it.each([false, true])("honors analytics.enabled=%s for PostHog and keeps Sentry inert", async (enabled) => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("VITEST", undefined);
-    vi.stubGlobal("fetch", forbidden);
+    vi.stubGlobal("fetch", forbiddenFetch);
     vi.resetModules();
 
     const analytics = artifact === "source"
@@ -36,8 +45,10 @@ describe.each(["source", "existing-dist"] as const)("network audit: production t
       ? await import("../src/error-reporting/sentry-config.js")
       : await import("../dist/error-reporting/sentry-config.js");
 
-    // Compare booleans, so failure diagnostics never print an ingestion key/DSN.
-    expect(posthog.POSTHOG_PROJECT_KEY === "PLACEHOLDER").toBe(true);
+    // Compare booleans/prefixes, so failure diagnostics never print ingestion keys.
+    expect(posthog.POSTHOG_PROJECT_KEY === "PLACEHOLDER").toBe(false);
+    expect(posthog.POSTHOG_PROJECT_KEY.startsWith("phc_")).toBe(true);
+    expect(posthog.POSTHOG_HOST).toBe("https://eu.i.posthog.com");
     expect(sentry.SENTRY_DSN === "PLACEHOLDER").toBe(true);
 
     for (const module of [analytics]) {
@@ -46,7 +57,7 @@ describe.each(["source", "existing-dist"] as const)("network audit: production t
       });
       client?.capture("synthetic_audit_event", { model: "synthetic-model" });
       await client?.shutdown();
-      expect(client === null).toBe(true);
+      expect(client === null).toBe(!enabled);
     }
     for (const module of [errors]) {
       const client = module.createSentryClient({

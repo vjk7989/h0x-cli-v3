@@ -51,7 +51,7 @@ export interface TraceSummary {
 /**
  * List every NDJSON trace file in `dir`, newest first. Each summary
  * carries the metadata extracted from the first `session_started` event
- * (when present) so `atomic-agent trace list` can show a meaningful
+ * (when present) so `h0x-cli trace list` can show a meaningful
  * snapshot without opening a pager.
  */
 export async function listTraceSummaries(

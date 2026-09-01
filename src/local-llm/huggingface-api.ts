@@ -6,6 +6,8 @@
  * "does not exist" and the message has to cover both.
  */
 
+import { appUserAgent } from "../brand/index.js";
+
 const HF_API = "https://huggingface.co/api";
 
 export interface HuggingFaceFile {
@@ -28,7 +30,7 @@ async function fetchHfJson(
   try {
     res = await fetch(`${HF_API}${path}`, {
       headers: {
-        "User-Agent": "atomic-agent/local-llm",
+        "User-Agent": appUserAgent("local-llm"),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       signal: opts?.signal ? AbortSignal.any([opts.signal, timeout]) : timeout,

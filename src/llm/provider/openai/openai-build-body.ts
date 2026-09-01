@@ -15,15 +15,17 @@ export function buildOpenAiChatBody(
   defaultChatModel: string,
   stream: boolean,
   extraBody?: Record<string, unknown>,
+  maxTokensField: "max_tokens" | "max_completion_tokens" = "max_tokens",
+  omitTemperature = false,
 ): Record<string, unknown> {
   const filtered = filterCloudCompletionRequest(request);
   const body: Record<string, unknown> = {
     model: defaultChatModel,
     messages: [{ role: "user", content: filtered.prompt }],
-    temperature: filtered.temperature ?? 0.2,
-    max_tokens: filtered.maxTokens ?? getConfig().localModels.completionMaxTokens,
     stream,
   };
+  if (!omitTemperature) body.temperature = filtered.temperature ?? 0.2;
+  body[maxTokensField] = filtered.maxTokens ?? getConfig().localModels.completionMaxTokens;
   if (filtered.stop) body.stop = filtered.stop;
   if (typeof filtered.seed === "number") body.seed = filtered.seed;
   if (filtered.tools && filtered.tools.length > 0) {

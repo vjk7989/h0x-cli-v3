@@ -141,12 +141,12 @@ describe.each(["source", "existing-dist"] as const)("network audit: actual loopb
       });
       expect(request.body).not.toContain(apiKey);
       if (kind === "openrouter") {
-        // Characterizes upstream attribution still present in source and dist.
-        expect(request.headers["http-referer"]).toBe("https://github.com/AtomicBot-ai/atomic-agent");
-        expect(request.headers["x-title"]).toBe("Atomic Agent");
+        expect(request.headers["http-referer"]).toBe("https://pavii.tech");
+        expect(request.headers["x-openrouter-title"]).toBe("h0x-cli by PAVii.Ai");
+        expect(request.headers["x-title"]).toBe("h0x-cli by PAVii.Ai");
         expect(request.headers["x-openrouter-categories"]).toBe("cli-agent,personal-agent");
       } else {
-        expect(request.headers["x-aimlapi-source"]).toBe("agent/atomic-agent");
+        expect(request.headers["x-aimlapi-source"]).toBe("agent/h0x-cli");
         expect(request.headers["x-aimlapi-partner-id"]).toBeUndefined();
         expect(request.headers["http-referer"]).toBeUndefined();
         expect(request.headers["x-title"]).toBeUndefined();

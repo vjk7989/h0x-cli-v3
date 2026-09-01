@@ -20,4 +20,5 @@ CLAW-LOOT.md
 .cursor/
 /.local/
 /.cache/
+/.npm-cache/
 /.codebase-memory/

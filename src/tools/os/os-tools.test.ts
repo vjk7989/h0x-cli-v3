@@ -245,6 +245,63 @@ describe("os.shell.run", () => {
     expect(result.summary).toContain("hello world");
   });
 
+  it("flattens nested array `args` emitted by some native tool providers", async () => {
+    const gate = new ApprovalGate({
+      emit: (req) => gate.resolve({ approvalId: req.approvalId, approved: true }),
+    });
+    const tool = buildOsShellTool({ approvals: gate, approvalRequired: true });
+    const result = await tool.run(
+      { cmd: "echo", args: ["echo", ["hello", "world"]] },
+      makeCtx(dir),
+    );
+
+    expect(result.details.rawArgs).toEqual(["hello", "world"]);
+    expect(result.status).toBe("ok");
+    expect(result.summary).toContain("hello world");
+  });
+
+  it("recovers a missing `cmd` from the first string arg", async () => {
+    const gate = new ApprovalGate({
+      emit: (req) => gate.resolve({ approvalId: req.approvalId, approved: true }),
+    });
+    const tool = buildOsShellTool({ approvals: gate, approvalRequired: true });
+    const result = await tool.run(
+      { args: ["echo", "hello"] },
+      makeCtx(dir),
+    );
+
+    expect(result.status).toBe("ok");
+    expect(result.details.recoveredMissingCmd).toBe(true);
+    expect(result.details.rawArgs).toEqual(["hello"]);
+    expect(result.summary).toContain("hello");
+  });
+
+  it("blocks package installs when eval mode disables environment mutation", async () => {
+    const previous = process.env.H0X_CLI_EVAL_DISABLE_PACKAGE_INSTALLS;
+    process.env.H0X_CLI_EVAL_DISABLE_PACKAGE_INSTALLS = "1";
+    const gate = new ApprovalGate({
+      emit: (req) => gate.resolve({ approvalId: req.approvalId, approved: true }),
+    });
+    const tool = buildOsShellTool({ approvals: gate, approvalRequired: true });
+
+    try {
+      const result = await tool.run(
+        { cmd: "python", args: ["-m", "pip", "install", "openai-whisper"] },
+        makeCtx(dir),
+      );
+
+      expect(result.status).toBe("error");
+      expect(result.summary).toContain("package installation is disabled");
+      expect(result.details.guardRule).toBe("eval.package_install_disabled");
+    } finally {
+      if (previous === undefined) {
+        delete process.env.H0X_CLI_EVAL_DISABLE_PACKAGE_INSTALLS;
+      } else {
+        process.env.H0X_CLI_EVAL_DISABLE_PACKAGE_INSTALLS = previous;
+      }
+    }
+  });
+
   it("returns a structured error when `args` is an object", async () => {
     const gate = new ApprovalGate({
       emit: (req) => gate.reject(req.approvalId, "should not ask"),

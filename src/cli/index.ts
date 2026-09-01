@@ -142,21 +142,24 @@ function printHelp(): void {
     "User config (edit via `h0x-cli config`; legacy env names retained):",
     "  <stateDir>/config.json         localModels.url, localModels.mode, log.level, agent.{tokenBudget,maxSteps,toolTimeoutMs,approvalLevel}",
     "",
-    "Bootstrap env:",
-    "  ATOMIC_AGENT_STATE_DIR         Directory for persistent state + config.json (default ~/.atomic-agent)",
-    "  ATOMIC_AGENT_LLAMA_API_KEY     Optional bearer token for the llama-server",
-    "  ATOMIC_AGENT_LLAMA_MAX_TOKENS  Max new tokens per completion (n_predict), default 4096, clamped 64..131072",
-    "  ATOMIC_AGENT_BROWSER_CHANNEL           Preferred browser family: chrome | msedge | chromium (default chrome)",
-    "  ATOMIC_AGENT_BROWSER_EXECUTABLE_PATH   Explicit path to a Chromium-family binary (overrides auto-detect)",
-    "  ATOMIC_AGENT_BROWSER_HEADLESS          1 to run headless (default 0)",
-    "  ATOMIC_AGENT_BROWSER_NO_SANDBOX        1 to pass --no-sandbox (containers / CI only)",
-    "  ATOMIC_AGENT_BROWSER_CDP_URL           Attach to an already-running browser via CDP instead of launching",
+    "Bootstrap env (H0X_CLI_* wins; matching ATOMIC_AGENT_* names are compatibility aliases):",
+    "  H0X_CLI_STATE_DIR              Directory for persistent state + config.json (default ~/.h0x-cli)",
+    "  H0X_CLI_LLAMA_API_KEY          Optional bearer token for the llama-server",
+    "  H0X_CLI_LLAMA_MAX_TOKENS       Max new tokens per completion (n_predict), default 4096, clamped 64..131072",
+    "  H0X_CLI_BROWSER_CHANNEL        Preferred browser family: chrome | msedge | chromium (default chrome)",
+    "  H0X_CLI_BROWSER_EXECUTABLE_PATH Explicit path to a Chromium-family binary (overrides auto-detect)",
+    "  H0X_CLI_BROWSER_HEADLESS       1 to run headless (default 0)",
+    "  H0X_CLI_BROWSER_NO_SANDBOX     1 to pass --no-sandbox (containers / CI only)",
+    "  H0X_CLI_BROWSER_CDP_URL        Attach to an already-running browser via CDP instead of launching",
   ];
   process.stdout.write(`${lines.join("\n")}\n`);
 }
 
 function userArgsFromArgv(): string[] {
-  if (process.env.ATOMIC_AGENT_DEBUG_ARGV === "1") {
+  if (
+    process.env.H0X_CLI_DEBUG_ARGV === "1" ||
+    process.env.ATOMIC_AGENT_DEBUG_ARGV === "1"
+  ) {
     process.stderr.write(
       `argv=${JSON.stringify(argv)}\nexecPath=${process.execPath}\nisSea=${isSea()}\n`,
     );

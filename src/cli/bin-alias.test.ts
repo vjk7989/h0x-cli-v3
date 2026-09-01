@@ -16,12 +16,18 @@ function read(relative: string): string {
 }
 
 describe("CLI package and compatibility aliases", () => {
-  it("publishes h0x-cli with the canonical and legacy entrypoints", () => {
+  it("publishes h0x-cli with the canonical command and intentional compatibility entrypoints", () => {
     const manifest = JSON.parse(read("package.json")) as {
       name: string;
+      homepage?: string;
+      repository?: { url?: string };
       bin: Record<string, string>;
     };
     expect(manifest.name).toBe("h0x-cli");
+    expect(manifest.homepage).toBe("https://pavii.tech");
+    expect(manifest.repository?.url).toBe(
+      "git+https://github.com/vjk7989/h0x-cli-v3.git",
+    );
     expect(manifest.bin).toMatchObject({
       "h0x-cli": "dist/cli/index.js",
       "atomic-agent": "dist/cli/index.js",
@@ -30,17 +36,25 @@ describe("CLI package and compatibility aliases", () => {
     });
   });
 
-  it("the POSIX installer links it next to the binary", () => {
+  it("the POSIX installer installs h0x-cli and keeps only intentional aliases", () => {
     const script = read("scripts/install.sh");
-    expect(script).toContain('link_alias atomic-agent "$INSTALL_DIR/atag"');
+    expect(script).toContain('link_alias h0x-cli "$INSTALL_DIR/atomic-agent"');
+    expect(script).toContain('link_alias h0x-cli "$INSTALL_DIR/atag"');
     // Relative link target, so moving the install dir does not break it.
     expect(script).toContain('ln -sfn "$1" "$2"');
+    expect(script).toContain("https://pavii.tech");
+    expect(script).toContain("vjk7989/h0x-cli-v3");
   });
 
-  it("the Windows installer writes an atag.cmd shim", () => {
+  it("the Windows installer writes h0x-cli and legacy command shims", () => {
     const script = read("scripts/install.ps1");
+    expect(script).toContain('$BinaryPath = Join-Path $Stage "h0x-cli.exe"');
+    expect(script).toContain("installed h0x-cli to $InstallDir\\h0x-cli.exe");
+    expect(script).toContain('Join-Path $InstallDir "atomic-agent.cmd"');
     expect(script).toContain('Join-Path $InstallDir "atag.cmd"');
     // %~dp0 keeps the shim pointed at the binary beside it.
-    expect(script).toContain('"`"%~dp0atomic-agent.exe`" %*"');
+    expect(script).toContain('"`"%~dp0h0x-cli.exe`" %*"');
+    expect(script).toContain("https://pavii.tech");
+    expect(script).toContain("vjk7989/h0x-cli-v3");
   });
 });

@@ -206,6 +206,14 @@ async function canonicalizeDeepestExisting(
   let suffix = "";
   // Bounded by path depth: every iteration strips one component.
   for (;;) {
+    const linkTarget = await readlinkIfSymlink(current);
+    if (linkTarget !== null) {
+      const resolvedTarget = isAbsolute(linkTarget)
+        ? linkTarget
+        : resolve(dirname(current), linkTarget);
+      const redirected = suffix.length === 0 ? resolvedTarget : join(resolvedTarget, suffix);
+      return canonicalizeMutationTarget(redirected);
+    }
     try {
       const resolved = await realpath(current);
       return suffix.length === 0 ? resolved : join(resolved, suffix);

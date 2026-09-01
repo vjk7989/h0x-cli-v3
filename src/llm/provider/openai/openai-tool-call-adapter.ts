@@ -8,6 +8,10 @@ import type { ToolCallAdapter } from "../adapters/tool-call-adapter.js";
 
 const REPLY_TOOL = "reply";
 const FINISH_TOOL = "finish";
+const PROVIDER_TOOL_NAME_ALIASES: Readonly<Record<string, string>> = {
+  "os.web_search": "os.web.search",
+  "os.web_fetch": "os.web.fetch",
+};
 
 /**
  * OpenAI function names must match `^[a-zA-Z0-9_-]{1,64}$` — dots are
@@ -18,7 +22,9 @@ export function nameEscape(qualifiedName: string): string {
 }
 
 export function nameUnescape(providerName: string): string {
-  return providerName.replace(/__/g, ".");
+  const alias = PROVIDER_TOOL_NAME_ALIASES[providerName];
+  if (alias) return alias;
+  return providerName.replace(/\$/g, ".").replace(/__/g, ".");
 }
 
 function replyFinishDescriptors(): ToolDescriptor[] {

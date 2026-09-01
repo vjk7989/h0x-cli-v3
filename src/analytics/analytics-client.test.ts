@@ -1,12 +1,21 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { AnalyticsClient, createAnalyticsClient } from "./analytics-client.js";
-import { POSTHOG_PLACEHOLDER_KEY, POSTHOG_PROJECT_KEY } from "./posthog-config.js";
+import {
+  POSTHOG_HOST,
+  POSTHOG_PLACEHOLDER_KEY,
+  POSTHOG_PROJECT_KEY,
+} from "./posthog-config.js";
 import { parseUserConfigFile } from "../config/config-schema.js";
 
-const posthogConstructor = vi.hoisted(() => vi.fn(function () {
-  throw new Error("The fork must not construct the PostHog SDK");
-}));
+const posthogConstructor = vi.hoisted(() =>
+  vi.fn(function () {
+    return {
+      capture: vi.fn(),
+      shutdown: vi.fn().mockResolvedValue(undefined),
+    };
+  }),
+);
 vi.mock("posthog-node", () => ({ PostHog: posthogConstructor }));
 
 function fakePosthog() {
@@ -114,26 +123,25 @@ describe("fork analytics defaults", () => {
     posthogConstructor.mockClear();
   });
 
-  it("ships the existing placeholder instead of the upstream ingestion key", () => {
-    expect(POSTHOG_PROJECT_KEY).toBe(POSTHOG_PLACEHOLDER_KEY);
-    expect(POSTHOG_PROJECT_KEY).toBe("PLACEHOLDER");
+  it("ships the PAVii EU Cloud public ingestion key", () => {
+    expect(POSTHOG_PROJECT_KEY).not.toBe(POSTHOG_PLACEHOLDER_KEY);
+    expect(POSTHOG_PROJECT_KEY).toMatch(/^phc_/);
+    expect(POSTHOG_HOST).toBe("https://eu.i.posthog.com");
   });
 
-  it("does not construct PostHog with an enabled legacy config outside test mode", async () => {
+  it("constructs PostHog with an enabled config outside test mode", async () => {
     const config = parseUserConfigFile({ version: 42, analytics: { enabled: true } });
     expect(config.analytics.enabled).toBe(true);
-    // Exercise the placeholder gate, not the independent test-runner guard.
     vi.stubEnv("VITEST", undefined);
     vi.stubEnv("NODE_ENV", "production");
-    const fetch = vi.fn().mockRejectedValue(new Error("Unexpected network request"));
-    vi.stubGlobal("fetch", fetch);
     const client = createAnalyticsClient({
       enabled: config.analytics.enabled, installId: "legacy-install", platform: "win32", version: "0.4.2",
     });
-    client?.capture("app_opened");
-    await client?.shutdown();
-    expect(client).toBeNull();
-    expect(posthogConstructor).not.toHaveBeenCalled();
-    expect(fetch).not.toHaveBeenCalled();
+    expect(client).toBeInstanceOf(AnalyticsClient);
+    expect(posthogConstructor).toHaveBeenCalledWith(POSTHOG_PROJECT_KEY, {
+      host: POSTHOG_HOST,
+      disableGeoip: true,
+      flushAt: 1,
+    });
   });
 });

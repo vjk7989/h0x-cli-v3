@@ -21,7 +21,7 @@ export interface SkillRecord {
 
 export interface LoadSkillsOptions {
   globalDir: string;
-  projectDir: string | null;
+  projectDir: string | readonly string[] | null;
   /**
    * OS to gate skills against (matched against each manifest's optional
    * `platforms` allowlist). Defaults to the live `os.platform()`;
@@ -59,20 +59,28 @@ export async function loadSkills(
   const errors: Array<{ path: string; error: string }> = [];
   const platform = options.platform ?? osPlatform();
   const globalSkills = await loadFromDir(options.globalDir, "global", errors);
-  // When `projectDir` resolves to the exact same absolute path as
-  // `globalDir` (e.g. a relative `ATOMIC_AGENT_STATE_DIR=.atomic-agent`
-  // run from the repo root makes both `<cwd>/.atomic-agent/skills`), the
-  // project scan would re-load every global skill and relabel it
-  // `source: "project"` in the merge below — which then blocks global-only
-  // operations like uninstall. There is no genuine project skill in that
-  // case, so skip the redundant scan and keep the "global" classification.
-  const projectIsGlobal =
-    !!options.projectDir &&
-    resolve(options.projectDir) === resolve(options.globalDir);
-  const projectSkills =
-    options.projectDir && !projectIsGlobal
-      ? await loadFromDir(options.projectDir, "project", errors)
-      : [];
+  const projectSkills: SkillRecord[] = [];
+  const projectDirs =
+    options.projectDir === null
+      ? []
+      : Array.isArray(options.projectDir)
+        ? options.projectDir
+        : [options.projectDir];
+  const seenProjectDirs = new Set<string>();
+  for (const projectDir of projectDirs) {
+    const absoluteProjectDir = resolve(projectDir);
+    if (seenProjectDirs.has(absoluteProjectDir)) continue;
+    seenProjectDirs.add(absoluteProjectDir);
+    // When `projectDir` resolves to the exact same absolute path as
+    // `globalDir` (e.g. a relative `ATOMIC_AGENT_STATE_DIR=.atomic-agent`
+    // run from the repo root makes both `<cwd>/.atomic-agent/skills`), the
+    // project scan would re-load every global skill and relabel it
+    // `source: "project"` in the merge below — which then blocks global-only
+    // operations like uninstall. There is no genuine project skill in that
+    // case, so skip the redundant scan and keep the "global" classification.
+    if (absoluteProjectDir === resolve(options.globalDir)) continue;
+    projectSkills.push(...(await loadFromDir(projectDir, "project", errors)));
+  }
 
   const merged = new Map<string, SkillRecord>();
   for (const s of globalSkills) {

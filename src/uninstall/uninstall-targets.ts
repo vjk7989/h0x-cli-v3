@@ -25,14 +25,14 @@ export interface UninstallTarget {
 }
 
 export interface UninstallPlanInput {
-  /** `getConfig().paths.stateDir` — honours `ATOMIC_AGENT_STATE_DIR`. */
+  /** `getConfig().paths.stateDir` — honours `H0X_CLI_STATE_DIR` and legacy aliases. */
   readonly stateDir: string;
   /** `process.execPath`. A dev run points at `node` and installs nothing. */
   readonly execPath: string;
   readonly homeDir: string;
   readonly platform: NodeJS.Platform;
   /**
-   * Whether `<installDir>/atomic-agent` exists. Every `program` target is
+   * Whether `<installDir>/h0x-cli` exists. Every `program` target is
    * gated on it: the install dir is shared (`~/.local/bin` holds other
    * people's tools), so `node_modules` and `vendor` next to *our* binary
    * are ours to delete, and the same names next to somebody else's are
@@ -84,11 +84,16 @@ export function isInstalledBinary(
 ): boolean {
   const exe = pathFor(platform).basename(execPath).toLowerCase();
   if (exe.startsWith("node") || exe.startsWith("tsx")) return false;
-  return exe.startsWith("atomic-agent");
+  return (
+    exe.startsWith("h0x-cli") ||
+    exe.startsWith("atomic-agent") ||
+    exe === "atag" ||
+    exe === "atag.exe"
+  );
 }
 
 /**
- * Everything `atomic-agent uninstall` would remove, in the order it is
+ * Everything `h0x-cli uninstall` would remove, in the order it is
  * shown and removed: data first, program second.
  *
  * Pure — no `fs`, no `process`. The caller stats the result to fill in
@@ -105,7 +110,7 @@ export function planUninstallTargets(
       group: "data",
     },
     {
-      path: path.resolve(input.homeDir, "Documents", "atomic-agent-debug"),
+      path: path.resolve(input.homeDir, "Documents", "h0x-cli-debug"),
       label: "debug bundles written by /dump",
       group: "data",
     },
@@ -120,8 +125,13 @@ export function planUninstallTargets(
   const installDir = installDirFor(input.execPath, input.platform);
   const exeSuffix = input.platform === "win32" ? ".exe" : "";
   targets.push({
-    path: path.resolve(installDir, `atomic-agent${exeSuffix}`),
+    path: path.resolve(installDir, `h0x-cli${exeSuffix}`),
     label: "the binary",
+    group: "program",
+  });
+  targets.push({
+    path: path.resolve(installDir, `atomic-agent${exeSuffix}`),
+    label: "the legacy compatibility alias",
     group: "program",
   });
   targets.push({
@@ -149,6 +159,7 @@ export function planUninstallTargets(
  * is the right price for that.
  */
 export function isSafeToRemove(path: string, homeDir: string): boolean {
+  if (/^\/[^/\\]+\/?$/.test(path)) return false;
   const target = resolve(path);
   const home = resolve(homeDir);
   if (target === home) return false;

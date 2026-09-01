@@ -1,5 +1,5 @@
 /**
- * Resolves "open a new OS terminal window running atomic-agent" into a
+ * Resolves "open a new OS terminal window running h0x-cli" into a
  * concrete `{cmd, args}` for the current platform. Pure on purpose: the
  * PATH probe and the spawn both arrive as inputs, so every branch is
  * unit-reachable without touching the machine.
@@ -127,7 +127,7 @@ export function agentArgv(input: TerminalLaunchInput): readonly string[] {
  * A freshly spawned terminal starts a login shell and does **not**
  * inherit our environment, so a non-default state dir has to travel
  * inside the command line — otherwise the second window silently talks
- * to a different `~/.atomic-agent`.
+ * to a different `~/.h0x-cli`.
  */
 function posixCommandLine(input: TerminalLaunchInput): string {
   const prefix = forwardedEnv(input.env)
@@ -138,7 +138,7 @@ function posixCommandLine(input: TerminalLaunchInput): string {
 }
 
 /**
- * Every `ATOMIC_AGENT_*` variable travels into the new window, sorted so
+ * Every `H0X_CLI_*` and `ATOMIC_AGENT_*` variable travels into the new window, sorted so
  * the command line is deterministic. Forwarding only the state dir made
  * the second window silently different whenever the parent was launched
  * with a custom llama URL, grammar dir or skills dir — the exact failure
@@ -149,7 +149,10 @@ function forwardedEnv(
 ): [string, string][] {
   return Object.entries(env)
     .filter((pair): pair is [string, string] =>
-      pair[0].startsWith("ATOMIC_AGENT_") && typeof pair[1] === "string" && pair[1].length > 0,
+      (pair[0].startsWith("H0X_CLI_") ||
+        pair[0].startsWith("ATOMIC_AGENT_")) &&
+      typeof pair[1] === "string" &&
+      pair[1].length > 0,
     )
     .sort(([a], [b]) => (a < b ? -1 : 1));
 }
@@ -193,7 +196,10 @@ function posixLaunch(input: TerminalLaunchInput): TerminalLaunch | null {
   // the same directory instead.
   const command = `${posixCommandLine(input)}; exec "\${SHELL:-sh}"`;
   const preferred =
-    input.env.ATOMIC_AGENT_TERMINAL ?? input.env.TERMINAL ?? null;
+    input.env.H0X_CLI_TERMINAL ??
+    input.env.ATOMIC_AGENT_TERMINAL ??
+    input.env.TERMINAL ??
+    null;
   if (preferred && input.hasBinary(preferred)) {
     const known = LINUX_TERMINALS.find((t) => t.bin === preferred);
     return {

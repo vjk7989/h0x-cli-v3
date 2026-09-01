@@ -70,7 +70,7 @@ describe("writeDebugBundleZip", () => {
       expect(result.includedTraces).toBe(1);
       expect(result.skippedTraces).toBe(1);
       expect(result.path).toBe(
-        join(outDir, "atomic-agent-debug-2026-04-24T12-34-56.789Z.zip"),
+        join(outDir, "h0x-cli-debug-2026-04-24T12-34-56.789Z.zip"),
       );
       const zip = await JSZip.loadAsync(
         await import("node:fs/promises").then((fs) => fs.readFile(result.path)),

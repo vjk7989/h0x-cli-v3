@@ -52,6 +52,11 @@ export function buildGaiaUserPrompt(question: string, attachmentHint: string | n
     "FINAL ANSWER: <your answer>",
     "The answer must match GAIA rules: a short string, a number, or a",
     "comma-separated list — no extra explanation on that line.",
+    "Once you have sufficient evidence, stop tool use and answer immediately.",
+    "Use at most eight tool calls when possible and reserve the remaining step for `reply`.",
+    "Do not install packages or repair optional tools during the benchmark;",
+    "after one unavailable tool or decoder attempt, use another source or answer best-effort.",
+    "For .xlsx files, `os.fs.read_document` may include `[fill=...]` markers; use those before writing scripts.",
   ].join(" ");
 
   const attachment = attachmentHint

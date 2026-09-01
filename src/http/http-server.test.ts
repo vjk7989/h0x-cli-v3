@@ -26,7 +26,7 @@ describe("http-server", () => {
       const response = await fetch(`${secured.baseUrl}/v1/models`);
       expect(response.status).toBe(200);
       const body = (await response.json()) as { data: Array<{ id: string }> };
-      expect(body.data[0]?.id).toBe("atomic-agent");
+      expect(body.data[0]?.id).toBe("h0x-cli");
     } finally {
       await secured.cleanup();
     }

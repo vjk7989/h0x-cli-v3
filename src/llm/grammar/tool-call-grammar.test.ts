@@ -252,6 +252,15 @@ first thought
     expect(out.tool).toBe("os.git.status");
   });
 
+  it("normalizes Gemini function-name separator drift for known dotted tools", () => {
+    const out = parseToolCall(
+      '{"tool":"os.web$search","args":{"query":"GAIA benchmark"}}',
+    );
+
+    expect(out.tool).toBe("os.web.search");
+    expect(out.args).toEqual({ query: "GAIA benchmark" });
+  });
+
   it("parses an os.git.log tool-call", () => {
     const out = parseToolCall(
       '{"tool":"os.git.log","args":{"limit":5,"path":"src/a.ts"}}',

@@ -62,6 +62,23 @@ describe("loadSkills", () => {
     expect(winner.source).toBe("project");
   });
 
+  it("loads project skills from multiple project directories without duplicating scans", async () => {
+    const legacyProject = join(base, "legacy-project");
+    await writeSkill(project, "new-project-skill", "new project skill");
+    await writeSkill(legacyProject, "legacy-project-skill", "legacy project skill");
+
+    const result = await loadSkills({
+      globalDir: global,
+      projectDir: [project, legacyProject, join(project, ".")],
+    });
+
+    expect(result.skills.map((s) => s.manifest.name)).toEqual([
+      "legacy-project-skill",
+      "new-project-skill",
+    ]);
+    expect(result.skills.every((s) => s.source === "project")).toBe(true);
+  });
+
   it("keeps source 'global' when projectDir resolves to the same path as globalDir", async () => {
     // A relative `ATOMIC_AGENT_STATE_DIR=.atomic-agent` run from the repo
     // root collapses globalDir and projectDir onto the same absolute path.

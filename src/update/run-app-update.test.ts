@@ -57,6 +57,7 @@ describe("fork installer execution", () => {
       const fetch = vi.fn().mockRejectedValue(new Error("Unexpected installer fetch"));
       vi.stubGlobal("fetch", fetch);
       vi.stubEnv("ATOMIC_AGENT_REPO", "AtomicBot-ai/atomic-agent");
+      vi.stubEnv("H0X_CLI_REPO", "vjk7989/h0x-cli-v3");
       const failure = await runAppUpdate(options).catch((error: unknown) => error);
       expect(failure).toBeInstanceOf(AppUpdateError);
       expect(failure).toMatchObject({ message: APP_UPDATE_UNAVAILABLE });
@@ -80,7 +81,7 @@ describe("buildUpdateInvocation", () => {
   it("builds a POSIX sh invocation against install.sh", () => {
     const inv = buildUpdateInvocation({
       platform: "linux",
-      repo: "AtomicBot-ai/atomic-agent",
+      repo: "vjk7989/h0x-cli-v3",
       installDir: "/home/u/.local/bin",
       baseEnv: {},
     });
@@ -89,17 +90,18 @@ describe("buildUpdateInvocation", () => {
     expect(inv.args[1]).toContain("install.sh");
     expect(inv.args[1]).toContain("curl -fsSL");
     expect(inv.args[1]).toContain("| sh");
-    expect(inv.env.ATOMIC_AGENT_INSTALL_DIR).toBe("/home/u/.local/bin");
-    expect(inv.env.ATOMIC_AGENT_NO_PATH).toBe("1");
-    expect(inv.env.ATOMIC_AGENT_REPO).toBe("AtomicBot-ai/atomic-agent");
-    expect(inv.env.ATOMIC_AGENT_VERSION).toBeUndefined();
+    expect(inv.env.H0X_CLI_INSTALL_DIR).toBe("/home/u/.local/bin");
+    expect(inv.env.H0X_CLI_NO_PATH).toBe("1");
+    expect(inv.env.H0X_CLI_REPO).toBe("vjk7989/h0x-cli-v3");
+    expect(inv.env.H0X_CLI_VERSION).toBeUndefined();
+    expect(inv.env.ATOMIC_AGENT_REPO).toBeUndefined();
   });
 
   it("builds a Windows powershell invocation against install.ps1", () => {
     const inv = buildUpdateInvocation({
       platform: "win32",
-      repo: "AtomicBot-ai/atomic-agent",
-      installDir: "C:\\Users\\u\\AppData\\Local\\atomic-agent",
+      repo: "vjk7989/h0x-cli-v3",
+      installDir: "C:\\Users\\u\\AppData\\Local\\h0x-cli",
       baseEnv: {},
     });
     // No %SystemRoot% to resolve against: fall back to the bare name.
@@ -110,10 +112,10 @@ describe("buildUpdateInvocation", () => {
     expect(psCommand).toContain("install.ps1");
     expect(psCommand).toContain("irm ");
     expect(psCommand).toContain("| iex");
-    expect(inv.env.ATOMIC_AGENT_INSTALL_DIR).toBe(
-      "C:\\Users\\u\\AppData\\Local\\atomic-agent",
+    expect(inv.env.H0X_CLI_INSTALL_DIR).toBe(
+      "C:\\Users\\u\\AppData\\Local\\h0x-cli",
     );
-    expect(inv.env.ATOMIC_AGENT_NO_PATH).toBe("1");
+    expect(inv.env.H0X_CLI_NO_PATH).toBe("1");
   });
 
   // Regression: the user's PATH decides what a bare `powershell.exe` means,
@@ -122,8 +124,8 @@ describe("buildUpdateInvocation", () => {
   it("runs the system PowerShell by absolute path when SystemRoot is set", () => {
     const inv = buildUpdateInvocation({
       platform: "win32",
-      repo: "AtomicBot-ai/atomic-agent",
-      installDir: "C:\\Users\\u\\AppData\\Local\\atomic-agent",
+      repo: "vjk7989/h0x-cli-v3",
+      installDir: "C:\\Users\\u\\AppData\\Local\\h0x-cli",
       baseEnv: { SystemRoot: "C:\\Windows" },
     });
     expect(inv.command).toBe(
@@ -136,7 +138,7 @@ describe("buildUpdateInvocation", () => {
   it("accepts an upper-case SYSTEMROOT spelling", () => {
     const inv = buildUpdateInvocation({
       platform: "win32",
-      repo: "AtomicBot-ai/atomic-agent",
+      repo: "vjk7989/h0x-cli-v3",
       installDir: "C:\\x",
       baseEnv: { SYSTEMROOT: "D:\\Windows" },
     });
@@ -148,7 +150,7 @@ describe("buildUpdateInvocation", () => {
   it("leaves the POSIX invocation untouched when SystemRoot is present", () => {
     const inv = buildUpdateInvocation({
       platform: "darwin",
-      repo: "AtomicBot-ai/atomic-agent",
+      repo: "vjk7989/h0x-cli-v3",
       installDir: "/usr/local/bin",
       baseEnv: { SystemRoot: "C:\\Windows" },
     });
@@ -158,12 +160,12 @@ describe("buildUpdateInvocation", () => {
   it("pins a version when provided", () => {
     const inv = buildUpdateInvocation({
       platform: "win32",
-      repo: "AtomicBot-ai/atomic-agent",
+      repo: "vjk7989/h0x-cli-v3",
       installDir: "C:\\x",
       version: "v0.1.60",
       baseEnv: {},
     });
-    expect(inv.env.ATOMIC_AGENT_VERSION).toBe("v0.1.60");
+    expect(inv.env.H0X_CLI_VERSION).toBe("v0.1.60");
   });
 
   it("preserves the base environment", () => {
@@ -175,14 +177,14 @@ describe("buildUpdateInvocation", () => {
     });
     expect(inv.env.HOME).toBe("/home/u");
     expect(inv.env.PATH).toBe("/usr/bin");
-    expect(inv.env.ATOMIC_AGENT_REPO).toBe("owner/repo");
+    expect(inv.env.H0X_CLI_REPO).toBe("owner/repo");
   });
 });
 
 describe("formatInstallFailure", () => {
   it("should attach the installer's own reason to the exit code", () => {
     const message = formatInstallFailure(1, [
-      "downloading atomic-agent-win32-x64.zip from AtomicBot-ai/atomic-agent ...",
+      "downloading h0x-cli-win32-x64.zip from vjk7989/h0x-cli-v3 ...",
       "error: download failed: https://github.com/o/r/releases/latest/download/a.zip",
     ]);
     expect(message).toContain("install script exited with code 1");

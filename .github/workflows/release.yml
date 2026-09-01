@@ -1,7 +1,9 @@
-# SEA release: build per-target Node SEA CLI, sign+notarize macOS, sign Windows, upload draft GitHub Release.
-# macOS secrets (match openclaw / electron-desktop): MACOS_CSC_LINK, MACOS_CSC_KEY_PASSWORD,
+# SEA release: build per-target h0x-cli Node SEA CLI, sign+notarize macOS, sign Windows, upload draft GitHub Release.
+# macOS signing/notarization secrets must be PAVii-owned before production signing:
+# MACOS_CSC_LINK, MACOS_CSC_KEY_PASSWORD,
 # NOTARYTOOL_KEY, NOTARYTOOL_KEY_ID, NOTARYTOOL_ISSUER
-# Windows code-signing secrets (DigiCert KeyLocker, match electron-desktop): SM_API_KEY,
+# Windows code-signing secrets (DigiCert KeyLocker) must be PAVii-owned:
+# SM_API_KEY,
 # SM_CLIENT_CERT_FILE_B64, SM_CLIENT_CERT_PASSWORD, SM_CODE_SIGNING_CERT_SHA1_HASH
 
 name: Release (SEA)
@@ -74,11 +76,6 @@ jobs:
         run: npm run build
 
       - name: Bundle CLI for SEA
-        env:
-          # Enables Sentry sourcemap upload in scripts/bundle-sea.ts; absent
-          # on forked-PR runs (no secrets access), which is the intended
-          # local/dev-parity fallback (build succeeds, upload just skips).
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: npm run bundle:sea
 
       - name: Fetch runtime assets (ripgrep for host)
@@ -115,7 +112,7 @@ jobs:
         run: |
           chmod +x scripts/sign-mac-binary.sh
           ulimit -n 524288 2>/dev/null || true
-          "./scripts/sign-mac-binary.sh" "bundle/${{ matrix.slug }}/atomic-agent"
+          "./scripts/sign-mac-binary.sh" "bundle/${{ matrix.slug }}/h0x-cli"
 
       - name: Notarize (macOS)
         if: runner.os == 'macOS'
@@ -134,7 +131,7 @@ jobs:
             echo "NOTARYTOOL_KEY not set; skipping notarization"
             exit 0
           fi
-          "./scripts/notarize-mac-binary.sh" "bundle/${{ matrix.slug }}/atomic-agent"
+          "./scripts/notarize-mac-binary.sh" "bundle/${{ matrix.slug }}/h0x-cli"
 
       # --- Windows code signing (DigiCert KeyLocker) -----------------------------
       # We sign the SOURCE files BEFORE `Package bundle` copies them into the zip.
@@ -212,7 +209,7 @@ jobs:
           $targets = @()
 
           # SEA binary — signed in place; package-bundle.ts archives this dir as-is.
-          $sea = "bundle\win32-x64\atomic-agent.exe"
+          $sea = "bundle\win32-x64\h0x-cli.exe"
           if (-not (Test-Path $sea)) {
             Write-Error "SEA binary not found at $sea"
             exit 1
@@ -242,7 +239,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-${{ matrix.slug }}
-          path: bundle/atomic-agent-${{ matrix.slug }}*
+          path: bundle/h0x-cli-${{ matrix.slug }}*
           if-no-files-found: error
           retention-days: 14
 

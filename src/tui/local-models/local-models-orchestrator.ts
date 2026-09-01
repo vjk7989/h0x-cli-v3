@@ -213,7 +213,7 @@ export class LocalModelsOrchestrator {
     this.activeTimer = null;
     this.stopLogsAutoRefresh();
     // Best-effort tear down the daemon we started. Anything the user
-    // launched via `atomic-agent models start` in another terminal has
+    // launched via `h0x-cli models start` in another terminal has
     // its own pid file and is not our responsibility.
     //
     // Awaited (not fire-and-forget): the daemon is spawned `detached`, so
@@ -1673,7 +1673,7 @@ export class LocalModelsOrchestrator {
    * Build an `EmbeddingDaemonInfo` snapshot for the panel. Reads live
    * pid/health from `getEmbeddingDaemonStatus` so the indicator stays
    * accurate even when the daemon was started outside the TUI (e.g.
-   * `atomic-agent models start` in another terminal).
+   * `h0x-cli models start` in another terminal).
    */
   private async collectEmbeddingDaemonInfo(
     dataDir: string,

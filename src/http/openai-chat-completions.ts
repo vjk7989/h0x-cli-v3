@@ -27,10 +27,12 @@ import {
   buildUsagePayload,
 } from "./openai-chunks.js";
 
+import { APP_MACHINE_NAME } from "../brand/index.js";
+
 export const SESSION_ID_HEADER = "X-Atomic-Session-Id";
 export const COMPLETION_ID_HEADER = "X-Atomic-Completion-Id";
 /**
- * Opt-in toggle for atomic-agent-specific SSE extensions on the streaming
+ * Opt-in toggle for h0x-cli-specific SSE extensions on the streaming
  * chat-completions endpoint. When absent, the stream is a strict subset of
  * OpenAI's `chat.completion.chunk` protocol so off-the-shelf clients (e.g.
  * Vercel AI SDK) can validate every `data:` frame against their zod schemas
@@ -38,7 +40,7 @@ export const COMPLETION_ID_HEADER = "X-Atomic-Completion-Id";
  * `usage`). Atomic-native consumers opt in to keep the richer stream.
  */
 export const EXTENSIONS_HEADER = "X-Atomic-Extensions";
-const MODEL_DEFAULT = "atomic-agent";
+const MODEL_DEFAULT = APP_MACHINE_NAME;
 
 /**
  * Body of a `POST /v1/chat/completions` request. Only the OpenAI

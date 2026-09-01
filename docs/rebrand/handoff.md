@@ -178,3 +178,119 @@ unrun. The prior full-suite failure evidence remains in
 
 This handoff role owns only `docs/rebrand/handoff.md`. It updated this document;
 it ran no tests, production code, builds, pushes, or service calls.
+
+## Telemetry policy update
+
+Updated on 2026-09-01 for the approved telemetry-policy patch. The selected policy
+is PAVii PostHog EU Cloud, enabled by default with opt-out through the existing
+`analytics.enabled` flag and `/privacy analytics off`. Source should contain only
+the public PostHog ingestion token and `https://eu.i.posthog.com`; never commit
+or document the pasted private PostHog API key, and rotate it in PostHog.
+
+Sentry remains disabled by `SENTRY_DSN = "PLACEHOLDER"` until a future DSN,
+retention policy, and error-reporting policy are provided. Reference
+[decisions.md](decisions.md#telemetry-policy-pavii-posthog),
+[endpoint ledger](../network-audit/endpoint-ledger.md), and
+[ownership](../network-audit/ownership.md) rather than duplicating details.
+
+## Connector ownership rebrand update
+
+Updated on 2026-09-01 for the approved connector-identity patch. The current
+source work centralizes first-party identity in `src/brand/identity.ts` and wires
+it into OpenRouter attribution, AI/ML API source attribution, MCP initialize
+client info, local model download User-Agents, Hugging Face helpers, GitHub skill
+hub requests, and ClawHub requests. Provider names, endpoints, compatibility
+aliases, storage/config/env keys, MCP server names, and tool namespaces are not
+renamed by this stage.
+
+Reference [decisions.md](decisions.md#connector-ownership-rebrand),
+[endpoint ledger](../network-audit/endpoint-ledger.md), and
+[ownership](../network-audit/ownership.md) rather than duplicating connector
+details here. The separate test-writing agent added focused expectations for
+OpenRouter, AI/ML API, MCP, local downloader, backend installer, Hugging Face,
+GitHub skill hub, ClawHub, wizard verification, and loopback audit coverage.
+Runner results, typecheck, and build status should be read from
+[verification](../network-audit/verification.md) after the parent records final
+commands.
+
+Suggested skills remain unchanged: use codebase-memory MCP for discovery, and
+use `understand-anything:understand-diff` or `understand-anything:understand-explain`
+only for later targeted review of this patch.
+
+## Deep config/storage rebrand update
+
+Updated on 2026-09-01 for Stage 1 of the rebrand roadmap. New default state
+uses `~/.h0x-cli`, legacy default `~/.atomic-agent` is copied forward once
+without deleting old data, and matching `H0X_CLI_*` env vars now take precedence
+over legacy `ATOMIC_AGENT_*` names. New project skills live under
+`.h0x-cli/skills`; legacy `.atomic-agent/skills` remains readable through the
+multi-project-dir skill loader.
+
+Reference [decisions.md](decisions.md#deep-config-and-storage-rebrand) for the
+code map and exact policy. Focused Stage 1 verification passed: 241 tests plus
+two skips across nine files, `tsc -p tsconfig.json --noEmit`, and the build
+command. A Windows-only `spawn ls ENOENT` fixture in `bootstrap.test.ts` was
+classified by the failure-analysis agent as unrelated to Stage 1 and fixed with
+a portable `process.execPath` test command before rerun.
+
+Next work should start Stage 2 package/release preparation only after reviewing
+the current diff. Do not publish packages, create releases, sign artifacts,
+upload source maps, or contact authenticated services. The older full-suite
+blocker remains separate and is not cleared by the Stage 1 focused gate.
+
+## Package/release preparation update
+
+Updated on 2026-09-01 for Stage 2 of the rebrand roadmap. Release defaults now
+target `vjk7989/h0x-cli-v3`, bundle archives/binaries use `h0x-cli`, installers
+install `h0x-cli` while preserving the intentional `atomic-agent` and `atag`
+aliases, and bundle README text includes TEAM PAVii.Ai, `https://pavii.tech`,
+and the h0x GitHub repo. The dormant self-update invocation path uses h0x
+environment names and h0x installer URLs, but update checks and update actions
+remain disabled until real h0x artifacts exist and are explicitly approved.
+
+Sentry source-map upload is disabled for release prep: the workflow no longer
+passes `SENTRY_AUTH_TOKEN`, and `scripts/bundle-sea.ts` no longer configures
+the old upstream org/project. Future upload requires PAVii-owned Sentry
+credentials and policy.
+
+Reference [decisions.md](decisions.md#package-and-release-preparation) for the
+code map and exact policy. Focused Stage 2 verification passed locally: 170
+tests across five files, `npx tsc -p tsconfig.json --noEmit`, `npm run build`,
+and `git diff --check` with line-ending warnings only. Check the independent
+test-running agent's final status before treating verification as complete.
+
+Stage 3 product features should not start while publication remains gated by
+real h0x release artifacts and the older full-suite blocker. Good next work is
+to resolve the known full-suite failures or produce actual h0x release
+artifacts in a dry-run-only flow; do not publish, sign, upload source maps, or
+contact authenticated production services without a separate explicit approval.
+
+## Deep CLI core and backend fork update
+
+Updated on 2026-09-01 for the compatibility-first deep rebrand pass. The stable
+system prompt now identifies as `h0x-cli`, built by `TEAM PAVii.Ai`, answers
+identity questions as `h0x-cli by PAVii.Ai`, and includes the YAGNI rule. This
+is an intentional stable-prefix/KV-cache invalidation; prompt ordering, grammar,
+reasoning framing, and runtime behavior should remain intact.
+
+Active user-facing surfaces were rebranded in Telegram copy, debug bundle names,
+HTTP health/model identity, local model hints, sidecar hints, serve/help text,
+uninstall paths, README/PROMPT/BUNDLING, and `.env.example`. Compatibility
+strings remain for legacy commands/env/state/protocol fields. Read
+[deep-rebrand-ledger.md](deep-rebrand-ledger.md) before changing any remaining
+`atomic-agent` hit.
+
+Backend fork prep lives outside this monorepo at
+`G:\h0xi\h0x-llama-cpp-turboquant-nightly`. Remotes are `upstream` for
+`AtomicBot-ai/atomic-llama-cpp-turboquant-nightly` and `origin` for
+`vjk7989/h0x-llama-cpp-turboquant-nightly`. Only README fork wrapper and
+TurboQuant release workflow/artifact labels were changed. Backend source,
+kernels, quantization, APIs, build flags, model formats, and runtime defaults
+were not changed.
+
+Focused CLI gate passed locally with 230 tests across 15 files under the pinned
+G-drive Node runtime. Typecheck, build, backend source scan, and full-suite
+verification also passed: the full suite reported 627 passing test files, 6653
+passing tests, and 5 skips. `git diff --check` passed for both repos with
+line-ending warnings only. Do not point h0x-cli managed backend downloads at
+the PAVii backend fork until dry-run artifacts exist and are verified.

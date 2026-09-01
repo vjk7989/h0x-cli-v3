@@ -17,10 +17,24 @@ import { setCustomLocalModels } from "../local-llm/models-catalog.js";
 import { loadDotenvFromStateDir } from "./load-dotenv.js";
 import { resolveLlmProviderApiKey } from "./resolve-llm-api-key.js";
 import type { UserLlmFileConfig } from "./llm-config.js";
+import {
+  LEGACY_STATE_DIR_DEFAULT,
+  maybeCopyLegacyStateDir,
+} from "./state-dir-migration.js";
 
 function readEnv(key: string): string | undefined {
+  const h0xKey = h0xEnvKeyFor(key);
+  if (h0xKey) {
+    const h0xValue = process.env[h0xKey];
+    if (h0xValue && h0xValue.length > 0) return h0xValue;
+  }
   const value = process.env[key];
   return value && value.length > 0 ? value : undefined;
+}
+
+function h0xEnvKeyFor(key: string): string | null {
+  if (!key.startsWith("ATOMIC_AGENT_")) return null;
+  return `H0X_CLI_${key.slice("ATOMIC_AGENT_".length)}`;
 }
 
 function readInt(key: string, fallback: number): number {
@@ -62,6 +76,16 @@ function resolvePath(raw: string | undefined, fallback: string): string {
   }
   if (isAbsolute(value)) return value;
   return resolve(process.cwd(), value);
+}
+
+function resolveStateDir(): string {
+  const explicit = readEnv("ATOMIC_AGENT_STATE_DIR");
+  if (explicit) return resolvePath(explicit, ENV_DEFAULTS.STATE_DIR);
+
+  const nextStateDir = resolvePath(undefined, ENV_DEFAULTS.STATE_DIR);
+  const legacyStateDir = resolvePath(undefined, LEGACY_STATE_DIR_DEFAULT);
+  maybeCopyLegacyStateDir({ legacyStateDir, nextStateDir });
+  return nextStateDir;
 }
 
 // Asset directories (e.g. `grammars/`) ship next to the Node SEA binary in
@@ -107,10 +131,7 @@ function resolveAssetDir(envKey: string, relativeDefault: string): string {
  * variables.
  */
 export function loadConfig(): AtomicAgentConfig {
-  const stateDir = resolvePath(
-    readEnv("ATOMIC_AGENT_STATE_DIR"),
-    ENV_DEFAULTS.STATE_DIR,
-  );
+  const stateDir = resolveStateDir();
   const dotenv = loadDotenvFromStateDir(stateDir);
   const userConfigFile = getUserConfigPath(stateDir);
   const user = ensureUserConfigFileSync(userConfigFile);

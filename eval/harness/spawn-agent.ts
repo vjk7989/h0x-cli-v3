@@ -6,6 +6,8 @@ import { fileURLToPath } from "node:url";
 
 const HERE = fileURLToPath(new URL(".", import.meta.url));
 const REPO_ROOT = resolve(HERE, "..", "..");
+const EVAL_CACHE_DIR = resolve(REPO_ROOT, "tmp", "cache");
+const LOCAL_BIN_DIR = resolve(REPO_ROOT, ".local", "bin");
 const TSX_BIN = resolve(REPO_ROOT, "node_modules", ".bin", "tsx");
 const DIST_CLI = resolve(REPO_ROOT, "dist", "cli", "index.js");
 const SRC_CLI = resolve(REPO_ROOT, "src", "cli", "index.ts");
@@ -81,12 +83,7 @@ export function spawnAgentRun(opts: SpawnAgentOptions): Promise<SpawnAgentResult
     const startedAt = Date.now();
     const child = spawn(command, args, {
       cwd: REPO_ROOT,
-      env: {
-        ...process.env,
-        ATOMIC_AGENT_STATE_DIR: opts.stateDir,
-        FORCE_COLOR: "0",
-        NO_COLOR: "1",
-      },
+      env: buildSpawnAgentEnv(opts.stateDir),
       stdio: ["pipe", "pipe", "pipe"],
     });
 
@@ -126,4 +123,20 @@ export function spawnAgentRun(opts: SpawnAgentOptions): Promise<SpawnAgentResult
     child.stdin.write(`${opts.prompt}\n`);
     child.stdin.end();
   });
+}
+
+export function buildSpawnAgentEnv(stateDir: string): NodeJS.ProcessEnv {
+  return {
+    ...process.env,
+    H0X_CLI_STATE_DIR: stateDir,
+    ATOMIC_AGENT_STATE_DIR: stateDir,
+    H0X_CLI_EVAL_DISABLE_PACKAGE_INSTALLS: "1",
+    H0X_CLI_EVAL_DISABLE_SESSION_SAVE: "1",
+    H0X_CLI_EVAL_EXIT_GRACE_MS: "250",
+    PYTHONIOENCODING: "utf-8",
+    XDG_CACHE_HOME: EVAL_CACHE_DIR,
+    PATH: `${LOCAL_BIN_DIR};${process.env.PATH ?? ""}`,
+    FORCE_COLOR: "0",
+    NO_COLOR: "1",
+  };
 }

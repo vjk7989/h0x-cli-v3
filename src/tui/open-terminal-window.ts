@@ -8,7 +8,7 @@ import {
 } from "./build-terminal-launch.js";
 
 /**
- * Opens a detached OS terminal window running a fresh `atomic-agent tui`
+ * Opens a detached OS terminal window running a fresh `h0x-cli tui`
  * (Ctrl+N / `/window`). The spawn is injectable so the unit tests never
  * pop a window, and every failure comes back as a value — a broken
  * emulator must not take the render loop down with it.
@@ -125,7 +125,7 @@ export async function openAgentTerminalWindow(
     return {
       ok: false,
       reason:
-        "no terminal emulator found — set $ATOMIC_AGENT_TERMINAL to the one you use",
+        "no terminal emulator found — set $H0X_CLI_TERMINAL (or legacy $ATOMIC_AGENT_TERMINAL) to the one you use",
     };
   }
   return await openTerminalWindow(launch, { cwd: input.cwd, ...options });

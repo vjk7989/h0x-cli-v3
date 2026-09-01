@@ -84,7 +84,9 @@ export class ToolCallParseError extends Error {
 }
 
 export function loadToolCallGrammar(): string {
-  const override = process.env.ATOMIC_AGENT_TOOL_CALL_GRAMMAR;
+  const override =
+    process.env.H0X_CLI_TOOL_CALL_GRAMMAR ??
+    process.env.ATOMIC_AGENT_TOOL_CALL_GRAMMAR;
   if (typeof override === "string" && override.length > 0) {
     return readFileSync(override, "utf8");
   }
@@ -100,7 +102,7 @@ export function loadToolCallGrammar(): string {
     return fromSea;
   }
   throw new Error(
-    "tool-call.gbnf not found (set ATOMIC_AGENT_TOOL_CALL_GRAMMAR, install grammars next to the binary, or run from a dev tree)",
+    "tool-call.gbnf not found (set H0X_CLI_TOOL_CALL_GRAMMAR or legacy ATOMIC_AGENT_TOOL_CALL_GRAMMAR, install grammars next to the binary, or run from a dev tree)",
   );
 }
 
@@ -242,10 +244,14 @@ function readToolName(payload: Record<string, unknown>): string {
   for (const key of ["tool", "name", "action"]) {
     const value = payload[key];
     if (typeof value === "string" && value.trim().length > 0) {
-      return value.trim();
+      return normalizeProviderToolName(value.trim());
     }
   }
   return "";
+}
+
+function normalizeProviderToolName(name: string): string {
+  return name.replace(/\$/g, ".");
 }
 
 function readArgs(payload: Record<string, unknown>): Record<string, unknown> {

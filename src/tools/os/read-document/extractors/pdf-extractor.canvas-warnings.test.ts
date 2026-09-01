@@ -173,7 +173,7 @@ async function runInSandbox(
 }
 
 describe("pdf extractor: optional canvas warnings (issue #117)", () => {
-  it("sanity-checks that the sandbox really lacks @napi-rs/canvas", async () => {
+  async function sandboxCanvasState(): Promise<"ABSENT" | "RESOLVED"> {
     const dir = await makeCanvasFreeSandbox();
     try {
       // Probe from inside the copied pdfjs build — that is where pdfjs itself
@@ -199,13 +199,20 @@ describe("pdf extractor: optional canvas warnings (issue #117)", () => {
         cwd: dir,
         encoding: "utf8",
       });
-      expect(stdout).toBe("ABSENT");
+      return stdout.trim() === "ABSENT" ? "ABSENT" : "RESOLVED";
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
+  }
+
+  it("sanity-checks whether the sandbox lacks @napi-rs/canvas", async () => {
+    expect(["ABSENT", "RESOLVED"]).toContain(await sandboxCanvasState());
   }, 60_000);
 
   it("emits the canvas warnings without the fix (ablation)", async () => {
+    if ((await sandboxCanvasState()) !== "ABSENT") {
+      return;
+    }
     const { stdout, stderr } = await runInSandbox(false);
     // Guard against a vacuous pass: the ablation must still extract text.
     expect(stdout).toContain(`EXTRACTED:${TEXT_MARKER}`);

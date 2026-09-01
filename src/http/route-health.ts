@@ -1,4 +1,5 @@
 import { checkLlamaServer } from "../llm/llama-server-health.js";
+import { APP_MACHINE_NAME } from "../brand/index.js";
 import { sendJson, type HttpHandler } from "./request-context.js";
 
 /**
@@ -31,7 +32,7 @@ export function createHealthHandler(): HttpHandler {
     const degraded = !llama.reachable;
     sendJson(res, degraded && strict ? 503 : 200, {
       status: degraded ? "degraded" : "ok",
-      runtime: "atomic-agent",
+      runtime: APP_MACHINE_NAME,
       workingDir: ctx.runtime.capabilities.workingDir,
       llama: {
         url: ctx.runtime.config.localModels.url,

@@ -1,7 +1,7 @@
 import { createReadStream } from "node:fs";
 import { resolve } from "node:path";
 
-import { getConfig } from "../config/index.js";
+import { ENV_DEFAULTS, getConfig } from "../config/index.js";
 import { buildCapabilities } from "../prompt/capabilities.js";
 import { DEFAULT_TOOL_DESCRIPTORS } from "../prompt/tool-descriptors.js";
 import { SkillRegistry } from "../skills/skill-registry.js";
@@ -134,7 +134,10 @@ async function handleReplay(args: string[]): Promise<number> {
 
   const skillRegistry = new SkillRegistry({
     globalDir: config.paths.globalSkillsDir,
-    projectDir: joinPath(workingDir, config.paths.projectSkillsDirName),
+    projectDir: [
+      joinPath(workingDir, config.paths.projectSkillsDirName),
+      joinPath(workingDir, ENV_DEFAULTS.LEGACY_PROJECT_SKILLS_DIR),
+    ],
   });
   await skillRegistry.refresh();
   const skillCatalog = buildSkillCatalog(skillRegistry.list());

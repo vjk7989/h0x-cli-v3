@@ -28,10 +28,23 @@ describe("loadConfig", () => {
   afterEach(() => {
     rmSync(stateDir, { recursive: true, force: true });
     delete process.env.ATOMIC_AGENT_STATE_DIR;
+    delete process.env.H0X_CLI_STATE_DIR;
     delete process.env.ATOMIC_AGENT_LLAMA_API_KEY;
+    delete process.env.H0X_CLI_LLAMA_API_KEY;
     delete process.env.ATOMIC_AGENT_LLAMA_MAX_TOKENS;
+    delete process.env.H0X_CLI_LLAMA_MAX_TOKENS;
     delete process.env.ATOMIC_AGENT_BROWSER_CHANNEL;
+    delete process.env.H0X_CLI_BROWSER_CHANNEL;
     delete process.env.ATOMIC_AGENT_GRAMMARS_DIR;
+    delete process.env.H0X_CLI_GRAMMARS_DIR;
+    delete process.env.ATOMIC_AGENT_REPO;
+    delete process.env.H0X_CLI_REPO;
+    delete process.env.ATOMIC_AGENT_TASKS_ENABLED;
+    delete process.env.H0X_CLI_TASKS_ENABLED;
+    delete process.env.ATOMIC_AGENT_BROWSER_CDP_URL;
+    delete process.env.H0X_CLI_BROWSER_CDP_URL;
+    delete process.env.ATOMIC_AGENT_STABLE_PREFIX_SALT;
+    delete process.env.H0X_CLI_STABLE_PREFIX_SALT;
     delete process.env.ATOMIC_LOADCONFIG_TEST_KEY;
     resetConfigCache();
     vi.restoreAllMocks();
@@ -86,6 +99,13 @@ describe("loadConfig", () => {
     expect(loadConfig().localModels.completionMaxTokens).toBe(16_384);
   });
 
+  it("lets H0X_CLI_LLAMA_MAX_TOKENS override the legacy env var", () => {
+    process.env.ATOMIC_AGENT_LLAMA_MAX_TOKENS = "8192";
+    process.env.H0X_CLI_LLAMA_MAX_TOKENS = "32768";
+    resetConfigCache();
+    expect(loadConfig().localModels.completionMaxTokens).toBe(32_768);
+  });
+
   it("reads values from an existing user config file", () => {
     writeUserConfigFileSync(getUserConfigPath(stateDir), {
       ...USER_CONFIG_DEFAULTS,
@@ -118,6 +138,30 @@ describe("loadConfig", () => {
     expect(config.browser.channel).toBe("msedge");
   });
 
+  it("lets H0X_CLI env vars override legacy equivalents for non-user-facing knobs", () => {
+    process.env.ATOMIC_AGENT_LLAMA_API_KEY = "legacy-secret";
+    process.env.H0X_CLI_LLAMA_API_KEY = "h0x-secret";
+    process.env.ATOMIC_AGENT_BROWSER_CHANNEL = "chrome";
+    process.env.H0X_CLI_BROWSER_CHANNEL = "msedge";
+    resetConfigCache();
+
+    const config = loadConfig();
+
+    expect(config.localModels.apiKey).toBe("h0x-secret");
+    expect(config.browser.channel).toBe("msedge");
+  });
+
+  it("keeps legacy ATOMIC_AGENT env vars working when H0X_CLI values are absent", () => {
+    process.env.ATOMIC_AGENT_LLAMA_API_KEY = "legacy-secret";
+    process.env.ATOMIC_AGENT_BROWSER_CHANNEL = "chromium";
+    resetConfigCache();
+
+    const config = loadConfig();
+
+    expect(config.localModels.apiKey).toBe("legacy-secret");
+    expect(config.browser.channel).toBe("chromium");
+  });
+
   it("paths point at the state dir and config file", () => {
     const config = loadConfig();
     expect(config.paths.stateDir).toBe(stateDir);
@@ -126,6 +170,52 @@ describe("loadConfig", () => {
       join(stateDir, "browser-profile"),
     );
     expect(config.paths.tracesDir).toBe(join(stateDir, "traces"));
+  });
+
+  it("uses H0X_CLI_STATE_DIR before ATOMIC_AGENT_STATE_DIR", () => {
+    const h0xStateDir = mkdtempSync(join(tmpdir(), "h0x-load-"));
+    try {
+      process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+      process.env.H0X_CLI_STATE_DIR = h0xStateDir;
+      resetConfigCache();
+
+      const config = loadConfig();
+
+      expect(config.paths.stateDir).toBe(h0xStateDir);
+      expect(config.paths.userConfigFile).toBe(getUserConfigPath(h0xStateDir));
+      expect(existsSync(getUserConfigPath(h0xStateDir))).toBe(true);
+      expect(existsSync(getUserConfigPath(stateDir))).toBe(false);
+    } finally {
+      rmSync(h0xStateDir, { recursive: true, force: true });
+    }
+  });
+
+  it("reads legacy state data without overwriting an existing h0x state dir", () => {
+    const h0xStateDir = mkdtempSync(join(tmpdir(), "h0x-load-"));
+    try {
+      writeUserConfigFileSync(getUserConfigPath(stateDir), {
+        ...USER_CONFIG_DEFAULTS,
+        log: { level: "debug" },
+      });
+      writeUserConfigFileSync(getUserConfigPath(h0xStateDir), {
+        ...USER_CONFIG_DEFAULTS,
+        log: { level: "warn" },
+      });
+      process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+      process.env.H0X_CLI_STATE_DIR = h0xStateDir;
+      resetConfigCache();
+
+      const config = loadConfig();
+
+      expect(config.paths.stateDir).toBe(h0xStateDir);
+      expect(config.log.level).toBe("warn");
+      const legacyOnDisk = JSON.parse(
+        readFileSync(getUserConfigPath(stateDir), "utf8"),
+      );
+      expect(legacyOnDisk.log.level).toBe("debug");
+    } finally {
+      rmSync(h0xStateDir, { recursive: true, force: true });
+    }
   });
 
   it("tracing.trace defaults expose the per-session NDJSON dir", () => {
@@ -239,5 +329,58 @@ describe("loadConfig", () => {
     process.env.ATOMIC_AGENT_GRAMMARS_DIR = override;
     resetConfigCache();
     expect(loadConfig().paths.grammarsDir).toBe(override);
+  });
+
+  it("lets H0X_CLI_GRAMMARS_DIR override the legacy grammars env var", () => {
+    const legacy = join(stateDir, "legacy-grammars");
+    const h0x = join(stateDir, "h0x-grammars");
+    mkdirSync(legacy);
+    mkdirSync(h0x);
+    process.env.ATOMIC_AGENT_GRAMMARS_DIR = legacy;
+    process.env.H0X_CLI_GRAMMARS_DIR = h0x;
+    resetConfigCache();
+    expect(loadConfig().paths.grammarsDir).toBe(h0x);
+  });
+
+  it("lets H0X_CLI env vars override remaining legacy-only runtime knobs", () => {
+    process.env.ATOMIC_AGENT_REPO = "AtomicBot-ai/atomic-agent";
+    process.env.H0X_CLI_REPO = "vjk7989/h0x-cli-v3";
+    process.env.ATOMIC_AGENT_TASKS_ENABLED = "0";
+    process.env.H0X_CLI_TASKS_ENABLED = "1";
+    process.env.ATOMIC_AGENT_BROWSER_CDP_URL = "http://legacy.example/cdp";
+    process.env.H0X_CLI_BROWSER_CDP_URL = "http://h0x.example/cdp";
+    resetConfigCache();
+
+    const config = loadConfig();
+
+    expect(config.update.repo).toBe("vjk7989/h0x-cli-v3");
+    expect(config.tasks.enabled).toBe(true);
+    expect(config.browser.cdpUrl).toBe("http://h0x.example/cdp");
+  });
+
+  it("keeps legacy env vars working for update, task, and browser knobs", () => {
+    process.env.ATOMIC_AGENT_REPO = "legacy/repo";
+    process.env.ATOMIC_AGENT_TASKS_ENABLED = "0";
+    process.env.ATOMIC_AGENT_BROWSER_CDP_URL = "http://legacy.example/cdp";
+    resetConfigCache();
+
+    const config = loadConfig();
+
+    expect(config.update.repo).toBe("legacy/repo");
+    expect(config.tasks.enabled).toBe(false);
+    expect(config.browser.cdpUrl).toBe("http://legacy.example/cdp");
+  });
+
+  it("uses the h0x stable-prefix salt by default and lets H0X_CLI override legacy", () => {
+    resetConfigCache();
+    expect(loadConfig().agent.stablePrefixHashSalt).toBe("h0x-cli-v1");
+
+    process.env.ATOMIC_AGENT_STABLE_PREFIX_SALT = "legacy-salt";
+    resetConfigCache();
+    expect(loadConfig().agent.stablePrefixHashSalt).toBe("legacy-salt");
+
+    process.env.H0X_CLI_STABLE_PREFIX_SALT = "h0x-salt";
+    resetConfigCache();
+    expect(loadConfig().agent.stablePrefixHashSalt).toBe("h0x-salt");
   });
 });

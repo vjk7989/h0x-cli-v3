@@ -101,11 +101,11 @@ export function buildUpdateInvocation(params: {
   const baseEnv = params.baseEnv ?? process.env;
   const env: NodeJS.ProcessEnv = {
     ...baseEnv,
-    ATOMIC_AGENT_REPO: repo,
-    ATOMIC_AGENT_INSTALL_DIR: installDir,
+    H0X_CLI_REPO: repo,
+    H0X_CLI_INSTALL_DIR: installDir,
     // The PATH entry already exists on an upgrade; don't touch it.
-    ATOMIC_AGENT_NO_PATH: "1",
-    ...(version ? { ATOMIC_AGENT_VERSION: version } : {}),
+    H0X_CLI_NO_PATH: "1",
+    ...(version ? { H0X_CLI_VERSION: version } : {}),
   };
 
   if (platform === "win32") {

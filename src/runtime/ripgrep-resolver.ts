@@ -5,7 +5,8 @@ import { delimiter, dirname, join } from "node:path";
  * Runtime resolver for the `rg` (ripgrep) binary used by `os.fs.grep`.
  *
  * Lookup order:
- *   1. `process.env.ATOMIC_AGENT_RG_PATH` — explicit override (tests, CI,
+ *   1. `process.env.H0X_CLI_RG_PATH`, then legacy
+ *      `process.env.ATOMIC_AGENT_RG_PATH` — explicit override (tests, CI,
  *      exotic layouts).
  *   2. `<dirname(process.execPath)>/vendor/rg[.exe]` — the sidecar file we
  *      ship alongside the SEA bundle.
@@ -14,8 +15,8 @@ import { delimiter, dirname, join } from "node:path";
  *   4. Plain `rg` / `rg.exe` resolved via `$PATH`.
  *
  * Results are memoised for the process lifetime. Call `resetRipgrepCache()`
- * from tests to force re-resolution after mutating `process.env.PATH` or
- * `ATOMIC_AGENT_RG_PATH`.
+ * from tests to force re-resolution after mutating `process.env.PATH`,
+ * `H0X_CLI_RG_PATH`, or `ATOMIC_AGENT_RG_PATH`.
  */
 
 export interface RipgrepResolverOptions {
@@ -47,7 +48,7 @@ export function resolveRipgrepPath(
 
   const binaryName = platform === "win32" ? "rg.exe" : "rg";
 
-  const override = env.ATOMIC_AGENT_RG_PATH;
+  const override = env.H0X_CLI_RG_PATH ?? env.ATOMIC_AGENT_RG_PATH;
   if (typeof override === "string" && override.length > 0) {
     if (fileExists(override)) {
       const result = override;
@@ -120,4 +121,4 @@ function lookupOnPath(
 }
 
 export const RIPGREP_MISSING_HINT =
-  "ripgrep (`rg`) was not found. Install it via `brew install ripgrep`, `apt install ripgrep`, or `choco install ripgrep`, or set ATOMIC_AGENT_RG_PATH to a binary path.";
+  "ripgrep (`rg`) was not found. Install it via `brew install ripgrep`, `apt install ripgrep`, or `choco install ripgrep`, or set H0X_CLI_RG_PATH (or legacy ATOMIC_AGENT_RG_PATH) to a binary path.";

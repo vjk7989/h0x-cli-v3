@@ -47,10 +47,40 @@ export function appendJsonlRow(
   mkdirSync(dirname(path), { recursive: true });
   const record = {
     at: new Date().toISOString(),
-    row,
-    result,
+    row: sanitizeGaiaRow(row),
+    result: sanitizeResult(result),
+    errorCategory: classifyError(result),
   };
   appendFileSync(path, `${JSON.stringify(record)}\n`, "utf8");
+}
+
+function sanitizeGaiaRow(row: GaiaRow): Pick<GaiaRow, "task_id" | "Level" | "file_name" | "file_path"> {
+  return {
+    task_id: row.task_id,
+    Level: row.Level,
+    file_name: row.file_name,
+    file_path: row.file_path,
+  };
+}
+
+function sanitizeResult(result: GaiaAgentRunResult): Omit<GaiaAgentRunResult, "rawReply"> {
+  const { rawReply: _rawReply, ...safeResult } = result;
+  return safeResult;
+}
+
+function classifyError(result: GaiaAgentRunResult): string | null {
+  const error = result.error;
+  if (error) {
+    if (/\b429\b|rate-?limit/i.test(error)) return "provider_rate_limit";
+    if (/max_steps_reached/i.test(error)) return "max_steps_reached";
+    if (/timeout/i.test(error)) return "timeout";
+    if (/^process_exit_/i.test(error)) return "process_exit";
+    if (/invalid_final_format/i.test(error)) return "invalid_final_format";
+    return "run_error";
+  }
+  if (!result.rawReply.trim() && !result.extractedAnswer.trim()) return "blank_reply";
+  if (result.metrics.exitCode === 0 && result.metrics.stepCount === null) return "missing_trace";
+  return null;
 }
 
 function csvEscape(value: string): string {

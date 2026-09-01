@@ -248,6 +248,25 @@ interface ChatLoopOptions {
   controller: AbortController;
 }
 
+function writeAndDrain(
+  stream: NodeJS.WriteStream,
+  text: string,
+): Promise<void> {
+  return new Promise((resolveWrite, rejectWrite) => {
+    stream.write(text, (error?: Error | null) => {
+      if (error) {
+        rejectWrite(error);
+        return;
+      }
+      resolveWrite();
+    });
+  });
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolveDelay) => setTimeout(resolveDelay, ms));
+}
+
 /**
  * Read messages line-by-line from stdin and feed them through
  * `runtime.runTurn`. Assistant replies go to stdout (so a pipe captures
@@ -294,22 +313,40 @@ async function runChatLoop(opts: ChatLoopOptions): Promise<SessionState> {
       // file (`tool_invocation.args.text`); stdout is purely a sync
       // channel, so flattening newlines does not lose data.
       const singleLine = reply.replace(/\r?\n/g, " ");
-      process.stdout.write(`${singleLine}\n`);
+      await writeAndDrain(process.stdout, `${singleLine}\n`);
     } else {
       // No assistant_reply was emitted this turn (failed / cancelled /
       // max_steps with no reply). Still write a single newline so the
       // "exactly one stdout line per turn" invariant holds for any
       // line-synchronised driver — the diagnostic detail already went
       // to stderr via formatAgentEvent.
-      process.stdout.write("\n");
+      await writeAndDrain(process.stdout, "\n");
     }
   };
 
+  const isInteractive = process.stdin.isTTY === true;
   const rl = createInterface({
     input: process.stdin,
     output: process.stderr,
-    terminal: process.stdin.isTTY === true,
+    terminal: isInteractive,
+    crlfDelay: Infinity,
   });
+
+  const handleLine = async (line: string): Promise<boolean> => {
+    const trimmed = line.trim();
+    if (trimmed.length === 0) return true;
+    if (trimmed === "/quit" || trimmed === "/exit") return false;
+    if (trimmed === "/abort") {
+      opts.controller.abort();
+      return false;
+    }
+    await driveTurn(trimmed);
+    return true;
+  };
+
+  const closeReadline = (): void => {
+    if ((rl as { closed?: boolean }).closed !== true) rl.close();
+  };
 
   const ask = (rli: ReadlineInterface): Promise<string | null> =>
     new Promise((resolvePrompt, rejectPrompt) => {
@@ -338,22 +375,26 @@ async function runChatLoop(opts: ChatLoopOptions): Promise<SessionState> {
     });
 
   try {
+    if (!isInteractive) {
+      for await (const line of rl) {
+        if (opts.controller.signal.aborted) break;
+        if (session.status === "completed") break;
+        const shouldContinue = await handleLine(line);
+        if (!shouldContinue) break;
+      }
+      return session;
+    }
+
     while (true) {
       if (opts.controller.signal.aborted) break;
       if (session.status === "completed") break;
       const line = await ask(rl);
       if (line === null) break;
-      const trimmed = line.trim();
-      if (trimmed.length === 0) continue;
-      if (trimmed === "/quit" || trimmed === "/exit") break;
-      if (trimmed === "/abort") {
-        opts.controller.abort();
-        break;
-      }
-      await driveTurn(trimmed);
+      const shouldContinue = await handleLine(line);
+      if (!shouldContinue) break;
     }
   } finally {
-    rl.close();
+    closeReadline();
   }
   return session;
 }
@@ -449,19 +490,22 @@ export async function runAgentCommand(args: string[]): Promise<number> {
       maxSteps: parsed.maxSteps ?? config.agent.maxSteps,
       controller,
     });
-    runtime.sessionStore.save(finalSession);
-    process.stderr.write(
+    if (process.env.H0X_CLI_EVAL_DISABLE_SESSION_SAVE !== "1") {
+      runtime.sessionStore.save(finalSession);
+    }
+    await writeAndDrain(
+      process.stderr,
       `${JSON.stringify(
-        {
-          sessionId: finalSession.id,
-          status: finalSession.status,
-          turnCount: finalSession.turnCount,
-          stepCount: finalSession.stepCount,
-          lastError: finalSession.lastError,
-        },
-        null,
-        2,
-      )}\n`,
+          {
+            sessionId: finalSession.id,
+            status: finalSession.status,
+            turnCount: finalSession.turnCount,
+            stepCount: finalSession.stepCount,
+            lastError: finalSession.lastError,
+          },
+          null,
+          2,
+        )}\n`,
     );
     // `stalled` means the step budget ran out with nothing produced —
     // that is not success, and a CI job watching this exit code must not
@@ -478,6 +522,10 @@ export async function runAgentCommand(args: string[]): Promise<number> {
     process.off("SIGINT", onSignal);
     process.off("SIGTERM", onSignal);
     await runtime.shutdown();
+    const graceMs = Number(process.env.H0X_CLI_EVAL_EXIT_GRACE_MS ?? 0);
+    if (Number.isFinite(graceMs) && graceMs > 0) {
+      await delay(Math.min(graceMs, 1000));
+    }
   }
   return exitCode;
 }

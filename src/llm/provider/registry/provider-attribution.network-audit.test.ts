@@ -71,13 +71,14 @@ describe.each(["openrouter", "aimlapi"])("network audit: %s factory payload and 
       expect(JSON.stringify(sent.body)).not.toContain(apiKey);
       expect(JSON.stringify([Object.fromEntries(sent.headers), sent.body])).not.toContain("synthetic-unrelated-environment-secret");
       if (kind === "openrouter") {
-        // CHARACTERIZATION: the fork's default registry still identifies upstream.
-        expect(sent.headers.get("http-referer")).toBe("https://github.com/AtomicBot-ai/atomic-agent");
-        expect(sent.headers.get("x-title")).toBe("Atomic Agent");
+        expect(sent.headers.get("http-referer")).toBe("https://pavii.tech");
+        expect(sent.headers.get("x-openrouter-title")).toBe("h0x-cli by PAVii.Ai");
+        // Backward-compatible attribution for older OpenRouter integrations.
+        expect(sent.headers.get("x-title")).toBe("h0x-cli by PAVii.Ai");
         expect(sent.headers.get("x-openrouter-categories")).toBe("cli-agent,personal-agent");
         expect(sent.headers.get("x-aimlapi-source")).toBeNull();
       } else {
-        expect(sent.headers.get("x-aimlapi-source")).toBe("agent/atomic-agent");
+        expect(sent.headers.get("x-aimlapi-source")).toBe("agent/h0x-cli");
         expect(sent.headers.get("x-aimlapi-partner-id")).toBeNull();
         expect(sent.headers.get("http-referer")).toBeNull();
         expect(sent.headers.get("x-title")).toBeNull();

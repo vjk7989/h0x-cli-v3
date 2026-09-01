@@ -1,3 +1,4 @@
+import { APP_MACHINE_NAME } from "../../../brand/index.js";
 import { OpenAiProvider, type OpenAiProviderOptions } from "../openai/openai-provider.js";
 
 /** Root without `/v1` — {@link OpenAiProvider} appends `/v1/chat/completions`. */
@@ -22,7 +23,7 @@ export { normalizeOpenAiBaseUrl as normalizeAimlapiBaseUrl } from "../openai/nor
  * service can debug it, and it says nothing about who should be paid.
  */
 export function buildAimlapiAttributionHeaders(): Record<string, string> {
-  return { "X-AIMLAPI-Source": "agent/atomic-agent" };
+  return { "X-AIMLAPI-Source": `agent/${APP_MACHINE_NAME}` };
 }
 
 export type AimlapiProviderOptions = Omit<OpenAiProviderOptions, "baseUrl"> & {

@@ -92,7 +92,18 @@ function main() {
   const byAgent = new Map();
 
   function emptyAgg() {
-    return { total: 0, correct: 0, skipped: 0, ms: 0, byLevel: new Map() };
+    return {
+      total: 0,
+      correct: 0,
+      skipped: 0,
+      ms: 0,
+      wallTimes: [],
+      toolFailures: 0,
+      formattingFailures: 0,
+      promptTokens: 0,
+      predictedTokens: 0,
+      byLevel: new Map(),
+    };
   }
 
   for (const row of rows) {
@@ -113,17 +124,41 @@ function main() {
       agg.correct += 1;
       lvl.correct += 1;
     }
-    agg.ms += Number(row.wall_clock_ms || 0);
+    const wallMs = Number(row.wall_clock_ms || 0);
+    agg.ms += wallMs;
+    agg.wallTimes.push(wallMs);
+    if (Number(row.tool_errors || 0) > 0) agg.toolFailures += 1;
+    if (!String(row.extracted_answer || "").trim()) agg.formattingFailures += 1;
+    agg.promptTokens += Number(row.prompt_tokens || 0);
+    agg.predictedTokens += Number(row.predicted_tokens || 0);
   }
 
   const pct = (c, t) => (t > 0 ? `${((c / t) * 100).toFixed(1)}%` : "n/a");
+  const p95 = (values) => {
+    if (values.length === 0) return 0;
+    const sorted = [...values].sort((a, b) => a - b);
+    return sorted[Math.min(sorted.length - 1, Math.ceil(sorted.length * 0.95) - 1)];
+  };
 
   console.log(`Scorecard: ${runDir}\n`);
-  console.log("agent_id\taccuracy\tcorrect/total\tskipped\tavg_wall_ms");
+  console.log(
+    "agent_id\taccuracy\tcorrect/total\tskipped\ttool_failure_rate\tformat_failure_rate\tavg_wall_ms\tp95_wall_ms\tprompt_tokens\tpredicted_tokens",
+  );
   for (const [id, agg] of [...byAgent.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
     const avgMs = agg.total > 0 ? Math.round(agg.ms / agg.total) : 0;
     console.log(
-      `${id}\t${pct(agg.correct, agg.total)}\t${agg.correct}/${agg.total}\t${agg.skipped}\t${avgMs}`,
+      [
+        id,
+        pct(agg.correct, agg.total),
+        `${agg.correct}/${agg.total}`,
+        String(agg.skipped),
+        pct(agg.toolFailures, agg.total),
+        pct(agg.formattingFailures, agg.total),
+        String(avgMs),
+        String(p95(agg.wallTimes)),
+        String(agg.promptTokens),
+        String(agg.predictedTokens),
+      ].join("\t"),
     );
   }
 

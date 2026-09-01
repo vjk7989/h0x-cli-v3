@@ -34,10 +34,19 @@ function parseIntEnv(raw: string | undefined): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
-const ENV_TEMPERATURE = parseFloatEnv(process.env.ATOMIC_AGENT_LLAMA_TEMPERATURE);
-const ENV_TOP_P = parseFloatEnv(process.env.ATOMIC_AGENT_LLAMA_TOP_P);
-const ENV_TOP_K = parseIntEnv(process.env.ATOMIC_AGENT_LLAMA_TOP_K);
-const ENV_SEED = parseIntEnv(process.env.ATOMIC_AGENT_LLAMA_SEED);
+const ENV_TEMPERATURE = parseFloatEnv(
+  process.env.H0X_CLI_LLAMA_TEMPERATURE ??
+    process.env.ATOMIC_AGENT_LLAMA_TEMPERATURE,
+);
+const ENV_TOP_P = parseFloatEnv(
+  process.env.H0X_CLI_LLAMA_TOP_P ?? process.env.ATOMIC_AGENT_LLAMA_TOP_P,
+);
+const ENV_TOP_K = parseIntEnv(
+  process.env.H0X_CLI_LLAMA_TOP_K ?? process.env.ATOMIC_AGENT_LLAMA_TOP_K,
+);
+const ENV_SEED = parseIntEnv(
+  process.env.H0X_CLI_LLAMA_SEED ?? process.env.ATOMIC_AGENT_LLAMA_SEED,
+);
 
 export class LlamaServerError extends Error {
   constructor(

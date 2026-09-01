@@ -1,7 +1,7 @@
 import { resolve } from "node:path";
 
 /**
- * Parsed flags for the `atomic-agent tui` subcommand. Kept separate from
+ * Parsed flags for the `h0x-cli tui` subcommand. Kept separate from
  * the orchestrator so argument handling can be unit-tested without
  * booting the Ink runtime.
  */
@@ -105,10 +105,10 @@ export function parseTuiArgs(args: string[]): TuiArgsResult {
 
 /**
  * The one-sentence refusal for a stdin that is not a terminal, or `null`
- * when the TUI can mount. A pipe (CI, cron, `echo hi | atomic-agent`, a
+ * when the TUI can mount. A pipe (CI, cron, `echo hi | h0x-cli`, a
  * Dockerfile RUN) used to reach Ink's raw-mode requirement and die with a
- * React stack trace of minified bundle offsets — and bare `atomic-agent` /
- * `atomic-agent tui` are exactly the commands new users and scripts run
+ * React stack trace of minified bundle offsets — and bare `h0x-cli` /
+ * `h0x-cli tui` are exactly the commands new users and scripts run
  * first. Lives here rather than in tui-command.ts so it is unit-testable:
  * that module imports the SEA bridge, which vitest cannot load.
  */

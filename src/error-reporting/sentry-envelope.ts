@@ -160,7 +160,7 @@ export function buildSentryAuthHeader(
 ): string {
   return [
     "Sentry sentry_version=7",
-    `sentry_client=atomic-agent/${release}`,
+    `sentry_client=h0x-cli/${release}`,
     `sentry_key=${dsn.publicKey}`,
   ].join(", ");
 }

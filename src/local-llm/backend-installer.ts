@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 
+import { appUserAgent } from "../brand/index.js";
 import { resolveBackendDir, resolveServerBinPath } from "./backend-paths.js";
 import {
   extractBackendArchive,
@@ -96,7 +97,7 @@ export async function fetchLatestRelease(opts?: {
   }
   const url = `https://api.github.com/repos/${GITHUB_REPO}/releases?per_page=${RELEASES_PER_PAGE}`;
   const headers: Record<string, string> = {
-    "User-Agent": "atomic-agent/local-llm-backend",
+    "User-Agent": appUserAgent("local-llm-backend"),
     Accept: "application/vnd.github+json",
   };
   const token = (process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "").trim();
@@ -284,7 +285,7 @@ export async function downloadBackend(
     const archivePath = join(stagingDir, assetName);
     await downloadFile(asset.browser_download_url, archivePath, {
       onProgress: opts?.onProgress,
-      userAgent: "atomic-agent/local-llm-backend-download",
+      userAgent: appUserAgent("local-llm-backend-download"),
       signal: opts?.signal,
     });
 

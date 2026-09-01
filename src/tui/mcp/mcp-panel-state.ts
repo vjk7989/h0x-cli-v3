@@ -64,7 +64,7 @@ export interface McpServerDetail {
  * validates it against `parseMcpServers`, merges into `config.json`,
  * and emits a "restart required" runtime info line. Per variant α —
  * the runtime is NOT mutated in-place; the new server is picked up on
- * the next `atomic-agent` boot.
+ * the next `h0x-cli` boot.
  */
 export interface McpAddModalState {
   json: string;

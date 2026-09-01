@@ -2,13 +2,13 @@
  * Packages a platform-specific redistributable for the CLI (Node SEA) built by
  * `build-binary.ts`. A bundle contains:
  *
- *   atomic-agent[.exe]             SEA binary (CLI: tui, run, serve, …)
+ *   h0x-cli[.exe]                  SEA binary (CLI: tui, run, serve, ...)
  *   grammars/                      GBNF grammars the agent needs at runtime
  *   prebuilds/                     Native prebuilds (better-sqlite3) for the target
  *   README.txt                     short usage note + requirements
  *
  * The bundle does NOT include llama-server: operators run it on their
- * own machine and point the agent at it via ATOMIC_AGENT_LLAMA_URL.
+ * own machine and point the agent at it via H0X_CLI_LLAMA_URL.
  *
  * Usage:
  *   npx tsx scripts/package-bundle.ts           # package for current host
@@ -266,14 +266,17 @@ async function main(): Promise<number> {
   await copyPlaywrightCoreRuntime(stageDir);
 
   const readme = [
-    `atomic-agent CLI (${target.slug}, Node SEA)`,
+    `h0x-cli (${target.slug}, Node SEA)`,
+    "Built by TEAM PAVii.Ai",
+    "Website: https://pavii.tech",
+    "Repository: https://github.com/vjk7989/h0x-cli-v3",
     "",
     "Requirements:",
-    "  - External llama.cpp server reachable via HTTP, or use `atomic-agent models`",
-    "    for managed local models. Set ATOMIC_AGENT_LLAMA_URL if using external",
+    "  - External llama.cpp server reachable via HTTP, or use `h0x-cli models`",
+    "    for managed local models. Set H0X_CLI_LLAMA_URL if using external",
     "    server only.",
     "  - Point the runtime at the server (if external), e.g.",
-    "      ATOMIC_AGENT_LLAMA_URL=http://127.0.0.1:8080",
+    "      H0X_CLI_LLAMA_URL=http://127.0.0.1:8080",
     "  - Install Google Chrome or Microsoft Edge (stable channel). Playwright",
     "    browsers are NOT bundled; playwright-core attaches to the system",
     "    browser via --channel=chrome|msedge.",
@@ -290,19 +293,20 @@ async function main(): Promise<number> {
       ? "    gracefully without it."
       : "",
     "",
-    "Skills live under $ATOMIC_AGENT_STATE_DIR/skills/ and",
-    "./.atomic-agent/skills/. Built-in starter skills are copied there on",
+    "Skills live under $H0X_CLI_STATE_DIR/skills/ and",
+    "./.h0x-cli/skills/. Legacy ./.atomic-agent/skills/ remains readable.",
+    "Built-in starter skills are copied there on",
     "each boot from ./starter-skills/ next to this binary (override with",
-    "ATOMIC_AGENT_STARTER_SKILLS_DIR). Same-named skill dirs are replaced.",
+    "H0X_CLI_STARTER_SKILLS_DIR). Same-named skill dirs are replaced.",
     "",
     "The bundle ships a pinned ripgrep binary at ./vendor/rg[.exe] which",
     "powers the os.fs.grep tool. Override it by setting",
-    "ATOMIC_AGENT_RG_PATH to the path of a different rg binary.",
+    "H0X_CLI_RG_PATH to the path of a different rg binary.",
     "",
     "Run the CLI, for example:",
     `  ./${target.executableName} tui --cwd /path/to/work`,
     "  # or use the Tauri/stdio sidecar: install the npm package and",
-    "  # run the separate `atomic-agent-sidecar` entry, not this SEA bundle.",
+    "  # run the separate `atomic-agent-sidecar` compatibility entry, not this SEA bundle.",
     "",
   ]
     .filter((line) => line !== "")
@@ -312,7 +316,7 @@ async function main(): Promise<number> {
 
   const archivePath = join(
     BUNDLE_ROOT,
-    `atomic-agent-${target.slug}.${target.archiveExt}`,
+    `h0x-cli-${target.slug}.${target.archiveExt}`,
   );
   stdout.write(`creating archive ${archivePath}\n`);
   if (target.archiveExt === "tar.gz") {

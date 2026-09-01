@@ -1,0 +1,1158 @@
+.env.example:3:#   atomic-agent config get
+.env.example:4:#   atomic-agent config set '<full-json-payload>'
+.env.example:9:# Bootstrap / optional env only. Not managed by `atomic-agent config`.
+.env.example:10:ATOMIC_AGENT_STATE_DIR=~/.atomic-agent
+.env.example:11:ATOMIC_AGENT_LLAMA_API_KEY=
+.env.example:14:ATOMIC_AGENT_BROWSER_CHANNEL=chrome
+.env.example:15:ATOMIC_AGENT_BROWSER_HEADLESS=false
+.env.example:16:ATOMIC_AGENT_BROWSER_CDP_URL=
+.env.example:17:ATOMIC_AGENT_BROWSER_LAUNCH_TIMEOUT_MS=30000
+.env.example:19:# Skills (auto-discovered from STATE_DIR/skills and ./.atomic-agent/skills)
+.env.example:20:ATOMIC_AGENT_SKILLS_CATALOG_BUDGET=512
+PROMPT.md:1:# atomic-agent — system prompt anatomy
+PROMPT.md:251:  `atomic-agent trace replay <sessionId>` and compare `stablePrefixHash`.
+BUNDLING.md:8:`atomic-agent-sidecar` when installed from npm; it is not the SEA
+BUNDLING.md:10:HTTP (`ATOMIC_AGENT_LLAMA_URL`) or use `atomic-agent models` for managed
+BUNDLING.md:78:The output lands at `bundle/atomic-agent-<slug>.<ext>` and
+BUNDLING.md:79:`bundle/atomic-agent-<slug>.<ext>.sha256` (for `shasum -a 256 -c`).
+BUNDLING.md:91:  codesign -dv ./bundle/darwin-arm64/atomic-agent
+BUNDLING.md:98:  **`./bundle/.../atomic-agent`** is killed, the problem is the SEA binary
+BUNDLING.md:127:curl -fsSL "https://raw.githubusercontent.com/OWNER/atomic-agent/BRANCH/scripts/install.sh" | sh
+BUNDLING.md:130:Set `ATOMIC_AGENT_REPO=owner/atomic-agent` if the default in
+BUNDLING.md:132:Optional: `ATOMIC_AGENT_VERSION`, `ATOMIC_AGENT_INSTALL_DIR`.
+BUNDLING.md:143:atomic-agent[.exe]            # SEA binary (CLI entry)
+BUNDLING.md:162:- **Override:** set `ATOMIC_AGENT_RG_PATH=/path/to/rg` to point the agent
+BUNDLING.md:222:  `ATOMIC_AGENT_LLAMA_URL=http://host:port` as needed.
+BUNDLING.md:226:  to the `atomic-agent` binary for window-management and reliable keyboard
+BUNDLING.md:230:- **Skills** live under `$ATOMIC_AGENT_STATE_DIR/skills/` and
+BUNDLING.md:231:  `./.atomic-agent/skills/`. The redistributable ships a `starter-skills/`
+README.md:7:This is a development-stage fork of [Atomic Agent](https://github.com/AtomicBot-ai/atomic-agent). Its history, MIT license, upstream copyright, and third-party attribution are preserved. This first stage changes the command identity and terminal branding, not the agent's core behavior or protocols. Public releases and h0x distribution packaging are not ready.
+README.md:13:Use Node **25.7 or newer** from a G-drive directory. In this workspace, Node 25.7.0 is unpacked at `G:\h0xi\atomic-agent\.local\runtime\node-v25.7.0-win-x64`. A fresh clone needs that runtime installed first; it is not committed.
+README.md:15:From `G:\h0xi\atomic-agent` in PowerShell:
+README.md:39:Compatibility aliases remain: `atomic-agent`, `atag`, and `atomic-agent-sidecar`. New installs default to `~/.h0x-cli`; a legacy default `~/.atomic-agent` state directory is copied forward on first h0x default boot without deleting the old data. `H0X_CLI_*` environment variables take precedence over matching legacy `ATOMIC_AGENT_*` aliases.
+README.md:53:The following results and graphics are historical **upstream Atomic Agent** evaluations. They have not been rerun or certified as h0x-cli benchmarks.
+README.md:55:On the public **GAIA validation Level 1** split (53 tasks), Atomic Agent and Hermes drove the **same** local `qwen-3.6-35b-a3b` (`llama-server`, UD-Q4_K_XL), with the same step budget and timeout. The only variable is the agent loop.
+README.md:57:![GAIA Level 1 benchmark: Atomic Agent 69.8% vs Hermes 58.5%](assets/gaia-l1-benchmark.png)
+README.md:59:| Metric | Atomic Agent | Hermes |
+README.md:72:    x-axis ["Atomic Agent", "Hermes"]
+README.md:81:    x-axis ["Atomic Agent", "Hermes"]
+README.md:90:The same loop holds up as the local model shrinks. Same GAIA L1 split, Atomic Agent alone:
+README.md:98:Even a 9B model clears half of GAIA L1 through the same context-frugal loop. (Different Atomic Agent versions per row; see the write-up for provenance.)
+README.md:100:Full reproducible write-up: [`GAIA-L1-EXPERIMENT.md`](eval-agents/docs/GAIA-L1-EXPERIMENT.md) · Raw artifacts (matrices, NDJSON traces, logs): [gaia-l1-eval-2026-06-11 release](https://github.com/AtomicBot-ai/atomic-agent/releases/tag/gaia-l1-eval-2026-06-11).
+README.md:138:Managed local models currently use the upstream TurboQuant `llama.cpp` ([`AtomicBot-ai/atomic-llama-cpp-turboquant-nightly`](https://github.com/AtomicBot-ai/atomic-llama-cpp-turboquant-nightly)):
+README.md:293:export ATOMIC_AGENT_LLAMA_URL=http://127.0.0.1:8080
+README.md:347:  --api-key "$ATOMIC_AGENT_API_KEY"
+README.md:458:- the TUI checks GitHub Releases for a newer version at startup (set `ATOMIC_AGENT_UPDATE_CHECK_ON_STARTUP=false` to skip);
+README.md:491:- `H0X_CLI_STATE_DIR`: state, config, skills, browser profile, memory, tasks, traces. Default: `~/.h0x-cli`; matching `ATOMIC_AGENT_STATE_DIR` remains a compatibility alias.
+README.md:499:For every h0x variable above, the matching legacy `ATOMIC_AGENT_*` name still works when the h0x name is absent.
+scripts\bundle-sea.ts:70:      __ATOMIC_AGENT_VERSION__: JSON.stringify(version),
+docs\rebrand\decisions.md:9:The product is a fork of Atomic Agent. The goal is surface rebranding first, distribution/core rebranding later, then launch and original features. [PRODUCT.md](../../PRODUCT.md) is the identity register: **h0x - CLI**, command/package/banner **h0x-cli**, **Built by TEAM PAVii.Ai**, website **pavii.tech**, and temporary **https://pavii.tech/docs**. Label that docs address as a placeholder; do not imply it is live.
+docs\rebrand\decisions.md:14:- Keep `atomic-agent`, `atag`, and `atomic-agent-sidecar` as compatibility commands. Retain the current version, config keys, environment-variable names, and storage discovery. No sidecar NDJSON or HTTP API changes.
+docs\rebrand\decisions.md:64:| Local install | `scripts/install-local.ps1` generates four launchers in `.local/bin`: `h0x-cli`, `atomic-agent`, `atag`, and `atomic-agent-sidecar`. Launchers pin runtime/state to G-drive paths and do not change cwd. Installation SUCCESS: build exit 0, npm link exit 0, four aliases installed. Local CLI smoke passed 8/8; live sidecar smoke was not run. |
+docs\rebrand\decisions.md:91:Installed local command smoke: GREEN, 8/8 actual `.local/bin/*.cmd` invocations. `h0x-cli`, `atomic-agent`, and `atag` returned identical help and version output (`h0x-cli 0.4.2`); `update --check` returned the expected unavailable message with exit 1; blank piped stdin returned the expected interactive-TTY refusal with exit 1. Caller cwd remained unchanged in all eight cases. See [smoke summary](../../.local/reports/rebrand-local-command-smoke-summary.md) and [captured JSON](../../.local/reports/rebrand-local-command-smoke.json). The smoke used absolute wrapper paths, so it does not establish fresh-shell PATH discovery. Sidecar alias mapping is covered by earlier tests, but live sidecar NDJSON smoke was not run. These checks do not establish interactive keyboard/restoration behavior.
+docs\rebrand\decisions.md:99:Windows verification environment: a bootstrap grant test failed with `spawn ls ENOENT` because PowerShell's `ls` alias is not an executable available to Node subprocesses. Rawls confirmed the installed `C:\Program Files\Git\usr\bin\ls.exe` works read-only. For reproducible reruns, put `G:\h0xi\atomic-agent\.local\runtime\node-v25.7.0-win-x64` FIRST on the test process PATH, retain the inherited PATH, and APPEND `C:\Program Files\Git\usr\bin`. Keep temporary files, caches, and outputs under the G-drive repo as before. This is process-scoped test setup only: no C-drive writes, no user/global PATH mutation, and no fixture or production edits for this environment issue. Do not confuse it with the separate local installer's user-PATH setup. Bootstrap and final focused reruns passed with this environment.
+docs\rebrand\decisions.md:161:- All generated audit artifacts, temporary data, caches, logs, and reports must stay under `G:\h0xi\atomic-agent` or another explicitly approved G-drive folder. Reading installed tools from C is permitted; writing project artifacts there is not. Do not include secret values in documentation.
+docs\rebrand\decisions.md:243:Decision: new default persistent state is `~/.h0x-cli`; legacy default `~/.atomic-agent` is copied into the new default on the first h0x default boot when the h0x directory does not already exist. The copy is idempotent, writes `migration.json`, and never deletes the legacy state. If both old and new state directories exist, h0x uses the new directory and does not overwrite it.
+docs\rebrand\decisions.md:245:Decision: matching `H0X_CLI_*` environment variables take precedence over legacy `ATOMIC_AGENT_*` names. Legacy names remain supported for compatibility. Direct env consumers outside `loadConfig` were updated for the same h0x-first policy where scoped to this stage: TUI terminal selection/skip flags, synchronized-output opt-out, CLI debug/API key, ripgrep override, llama sampling knobs, grammar override, starter skills source, and OpenAI-compatible fallback API key.
+docs\rebrand\decisions.md:247:Decision: new project-local skills default to `.h0x-cli/skills`; legacy `.atomic-agent/skills` remains readable. Runtime, CLI skill listing/showing/disable checks, and trace replay pass both directories to the skill loader. The loader now accepts multiple project directories, dedupes identical resolved paths, and preserves the existing global-skip guard when a project path equals the global skills dir.
+docs\rebrand\decisions.md:249:Decision: stable-prefix salt changed from `atomic-agent-v1` to `h0x-cli-v1`, intentionally invalidating prior llama.cpp KV slots once. Config and dotenv notices now use `h0x-cli`; config-help and top-level CLI help teach h0x env names while documenting legacy aliases.
+docs\rebrand\decisions.md:266:Decision: release defaults now point at `vjk7989/h0x-cli-v3`, and generated SEA artifacts use `h0x-cli` archive and binary names. Compatibility aliases remain intentional for CLI entrypoints and installers: `atomic-agent`, `atag`, and the existing `atomic-agent-sidecar` sidecar command are preserved where already supported.
+docs\rebrand\decisions.md:268:Decision: install scripts document `https://pavii.tech` examples and h0x environment names, with legacy `ATOMIC_AGENT_*` install overrides still accepted. POSIX and Windows installers install `h0x-cli` as the primary binary and create only the intentional compatibility aliases. Bundle README output includes TEAM PAVii.Ai, the website, and the h0x GitHub repository.
+docs\network-audit\dependencies-and-build.md:3:Date: 2026-08-31. Workspace: `G:\h0xi\atomic-agent`.
+docs\network-audit\dependencies-and-build.md:9:- Read project operating rules in `AGENTS.md`; used the local `atomic-agent` knowledge graph for symbol discovery and the inbound trace of `createJudgeClient`. Read local files for exact evidence. Used literal/config searches for endpoints and scripts, including installed dependency code not covered by the graph.
+docs\network-audit\dependencies-and-build.md:17:1. **Source and release metadata can leave during SEA builds.** A nonempty `SENTRY_AUTH_TOKEN` enables source-map upload to the hardcoded upstream organization `atomic-agent`, project `cli`, independently of runtime analytics/crash-report settings. Maps include original source content by default. The installed plugin also defaults to release creation, finalization, and automatic commit association. See the Sentry section below.
+docs\network-audit\dependencies-and-build.md:19:3. **Eval can disclose task content to a hosted judge.** `eval/harness/judge-client.ts:9` defaults to OpenRouter; lines 43-45 select an available key. Lines 76-103 transmit task, reply, and rubric assembled by `eval/harness/build-judge-prompt.ts:28`. An explicit `ATOMIC_AGENT_JUDGE_URL` override still receives the selected key at line 89, including if the destination is local. Endpoint selection and key scoping need to be assessed together.
+docs\network-audit\dependencies-and-build.md:20:4. **The download installers still target the upstream repository.** `scripts/install.sh:20` and `scripts/install.ps1:37` default to `AtomicBot-ai/atomic-agent`, despite this working tree's `h0x-cli` package identity and repository at `package.json:2` and line 8. Running those installers without `ATOMIC_AGENT_REPO` would fetch upstream release artifacts, not prove installation of this fork. Header examples also retain `atomicagent.io`.
+docs\network-audit\dependencies-and-build.md:78:- **Recipient:** organization `atomic-agent`, project `cli` (`scripts/bundle-sea.ts:32`); base URL defaults to `https://sentry.io`, with `SENTRY_URL` override honored by `node_modules/@sentry/bundler-plugins/build/esm/core/options-mapping.js:9`. Org/project are explicitly passed, so those two environment overrides do not replace the hardcoded values. Auth is provided to the Sentry CLI; its native API routing and server-provided chunk-upload URLs were not observed.
+docs\network-audit\dependencies-and-build.md:112:| Judge and memory judge | Default `https://openrouter.ai/api/v1/chat/completions`, model `openai/gpt-4o-mini`; bearer credential, task, assistant reply, rubric, sampling parameters. OpenRouter also receives `HTTP-Referer` and `X-Title` attribution, defaulting to upstream repo and `atomic-agent eval`. | `eval/harness/judge-client.ts:9`, line 13, line 43, line 77, line 89, line 99; `eval/harness/build-judge-prompt.ts:28`. `ATOMIC_AGENT_JUDGE_DISABLED=1` returns null at line 39. Memory eval reuses it via `eval-memory/harness/judge.ts:48`; graph traced callers in E2-E6 and LoCoMo. |
+docs\network-audit\dependencies-and-build.md:128:- Read-only check of `C:\Users\vijay\.atomic-agent\skills` found the same **17 manifest/script files**, all byte-identical. No C-drive artifacts were written. Project-local `.atomic-agent/skills` did not exist at the initial check. Other `.local/readability-visual-state/.../skills` copies appeared in discovery but were not independently established as active runtime roots or fully compared; concurrent cleanup/state changes are possible.
+docs\rebrand\failure-plan.md:7:- [Full log](G:/h0xi/atomic-agent/.local/reports/rebrand-stage5-full.log), [JSON assertions](G:/h0xi/atomic-agent/.local/reports/rebrand-stage5-full.json): exit 1; 618 files, 608 passed, 10 failed; 6527 tests, 6509 passed, 14 failed, 4 skipped; 300.81 seconds.
+docs\rebrand\failure-plan.md:18:[uninstall-targets.test.ts:109](G:/h0xi/atomic-agent/src/uninstall/uninstall-targets.test.ts:109): `isSafeToRemove refuses a one-segment system directory`; `/usr` is accepted instead of rejected.
+docs\rebrand\failure-plan.md:20:Evidence: confirmed unchanged guard/test; direct read-only Node path probe shows Windows resolves `/usr` to `G:\usr`, split segments `["G:", "usr"]`. The guard in [uninstall-targets.ts](G:/h0xi/atomic-agent/src/uninstall/uninstall-targets.ts) counts the drive as a directory. `C:\Windows` likewise has two segments and passes the shallow-directory condition despite the source comment explicitly intending rejection. This is a pre-existing Windows safety defect in the predicate, not merely a POSIX test fixture. No destructive operation was attempted; broader exploitability was not assessed.
+docs\rebrand\failure-plan.md:28:[send-message-concurrency.test.ts:139](G:/h0xi/atomic-agent/src/sidecar/send-message-concurrency.test.ts:139): `serialises two rapid send_message calls FIFO without crossing state`; observed `[m1,m2,m3]`, expected `[m1,m2]`.
+docs\rebrand\failure-plan.md:30:Evidence: confirmed unchanged test and exact match to [.github/workflows/test.yml:110](G:/h0xi/atomic-agent/.github/workflows/test.yml:110), which documents this failure on unmodified main and issue #203. CI calls it a sidecar behavior question, not a timing flake. The stub ignores reflection-prefixed sessions but labels other completion calls as user-message inferences. Whether the third call is legitimate auxiliary work has NOT been proven.
+docs\rebrand\failure-plan.md:38:[local-backend-readiness.test.ts](G:/h0xi/atomic-agent/src/tui/local-backend-readiness.test.ts) fails these `isCloudTextProviderReady` cases with true instead of false:
+docs\rebrand\failure-plan.md:45:Evidence: unchanged tests/readiness/resolver. Current diagnostic process has OPENAI_API_KEY present; OPENAI_COMPAT_API_KEY and ATOMIC_AGENT_OPENAI_API_KEY absent (values never printed). [resolve-llm-api-key.ts](G:/h0xi/atomic-agent/src/config/resolve-llm-api-key.ts) intentionally consults these for openai-compatible entries. Test setup clears OPENROUTER_API_KEY only, leaving its supposedly keyless fixtures exposed. Inherited-runner leakage is strongly supported; the completed runner's exact environment was not captured by this agent.
+docs\rebrand\failure-plan.md:53:- [skill-script-runner.test.ts:100](G:/h0xi/atomic-agent/src/skills/skill-script-runner.test.ts:100): `runs a bash script by .sh extension`; exit 1 instead of 0.
+docs\rebrand\failure-plan.md:54:- [skill-tools.test.ts:126](G:/h0xi/atomic-agent/src/tools/skill/skill-tools.test.ts:126): `skill.run_script auto-approves the read-only gog setup check`; error instead of ok.
+docs\rebrand\failure-plan.md:64:[pdf-extractor.canvas-warnings.test.ts](G:/h0xi/atomic-agent/src/tools/os/read-document/extractors/pdf-extractor.canvas-warnings.test.ts):
+docs\rebrand\failure-plan.md:69:Evidence: unchanged test copies pdfjs into tmpdir but does not block ancestor node_modules resolution. With G-repository-local TMP, the sandbox remains below this checkout. A read-only createRequire probe anchored under G:\h0xi\atomic-agent\.local\tmp resolves canvas from G:\h0xi\atomic-agent\node_modules\@napi-rs\canvas\index.js. This defeats the no-canvas premise, consistent with both reported failures; the product extraction path itself succeeds.
+docs\rebrand\failure-plan.md:77:[open-terminal-window.test.ts:130](G:/h0xi/atomic-agent/src/tui/open-terminal-window.test.ts:130): `isOnPath finds a binary that exists on PATH`; false instead of true.
+docs\rebrand\failure-plan.md:87:[fs-approval-scope.test.ts:71](G:/h0xi/atomic-agent/src/tools/os/fs-approval-scope.test.ts:71): `a symlink inside the workspace that points outside is NOT workspace`; second assertion returns outside instead of home.
+docs\rebrand\failure-plan.md:97:[stream-cli-completion.test.ts:232](G:/h0xi/atomic-agent/src/llm/provider/subscription-cli/stream-cli-completion.test.ts:232): `force-kills a child that traps SIGTERM instead of orphaning it`; alive(pid) is false immediately after iterator.return, expected true.
+docs\rebrand\failure-plan.md:107:[backend-installer.test.ts:480](G:/h0xi/atomic-agent/src/local-llm/backend-installer.test.ts:480): `updates on a variant change even though the tag is unchanged`; updateAvailable false instead of true.
+docs\rebrand\failure-plan.md:109:Evidence: unchanged test mocks Windows/x64, installs a CUDA 13.3 asset, and supplies a release containing Vulkan only. [windows-backend-variant.ts](G:/h0xi/atomic-agent/src/local-llm/windows-backend-variant.ts) still performs cached real nvidia-smi detection. If it selects CUDA, the mocked release has no matching desired asset and the installer returns no available update. Real GPU selection in the failed worker was not captured; cause remains inferred, not confirmed.
+docs\rebrand\failure-plan.md:121:5. Runner, not this analyst, executes the specified focused files with G:\h0xi\atomic-agent\.local\runtime\node-v25.7.0-win-x64\node.exe and the existing Vitest entrypoint, reports exit codes/assertions, then tsc. After all approved focused repairs pass, rerun the FULL suite with no exclusions and bail 0; retain G log/JSON outputs and require exit 0 with no unhandled errors. Existing full-suite failure evidence remains retained.
+src\agent\agent-loop-steering.test.ts:123:    workingDir = mkdtempSync(join(tmpdir(), "atomic-agent-steer-"));
+docs\rebrand\handoff.md:223:uses `~/.h0x-cli`, legacy default `~/.atomic-agent` is copied forward once
+docs\rebrand\handoff.md:225:over legacy `ATOMIC_AGENT_*` names. New project skills live under
+docs\rebrand\handoff.md:226:`.h0x-cli/skills`; legacy `.atomic-agent/skills` remains readable through the
+docs\rebrand\handoff.md:245:install `h0x-cli` while preserving the intentional `atomic-agent` and `atag`
+docs\network-audit\findings.md:161:The standalone bundler configures Sentry org `atomic-agent`, project `cli`, and
+docs\network-audit\findings.md:176:upstream names. MCP advertises `atomic-agent` version `0.1.0`, not the installed
+docs\network-audit\verification.md:80:- TEMP, TMP, TMPDIR: `G:\h0xi\atomic-agent\.local\tmp`.
+docs\network-audit\verification.md:81:- ATOMIC_AGENT_STATE_DIR: `G:\h0xi\atomic-agent\.local\network-audit\state`.
+docs\network-audit\verification.md:107:All commands run from `G:\h0xi\atomic-agent` using the runner above. Vitest
+docs\network-audit\verification.md:293:Node runtime under `G:\h0xi\atomic-agent`:
+docs\network-audit\endpoint-ledger.md:31:| R05 configured local-llama endpoint; default `127.0.0.1:8080` | Health/props, completion, tokenize/slot/model operations; startup, turns, auxiliary memory work | Prompt/context/tool outputs; optional `ATOMIC_AGENT_LLAMA_API_KEY` | Selected legacy local-llama fallback in launcher configuration. Origin is loopback; server behavior beyond that hop not audited | Preserve local function. Do not assume a custom LAN/remote URL is local. `src/llm/llama-server-client.ts:180`, `src/llm/provider/registry/provider-types.ts`, `src/config/load-config.ts:134` |
+docs\network-audit\endpoint-ledger.md:49:| R23 `api.github.com/repos/AtomicBot-ai/atomic-llama-cpp-turboquant-nightly/releases` plus returned asset/CDN hosts | Local-model panel refresh/backend check; managed backend install/auto-update | Release GETs, selected asset, User-Agent; `GITHUB_TOKEN`/`GH_TOKEN` when present | Backend auto-update flag true; check occurs on refresh even independently of auto-install gate. No GitHub token observed | Upstream supply-chain dependency remains. Own artifact pipeline needed before replacing. `src/local-llm/backend-installer.ts:15`, `:97`, `:285`; `src/tui/local-models/local-models-orchestrator.ts:261` |
+src\agent\agent-loop.test.ts:69:    workingDir = mkdtempSync(join(tmpdir(), "atomic-agent-loop-"));
+src\agent\agent-loop.test.ts:1050:    workingDir = mkdtempSync(join(tmpdir(), "atomic-agent-loop-reflect-"));
+scripts\install-local.ps1:37:  'atomic-agent' = 'cli/index.js'
+scripts\install-local.ps1:39:  'atomic-agent-sidecar' = 'sidecar/main.js'
+scripts\install-local.ps1:50:set "ATOMIC_AGENT_STATE_DIR=$local\state"
+scripts\install.sh:21:REPO="${H0X_CLI_REPO:-${ATOMIC_AGENT_REPO:-$REPO_DEFAULT}}"
+scripts\install.sh:22:VERSION="${H0X_CLI_VERSION:-${ATOMIC_AGENT_VERSION:-}}"
+scripts\install.sh:23:INSTALL_DIR="${H0X_CLI_INSTALL_DIR:-${ATOMIC_AGENT_INSTALL_DIR:-$HOME/.local/bin}}"
+scripts\install.sh:261:# that as a hang and pressed Ctrl-C -- which left them with no atomic-agent at
+scripts\install.sh:271:VERIFY_TIMEOUT="${H0X_CLI_VERIFY_TIMEOUT:-${ATOMIC_AGENT_VERIFY_TIMEOUT:-20}}"
+scripts\install.sh:481:  link_alias h0x-cli "$INSTALL_DIR/atomic-agent"
+scripts\install.sh:484:  link_alias h0x-cli.exe "$INSTALL_DIR/atomic-agent.exe"
+scripts\install.sh:515:  if [ "${H0X_CLI_NO_PATH:-${ATOMIC_AGENT_NO_PATH:-0}}" = "1" ]; then
+scripts\install.sh:584:echo "(plus compatibility aliases 'atomic-agent' and 'atag' next to it)"
+scripts\install.sh:589:    echo "  atomic-agent   # compatibility alias"
+scripts\install.sh:596:    echo "  atomic-agent   # compatibility alias"
+scripts\install.sh:603:    echo "  atomic-agent   # compatibility alias"
+scripts\network-audit-baseline.mjs:49:  "OPENAI_API_KEY", "OPENAI_COMPAT_API_KEY", "ATOMIC_AGENT_OPENAI_API_KEY",
+scripts\network-audit-baseline.mjs:51:  "ANTHROPIC_API_KEY", "ATOMIC_AGENT_LLAMA_API_KEY", "EXA_API_KEY", "BRAVE_SEARCH_API_KEY",
+scripts\network-audit-baseline.mjs:89:    browserEnabled: boolEnv("ATOMIC_AGENT_BROWSER_ENABLED", true),
+scripts\network-audit-baseline.mjs:90:    browserCdpConfigured: present("ATOMIC_AGENT_BROWSER_CDP_URL"),
+scripts\network-audit-baseline.mjs:107:    productOverrideNames: Object.keys(process.env).filter((key) => key.startsWith("ATOMIC_AGENT_")).sort(),
+scripts\install.ps1:38:$Repo = if ($env:H0X_CLI_REPO) { $env:H0X_CLI_REPO } elseif ($env:ATOMIC_AGENT_REPO) { $env:ATOMIC_AGENT_REPO } else { $RepoDefault }
+scripts\install.ps1:39:$Version = if ($env:H0X_CLI_VERSION) { $env:H0X_CLI_VERSION } else { $env:ATOMIC_AGENT_VERSION }
+scripts\install.ps1:42:} elseif ($env:ATOMIC_AGENT_INSTALL_DIR) {
+scripts\install.ps1:43:  $env:ATOMIC_AGENT_INSTALL_DIR
+scripts\install.ps1:381:  Set-Content -LiteralPath (Join-Path $InstallDir "atomic-agent.cmd") -Encoding ASCII -Value @(
+scripts\install.ps1:388:  Write-Info "(plus compatibility aliases 'atomic-agent' and 'atag' next to it)"
+scripts\install.ps1:414:  if ($env:H0X_CLI_NO_PATH -eq "1" -or $env:ATOMIC_AGENT_NO_PATH -eq "1") {
+scripts\install.ps1:436:    Write-Info "  atomic-agent   # compatibility alias"
+scripts\install.ps1:443:    Write-Info "  atomic-agent   # compatibility alias"
+scripts\install.ps1:450:    Write-Info "  atomic-agent   # compatibility alias"
+scripts\package-bundle.ts:297:    "./.h0x-cli/skills/. Legacy ./.atomic-agent/skills/ remains readable.",
+scripts\package-bundle.ts:309:    "  # run the separate `atomic-agent-sidecar` compatibility entry, not this SEA bundle.",
+src\channels\telegram\inbound-handler.test.ts:235:    expect(api.sent[0]!.text).toContain("atomic-agent");
+src\bundling\release-matrix-alignment.test.ts:64:    expect(yml).not.toContain("bundle/atomic-agent-${{ matrix.slug }}*");
+src\bundling\release-matrix-alignment.test.ts:73:    expect(script).not.toContain("`atomic-agent-${target.slug}.${target.archiveExt}`");
+src\bundling\release-matrix-alignment.test.ts:79:    expect(script).not.toContain('const SENTRY_ORG = "atomic-agent"');
+src\channels\telegram\inbound-handler.ts:113:  "atomic-agent — Telegram remote control\n\n" +
+src\version.ts:12:declare const __ATOMIC_AGENT_VERSION__: string | undefined;
+src\version.ts:19: * Resolve the running atomic-agent version. Prefers the build-time
+src\version.ts:28:  if (typeof __ATOMIC_AGENT_VERSION__ === "string") {
+src\version.ts:29:    cached = __ATOMIC_AGENT_VERSION__;
+src\channels\telegram\welcome-message.ts:23:  "You can now control Atomic Agent from this chat.",
+src\error-reporting\sentry-envelope.ts:163:    `sentry_client=atomic-agent/${release}`,
+src\import\openclaw\openclaw-importer.ts:38: * Orchestrates a one-shot OpenClaw -> atomic-agent import. Each option is
+src\agent\step-executor.test.ts:1268:    process.env.ATOMIC_AGENT_MAX_PARALLEL_TOOL_CALLS = "1";
+src\agent\step-executor.test.ts:1285:      delete process.env.ATOMIC_AGENT_MAX_PARALLEL_TOOL_CALLS;
+src\agent\step-executor.test.ts:1613:  const originalEnv = process.env.ATOMIC_AGENT_MAX_PARALLEL_TOOL_CALLS;
+src\agent\step-executor.test.ts:1616:    process.env.ATOMIC_AGENT_MAX_PARALLEL_TOOL_CALLS = originalEnv;
+src\agent\step-executor.test.ts:1648:      process.env.ATOMIC_AGENT_MAX_PARALLEL_TOOL_CALLS =
+src\http\openai-chunks.ts:7: * hermes gateway will work unchanged against atomic-agent.
+src\http\openai-chat-completions.ts:33: * Opt-in toggle for atomic-agent-specific SSE extensions on the streaming
+src\http\openai-chat-completions.ts:41:const MODEL_DEFAULT = "atomic-agent";
+src\update\run-app-update.test.ts:18:    expect(canSelfUpdate("linux", "/home/u/.local/bin/atomic-agent")).toBe(false);
+src\update\run-app-update.test.ts:19:    expect(canSelfUpdate("darwin", "/Users/u/.local/bin/atomic-agent")).toBe(
+src\update\run-app-update.test.ts:26:      canSelfUpdate("win32", "C:\\Users\\u\\AppData\\Local\\atomic-agent\\atomic-agent.exe"),
+src\update\run-app-update.test.ts:43:    for (const name of ["h0x-cli", "h0x-cli.exe", "atomic-agent", "atomic-agent.exe", "atag", "node", "tsx"]) {
+src\update\run-app-update.test.ts:55:  it.each([undefined, { repo: "AtomicBot-ai/atomic-agent" }, { repo: "fork/example", version: "v9.9.9" }])(
+src\update\run-app-update.test.ts:59:      vi.stubEnv("ATOMIC_AGENT_REPO", "AtomicBot-ai/atomic-agent");
+src\update\run-app-update.test.ts:97:    expect(inv.env.ATOMIC_AGENT_REPO).toBeUndefined();
+src\http\openai-chat-completions.test.ts:64:    const response = await postChat(harness.baseUrl, { model: "atomic-agent" });
+src\http\openai-chat-completions.test.ts:72:      model: "atomic-agent",
+src\http\openai-chat-completions.test.ts:91:      model: "atomic-agent",
+src\http\openai-chat-completions.test.ts:105:        model: "atomic-agent",
+src\http\openai-chat-completions.test.ts:209:      if (!params.prompt.includes("You are atomic-agent")) {
+src\http\openai-chat-completions.test.ts:336:          model: "atomic-agent",
+src\http\openai-chat-completions.test.ts:356:  it("omits atomic-agent SSE extensions by default so OpenAI clients validate cleanly", async () => {
+src\http\openai-chat-completions.test.ts:362:        model: "atomic-agent",
+src\http\openai-chat-completions.test.ts:388:        model: "atomic-agent",
+src\http\openai-chat-completions.test.ts:414:          model: "atomic-agent",
+src\http\openai-chat-completions.test.ts:467:          model: "atomic-agent",
+src\update\check-app-update.test.ts:18:    vi.stubEnv("ATOMIC_AGENT_REPO", "AtomicBot-ai/atomic-agent");
+src\update\check-app-update.test.ts:19:    vi.stubEnv("ATOMIC_AGENT_UPDATE_CHECK_ON_STARTUP", "1");
+src\update\check-app-update.test.ts:39:    { repo: "AtomicBot-ai/atomic-agent" },
+src\http\http-server.test.ts:29:      expect(body.data[0]?.id).toBe("atomic-agent");
+src\http\route-approval.ts:21: * atomic-agent grows a per-tool trust store.
+src\http\approval-bus.ts:8: * approvals do not need cross-worker coordination in atomic-agent.
+src\mcp\mcp-types.ts:4: * atomic-agent is an MCP **client only** — it connects to external
+src\http\route-models.ts:17:          id: "atomic-agent",
+src\http\route-models.ts:20:          owned_by: "atomic-agent",
+src\http\route-health.ts:34:      runtime: "atomic-agent",
+src\cli\update-command.ts:25:   * answer is read from stdin, and `atomic-agent update < /dev/null`
+src\cli\update-command.ts:102: * `atomic-agent update` — check GitHub Releases and re-run the canonical
+src\http\route-table.ts:41: * Build the full atomic-agent HTTP route table. All handlers are
+src\config\windows-acl.test.ts:5:const PATH = "C:\\Users\\u\\.atomic-agent\\.env";
+src\cli\update-command.test.ts:58:      getRepo: () => "AtomicBot-ai/atomic-agent",
+src\cli\update-command.test.ts:151:        repo: "AtomicBot-ai/atomic-agent",
+src\cli\update-command.test.ts:161:        opts?.onLine?.("downloading atomic-agent");
+src\cli\update-command.test.ts:162:        opts?.onLine?.("installed atomic-agent to /tmp/install");
+src\cli\update-command.test.ts:167:    expect(stdout()).toMatch(/\[update\] downloading atomic-agent/);
+src\cli\update-command.test.ts:168:    expect(stdout()).toMatch(/\[update\] installed atomic-agent/);
+src\cli\update-command.test.ts:235:      getRepo: () => "AtomicBot-ai/atomic-agent", isTTY: () => true, confirm,
+src\config\state-dir-migration.ts:6:export const LEGACY_STATE_DIR_DEFAULT = "~/.atomic-agent";
+src\cli\uninstall-command.ts:130: * `atomic-agent uninstall` — the one command that undoes the install,
+src\config\state-dir-migration.test.ts:14:const originalAtomicStateDir = process.env.ATOMIC_AGENT_STATE_DIR;
+src\config\state-dir-migration.test.ts:47:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\config\state-dir-migration.test.ts:54:      delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\config\state-dir-migration.test.ts:56:      process.env.ATOMIC_AGENT_STATE_DIR = originalAtomicStateDir;
+src\config\state-dir-migration.test.ts:68:  it("migrates an old default ~/.atomic-agent config into the new ~/.h0x-cli state dir", async () => {
+src\config\state-dir-migration.test.ts:69:    const legacyDir = join(homeDir, ".atomic-agent");
+src\config\state-dir-migration.test.ts:89:    const legacyDir = join(homeDir, ".atomic-agent");
+src\config\state-dir-migration.test.ts:115:    expect(existsSync(join(homeDir, ".atomic-agent", "config.json"))).toBe(false);
+src\cli\uninstall-command.test.ts:14:      path: "/Users/op/.atomic-agent",
+src\cli\uninstall-command.test.ts:19:      path: "/Users/op/.local/bin/atomic-agent",
+src\cli\uninstall-command.test.ts:56:      getStateDir: () => "/Users/op/.atomic-agent",
+src\cli\uninstall-command.test.ts:69:    expect(stdout()).toContain("/Users/op/.atomic-agent");
+src\config\resolve-llm-api-key.ts:43:      process.env.ATOMIC_AGENT_OPENAI_API_KEY;
+src\mcp\mcp-sampling-handler.ts:5: * their behalf via `sampling/createMessage`. atomic-agent forwards
+src\uninstall\uninstall-targets.ts:28:  /** `getConfig().paths.stateDir` — honours `ATOMIC_AGENT_STATE_DIR`. */
+src\uninstall\uninstall-targets.ts:35:   * Whether `<installDir>/atomic-agent` exists. Every `program` target is
+src\uninstall\uninstall-targets.ts:87:  return exe.startsWith("atomic-agent");
+src\uninstall\uninstall-targets.ts:91: * Everything `atomic-agent uninstall` would remove, in the order it is
+src\uninstall\uninstall-targets.ts:108:      path: path.resolve(input.homeDir, "Documents", "atomic-agent-debug"),
+src\uninstall\uninstall-targets.ts:123:    path: path.resolve(installDir, `atomic-agent${exeSuffix}`),
+src\http\test-harness.ts:150:  mkdirSync(join(workingDir, ".atomic-agent", "skills"), { recursive: true });
+src\http\test-harness.ts:151:  process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\http\test-harness.ts:152:  process.env.ATOMIC_AGENT_GRAMMARS_DIR = join(process.cwd(), "grammars");
+src\http\test-harness.ts:242:      delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\http\test-harness.ts:243:      delete process.env.ATOMIC_AGENT_GRAMMARS_DIR;
+src\cli\trace-formatter.ts:10: * suitable for `atomic-agent trace show`. Long payloads (prompt tail,
+src\session\session-store.test.ts:13:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-sess-"));
+src\cli\trace-file-io.ts:54: * (when present) so `atomic-agent trace list` can show a meaningful
+src\uninstall\uninstall-targets.test.ts:12:    stateDir: "/Users/op/.atomic-agent",
+src\uninstall\uninstall-targets.test.ts:13:    execPath: "/Users/op/.local/bin/atomic-agent",
+src\uninstall\uninstall-targets.test.ts:25:      "/Users/op/.atomic-agent",
+src\uninstall\uninstall-targets.test.ts:26:      "/Users/op/Documents/atomic-agent-debug",
+src\uninstall\uninstall-targets.test.ts:35:      "/Users/op/.local/bin/atomic-agent",
+src\uninstall\uninstall-targets.test.ts:50:        execPath: "C:\\Users\\op\\bin\\atomic-agent.exe",
+src\uninstall\uninstall-targets.test.ts:55:      "C:/Users/op/bin/atomic-agent.exe",
+src\uninstall\uninstall-targets.test.ts:80:    ["/Users/op/.local/bin/atomic-agent", true],
+src\uninstall\uninstall-targets.test.ts:81:    ["/Users/op/.local/bin/atomic-agent.exe", true],
+src\uninstall\uninstall-targets.test.ts:94:    expect(isSafeToRemove("/Users/op/.atomic-agent", home)).toBe(true);
+src\http\webhook-template.test.ts:14:      { repository: { full_name: "atomicbot/atomic-agent" } },
+src\http\webhook-template.test.ts:16:    expect(out).toBe("repo=atomicbot/atomic-agent");
+src\session\session-state.ts:30: * Both entry points that own an exit code — `atomic-agent run` and the
+src\uninstall\strip-installer-path-line.ts:7:export const INSTALLER_PATH_MARKER = "# added by atomic-agent installer";
+src\import\hermes\hermes-importer.ts:45: * Orchestrates a one-shot Hermes -> atomic-agent import. Each option is
+src\cli\trace-command.test.ts:99:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\cli\trace-command.test.ts:108:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\uninstall\run-uninstall.ts:68:        error: "refused: not a path atomic-agent installs",
+src\cli\task-command.test.ts:26:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\cli\task-command.test.ts:42:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\mcp\mcp-client.network-audit.test.ts:70:      kind: "stdio", command: "G:/h0xi/atomic-agent/never-execute-audit.exe",
+src\mcp\mcp-client.network-audit.test.ts:71:      cwd: "G:/h0xi/atomic-agent",
+src\mcp\mcp-client.network-audit.test.ts:109:        inherited: true, overridden: true, added: true, cwd: "G:/h0xi/atomic-agent",
+src\config\load-dotenv-retry.test.ts:132:      "C:\\Users\\u\\.atomic-agent\\.env",
+src\config\load-dotenv-retry.test.ts:136:    expect(text).toContain("C:\\Users\\u\\.atomic-agent\\.env");
+src\config\load-dotenv-retry.test.ts:145:    const text = formatDotenvReadWarning("/home/u/.atomic-agent/.env", failure, "linux");
+src\uninstall\run-uninstall.test.ts:32:    const stateDir = join(home, ".atomic-agent");
+src\uninstall\run-uninstall.test.ts:35:    const binary = join(home, "bin", "atomic-agent");
+src\uninstall\run-uninstall.test.ts:71:    const stateDir = join(home, ".atomic-agent");
+src\uninstall\run-uninstall.test.ts:109:    const doomed = join(home, ".atomic-agent");
+src\uninstall\run-uninstall.test.ts:123:    const stateDir = join(home, ".atomic-agent");
+src\uninstall\resolve-uninstall-plan.ts:58:    (await exists(resolve(installDir, `atomic-agent${exeSuffix}`)));
+src\cli\skill.test.ts:62:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\cli\skill.test.ts:78:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\uninstall\measure-uninstall-plan.ts:21: * models" stops a stray Enter in a way "~/.atomic-agent" does not.
+src\config\load-config.ts:36:  if (!key.startsWith("ATOMIC_AGENT_")) return null;
+src\config\load-config.ts:37:  return `H0X_CLI_${key.slice("ATOMIC_AGENT_".length)}`;
+src\config\load-config.ts:82:  const explicit = readEnv("ATOMIC_AGENT_STATE_DIR");
+src\config\load-config.ts:142:  const grammarsDir = resolveAssetDir("ATOMIC_AGENT_GRAMMARS_DIR", "grammars");
+src\config\load-config.ts:145:    "ATOMIC_AGENT_BROWSER_CHANNEL",
+src\config\load-config.ts:164:      apiKey: readEnv("ATOMIC_AGENT_LLAMA_API_KEY") ?? null,
+src\config\load-config.ts:168:        "ATOMIC_AGENT_LLAMA_MAX_TOKENS",
+src\config\load-config.ts:174:        "ATOMIC_AGENT_LLAMA_HEALTH_TIMEOUT_MS",
+src\config\load-config.ts:178:        "ATOMIC_AGENT_LLAMA_REQUEST_TIMEOUT_MS",
+src\config\load-config.ts:182:        "ATOMIC_AGENT_LLAMA_HEALTH_RETRIES",
+src\config\load-config.ts:186:        "ATOMIC_AGENT_LLAMA_HEALTH_BACKOFF_MS",
+src\config\load-config.ts:190:        "ATOMIC_AGENT_LLAMA_COMPLETION_RETRIES",
+src\config\load-config.ts:194:        "ATOMIC_AGENT_LLAMA_COMPLETION_RETRY_BACKOFF_MS",
+src\config\load-config.ts:198:        "ATOMIC_AGENT_LLAMA_DEFAULT_SLOT",
+src\config\load-config.ts:224:        readEnv("ATOMIC_AGENT_STABLE_PREFIX_SALT") ??
+src\config\load-config.ts:230:        "ATOMIC_AGENT_LOADED_TOOLS_CAP",
+src\config\load-config.ts:236:        "ATOMIC_AGENT_LOADED_TOOLS_MAX_TOKENS",
+src\config\load-config.ts:242:        "ATOMIC_AGENT_AUTO_EXPAND_RARE_ON_ERROR",
+src\config\load-config.ts:246:        "ATOMIC_AGENT_MAX_PARALLEL_TOOL_CALLS",
+src\config\load-config.ts:252:        "ATOMIC_AGENT_BATCH_TOOL_RESULT_CHAR_CAP",
+src\config\load-config.ts:258:        "ATOMIC_AGENT_LOOP_WARNING_THRESHOLD",
+src\config\load-config.ts:264:        "ATOMIC_AGENT_LOOP_CRITICAL_THRESHOLD",
+src\config\load-config.ts:270:        "ATOMIC_AGENT_LOOP_BREAKER_VETO_STREAK",
+src\config\load-config.ts:276:        "ATOMIC_AGENT_LOOP_HISTORY_SIZE",
+src\config\load-config.ts:282:        "ATOMIC_AGENT_LOOP_WANDERING_THRESHOLD",
+src\config\load-config.ts:288:        "ATOMIC_AGENT_LOOP_WANDERING_ESCALATION",
+src\config\load-config.ts:296:        "ATOMIC_AGENT_BROWSER_ENABLED",
+src\config\load-config.ts:301:        "ATOMIC_AGENT_BROWSER_HEADLESS",
+src\config\load-config.ts:304:      cdpUrl: readEnv("ATOMIC_AGENT_BROWSER_CDP_URL") ?? null,
+src\config\load-config.ts:305:      executablePath: readEnv("ATOMIC_AGENT_BROWSER_EXECUTABLE_PATH") ?? null,
+src\config\load-config.ts:307:        "ATOMIC_AGENT_BROWSER_NO_SANDBOX",
+src\config\load-config.ts:311:        "ATOMIC_AGENT_BROWSER_LAUNCH_TIMEOUT_MS",
+src\config\load-config.ts:317:        "ATOMIC_AGENT_SKILLS_CATALOG_BUDGET",
+src\config\load-config.ts:340:      enabled: readBool("ATOMIC_AGENT_TASKS_ENABLED", ENV_DEFAULTS.TASKS_ENABLED),
+src\config\load-config.ts:342:        "ATOMIC_AGENT_TASKS_MAX_ATTEMPTS",
+src\config\load-config.ts:346:        "ATOMIC_AGENT_TASKS_BACKOFF_INITIAL_MS",
+src\config\load-config.ts:350:        "ATOMIC_AGENT_TASKS_BACKOFF_MAX_MS",
+src\config\load-config.ts:354:        "ATOMIC_AGENT_TASKS_RUN_ON_CREATE",
+src\config\load-config.ts:358:        "ATOMIC_AGENT_TASKS_STALE_AFTER_MS",
+src\config\load-config.ts:362:        "ATOMIC_AGENT_TASKS_SCHEDULER_ENABLED",
+src\config\load-config.ts:366:        "ATOMIC_AGENT_TASKS_SCHEDULER_TICK_MS",
+src\config\load-config.ts:370:        "ATOMIC_AGENT_TASKS_SCHEDULER_BATCH",
+src\config\load-config.ts:374:        "ATOMIC_AGENT_TASKS_AGENT_TOOLS_ENABLED",
+src\config\load-config.ts:378:        "ATOMIC_AGENT_TASKS_MIN_INTERVAL_MS",
+src\config\load-config.ts:384:        "ATOMIC_AGENT_UPDATE_CHECK_ON_STARTUP",
+src\config\load-config.ts:387:      repo: readEnv("ATOMIC_AGENT_REPO") ?? ENV_DEFAULTS.UPDATE_REPO,
+src\import\hermes\map-secrets.ts:4: * atomic-agent `.env`. Both names are identical across the two projects,
+src\cli\serve-command.ts:37:    "                      (falls back to env ATOMIC_AGENT_API_KEY when flag is omitted)",
+src\cli\serve-command.ts:108:      process.env.H0X_CLI_API_KEY ?? process.env.ATOMIC_AGENT_API_KEY;
+src\config\load-config.test.ts:23:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\config\load-config.test.ts:30:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\config\load-config.test.ts:32:    delete process.env.ATOMIC_AGENT_LLAMA_API_KEY;
+src\config\load-config.test.ts:34:    delete process.env.ATOMIC_AGENT_LLAMA_MAX_TOKENS;
+src\config\load-config.test.ts:36:    delete process.env.ATOMIC_AGENT_BROWSER_CHANNEL;
+src\config\load-config.test.ts:38:    delete process.env.ATOMIC_AGENT_GRAMMARS_DIR;
+src\config\load-config.test.ts:40:    delete process.env.ATOMIC_AGENT_STABLE_PREFIX_SALT;
+src\config\load-config.test.ts:59:  it("maps ATOMIC_AGENT_LLAMA_MAX_TOKENS to completionMaxTokens with bounds", () => {
+src\config\load-config.test.ts:60:    process.env.ATOMIC_AGENT_LLAMA_MAX_TOKENS = "8192";
+src\config\load-config.test.ts:63:    process.env.ATOMIC_AGENT_LLAMA_MAX_TOKENS = "10";
+src\config\load-config.test.ts:66:    process.env.ATOMIC_AGENT_LLAMA_MAX_TOKENS = "999999999";
+src\config\load-config.test.ts:83:  it("ATOMIC_AGENT_LLAMA_MAX_TOKENS overrides the file value", () => {
+src\config\load-config.test.ts:91:    process.env.ATOMIC_AGENT_LLAMA_MAX_TOKENS = "16384";
+src\config\load-config.test.ts:97:    process.env.ATOMIC_AGENT_LLAMA_MAX_TOKENS = "8192";
+src\config\load-config.test.ts:128:    process.env.ATOMIC_AGENT_LLAMA_API_KEY = "secret";
+src\config\load-config.test.ts:129:    process.env.ATOMIC_AGENT_BROWSER_CHANNEL = "msedge";
+src\config\load-config.test.ts:136:    process.env.ATOMIC_AGENT_LLAMA_API_KEY = "legacy-secret";
+src\config\load-config.test.ts:138:    process.env.ATOMIC_AGENT_BROWSER_CHANNEL = "chrome";
+src\config\load-config.test.ts:149:    process.env.ATOMIC_AGENT_LLAMA_API_KEY = "legacy-secret";
+src\config\load-config.test.ts:150:    process.env.ATOMIC_AGENT_BROWSER_CHANNEL = "chromium";
+src\config\load-config.test.ts:169:  it("uses H0X_CLI_STATE_DIR before ATOMIC_AGENT_STATE_DIR", () => {
+src\config\load-config.test.ts:172:      process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\config\load-config.test.ts:198:      process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\config\load-config.test.ts:320:  it("still lets ATOMIC_AGENT_GRAMMARS_DIR win over the packaged copy", () => {
+src\config\load-config.test.ts:323:    process.env.ATOMIC_AGENT_GRAMMARS_DIR = override;
+src\config\load-config.test.ts:333:    process.env.ATOMIC_AGENT_GRAMMARS_DIR = legacy;
+src\config\load-config.test.ts:343:    process.env.ATOMIC_AGENT_STABLE_PREFIX_SALT = "legacy-salt";
+src\cli\run-agent.test.ts:167:    mkdirSync(join(workingDir, ".atomic-agent", "skills"), { recursive: true });
+src\cli\run-agent.test.ts:169:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\cli\run-agent.test.ts:170:    process.env.ATOMIC_AGENT_GRAMMARS_DIR = join(process.cwd(), "grammars");
+src\cli\run-agent.test.ts:188:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\cli\run-agent.test.ts:189:    delete process.env.ATOMIC_AGENT_GRAMMARS_DIR;
+src\scheduler\scheduler.ts:117:   * `atomic-agent task tick` CLI so operators can drain due tasks
+src\cli\models-search-command.test.ts:75:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\cli\models-search-command.test.ts:91:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\prompt\stable-prefix.ts:86:  "You are atomic-agent, a local operator. Each step emits exactly one JSON array matching the tool grammar — no other prose.",
+src\cli\models-command.test.ts:44:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\cli\models-command.test.ts:60:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\test-setup.ts:8: * `~/.atomic-agent/`. Tests that need a specific state dir override
+src\test-setup.ts:9: * `process.env.ATOMIC_AGENT_STATE_DIR` in their own `beforeEach`.
+src\test-setup.ts:11:if (!process.env.ATOMIC_AGENT_STATE_DIR) {
+src\test-setup.ts:12:  process.env.ATOMIC_AGENT_STATE_DIR = mkdtempSync(
+src\test-setup.ts:13:    join(tmpdir(), "atomic-agent-test-"),
+src\cli\index.ts:134:    "  atomic-agent <command> [options] (compatibility alias)",
+src\cli\index.ts:145:    "Bootstrap env (H0X_CLI_* wins; matching ATOMIC_AGENT_* names are compatibility aliases):",
+src\cli\index.ts:161:    process.env.ATOMIC_AGENT_DEBUG_ARGV === "1"
+src\cli\index.ts:169:  // whatever path the shell used to invoke the binary (e.g. `./atomic-agent`);
+src\cli\index.test.ts:67:    expect(output).toContain("atomic-agent <command> [options]");
+src\cli\index.test.ts:82:  it.each(["h0x-cli", "atomic-agent", "atag"])("%s without arguments opens the same TUI in the caller's cwd", async (name) => {
+src\config\config-schema.ts:123: * systems (e.g. a GitHub hook, a cron-like SaaS) at atomic-agent
+src\config\config-schema.ts:263:     * by `loadedAt`). Env-only: `ATOMIC_AGENT_LOADED_TOOLS_CAP`.
+src\config\config-schema.ts:268:     * Env-only: `ATOMIC_AGENT_LOADED_TOOLS_MAX_TOKENS`.
+src\config\config-schema.ts:274:     * `ATOMIC_AGENT_AUTO_EXPAND_RARE_ON_ERROR`.
+src\config\config-schema.ts:282:     * `ATOMIC_AGENT_MAX_PARALLEL_TOOL_CALLS`. Hard upper bound: 16.
+src\config\config-schema.ts:290:     * `ATOMIC_AGENT_BATCH_TOOL_RESULT_CHAR_CAP`.
+src\config\config-schema.ts:296:     * `### notice` (env `ATOMIC_AGENT_LOOP_WARNING_THRESHOLD`).
+src\config\config-schema.ts:298:     * the call before dispatch (env `ATOMIC_AGENT_LOOP_CRITICAL_THRESHOLD`).
+src\config\config-schema.ts:300:     * force a graceful reply (env `ATOMIC_AGENT_LOOP_BREAKER_VETO_STREAK`).
+src\config\config-schema.ts:302:     * ring (env `ATOMIC_AGENT_LOOP_HISTORY_SIZE`).
+src\config\config-schema.ts:305:     * (env `ATOMIC_AGENT_LOOP_WANDERING_THRESHOLD`).
+src\config\config-schema.ts:307:     * forced graceful reply (env `ATOMIC_AGENT_LOOP_WANDERING_ESCALATION`).
+src\config\config-schema.ts:325:     * still drive them. Env `ATOMIC_AGENT_BROWSER_ENABLED`, default `true`.
+src\config\config-schema.ts:472:     * `ATOMIC_AGENT_UPDATE_CHECK_ON_STARTUP`. Set to `false` to disable
+src\config\config-schema.ts:478:     * `install.sh` source. Env-only: `ATOMIC_AGENT_REPO`.
+src\config\config-schema.ts:962:   * sessions; the operator stops it via `atomic-agent models stop`.
+src\config\config-schema.ts:978: * (`atomic-agent models start` brings both up, `models stop` brings
+src\config\config-schema.ts:1018:     * without juggling the `ATOMIC_AGENT_LLAMA_MAX_TOKENS` env var.
+src\config\config-schema.ts:2028:  LEGACY_PROJECT_SKILLS_DIR: ".atomic-agent/skills",
+src\config\config-paths.ts:7: * Dotted-key addressing for `atomic-agent config get|set|unset|list`.
+src\tui\app-key-bindings.ts:69:  /** Open a fresh OS terminal window running atomic-agent (Ctrl+N, `/window`). */
+src\tui\app-key-bindings.ts:536:  // Ctrl+N opens a fresh OS terminal window running atomic-agent in the
+src\cli\config-help.ts:34:    "legacy ATOMIC_AGENT_STATE_DIR, or defaults to ~/.h0x-cli).",
+src\config\config-file.ts:176:      `${err.reason} (in ${path}) — edit or delete that file to start from defaults, or point H0X_CLI_STATE_DIR (or legacy ATOMIC_AGENT_STATE_DIR) elsewhere`,
+src\cli\config-command.test.ts:20:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\cli\config-command.test.ts:36:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\cli\bin-alias.test.ts:33:      "atomic-agent": "dist/cli/index.js",
+src\cli\bin-alias.test.ts:35:      "atomic-agent-sidecar": "dist/sidecar/main.js",
+src\cli\bin-alias.test.ts:41:    expect(script).toContain('link_alias h0x-cli "$INSTALL_DIR/atomic-agent"');
+src\cli\bin-alias.test.ts:53:    expect(script).toContain('Join-Path $InstallDir "atomic-agent.cmd"');
+src\llm\model-profile-manager.ts:55: * behind `llama-server` without restarting atomic-agent.
+src\tasks\task-store.test.ts:20:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-tasks-"));
+src\llm\llama-server-health.test.ts:30:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\llm\llama-server-health.test.ts:36:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\tui\build-terminal-launch.ts:141: * Every `H0X_CLI_*` and `ATOMIC_AGENT_*` variable travels into the new window, sorted so
+src\tui\build-terminal-launch.ts:153:        pair[0].startsWith("ATOMIC_AGENT_")) &&
+src\tui\build-terminal-launch.ts:200:    input.env.ATOMIC_AGENT_TERMINAL ??
+src\llm\llama-server-client.ts:39:    process.env.ATOMIC_AGENT_LLAMA_TEMPERATURE,
+src\llm\llama-server-client.ts:42:  process.env.H0X_CLI_LLAMA_TOP_P ?? process.env.ATOMIC_AGENT_LLAMA_TOP_P,
+src\llm\llama-server-client.ts:45:  process.env.H0X_CLI_LLAMA_TOP_K ?? process.env.ATOMIC_AGENT_LLAMA_TOP_K,
+src\llm\llama-server-client.ts:48:  process.env.H0X_CLI_LLAMA_SEED ?? process.env.ATOMIC_AGENT_LLAMA_SEED,
+src\tui\build-terminal-launch.test.ts:38:          execPath: "/usr/local/bin/atomic-agent",
+src\tui\build-terminal-launch.test.ts:39:          argv: ["/usr/local/bin/atomic-agent", "/usr/local/bin/atomic-agent"],
+src\tui\build-terminal-launch.test.ts:42:    ).toEqual(["/usr/local/bin/atomic-agent", "tui"]);
+src\tui\build-terminal-launch.test.ts:46:    // The parent may have been started as `atomic-agent` with no args.
+src\tui\build-terminal-launch.test.ts:79:      input({ env: { ATOMIC_AGENT_STATE_DIR: "/tmp/state dir" } }),
+src\tui\build-terminal-launch.test.ts:82:      "ATOMIC_AGENT_STATE_DIR='/tmp/state dir'",
+src\tui\build-terminal-launch.test.ts:121:  it("honours $ATOMIC_AGENT_TERMINAL over the probe order", () => {
+src\tui\build-terminal-launch.test.ts:125:        env: { ATOMIC_AGENT_TERMINAL: "foot", TERMINAL: "xterm" },
+src\tasks\task-runner.test.ts:73:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-runner-"));
+src\runtime\ripgrep-resolver.ts:9: *      `process.env.ATOMIC_AGENT_RG_PATH` — explicit override (tests, CI,
+src\runtime\ripgrep-resolver.ts:19: * `H0X_CLI_RG_PATH`, or `ATOMIC_AGENT_RG_PATH`.
+src\runtime\ripgrep-resolver.ts:51:  const override = env.H0X_CLI_RG_PATH ?? env.ATOMIC_AGENT_RG_PATH;
+src\runtime\ripgrep-resolver.ts:124:  "ripgrep (`rg`) was not found. Install it via `brew install ripgrep`, `apt install ripgrep`, or `choco install ripgrep`, or set H0X_CLI_RG_PATH (or legacy ATOMIC_AGENT_RG_PATH) to a binary path.";
+src\tui\chat-orchestrator.ts:50:const DEBUG_BUNDLE_DIR_NAME = "atomic-agent-debug";
+src\tui\chat-orchestrator.ts:76:   * `~/.atomic-agent` state.
+src\tui\chat-orchestrator.ts:1078:   * most recent sessions into `~/Documents/atomic-agent-debug/`. The
+src\local-llm\backend-installer.ts:16:const GITHUB_REPO = "AtomicBot-ai/atomic-llama-cpp-turboquant-nightly";
+src\runtime\ripgrep-resolver.test.ts:13:  it("prefers ATOMIC_AGENT_RG_PATH override when it exists", () => {
+src\runtime\ripgrep-resolver.test.ts:16:      env: { ATOMIC_AGENT_RG_PATH: override, PATH: "/usr/bin" },
+src\runtime\ripgrep-resolver.test.ts:17:      execPath: "/opt/app/atomic-agent-sidecar",
+src\runtime\ripgrep-resolver.test.ts:26:    const execPath = "/opt/app/atomic-agent-sidecar";
+src\runtime\ripgrep-resolver.test.ts:42:    const execPath = "/app/atomic-agent-sidecar.exe";
+src\runtime\ripgrep-resolver.test.ts:109:        env: { ATOMIC_AGENT_RG_PATH: "/does/not/exist", PATH: "/usr/bin" },
+src\skills\skill-loader.ts:75:    // `globalDir` (e.g. a relative `ATOMIC_AGENT_STATE_DIR=.atomic-agent`
+src\skills\skill-loader.ts:76:    // run from the repo root makes both `<cwd>/.atomic-agent/skills`), the
+src\skills\skill-loader.test.ts:83:    // A relative `ATOMIC_AGENT_STATE_DIR=.atomic-agent` run from the repo
+src\skills\seed-starter-skills.ts:89:    process.env.ATOMIC_AGENT_STARTER_SKILLS_DIR
+src\runtime\bootstrap.ts:609: * (`atomic-agent run`) and the sidecar (`atomic-agent-sidecar`) go
+src\runtime\bootstrap.ts:2979: * NDJSON sink so `atomic-agent trace show` can read the session back —
+src\memory\voting\vote-store.test.ts:22:  const tmp = mkdtempSync(join(tmpdir(), "atomic-agent-vote-"));
+src\runtime\bootstrap.test.ts:105:    mkdirSync(join(workingDir, ".atomic-agent", "skills"), { recursive: true });
+src\runtime\bootstrap.test.ts:106:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\runtime\bootstrap.test.ts:107:    process.env.ATOMIC_AGENT_GRAMMARS_DIR = join(process.cwd(), "grammars");
+src\runtime\bootstrap.test.ts:115:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\runtime\bootstrap.test.ts:116:    delete process.env.ATOMIC_AGENT_GRAMMARS_DIR;
+src\runtime\bootstrap.test.ts:248:        `atomic-agent-e2e-${randomBytes(6).toString("hex")}.txt`,
+src\runtime\bootstrap.test.ts:652:  it("loads legacy .atomic-agent project skills after the h0x project dir rename", async () => {
+src\runtime\bootstrap.test.ts:654:      join(workingDir, ".atomic-agent", "skills"),
+src\runtime\bootstrap.test.ts:727:    process.env.ATOMIC_AGENT_TASKS_ENABLED = "false";
+src\runtime\bootstrap.test.ts:741:      delete process.env.ATOMIC_AGENT_TASKS_ENABLED;
+src\runtime\bootstrap.test.ts:972:    mkdirSync(join(workingDir, ".atomic-agent", "skills"), { recursive: true });
+src\runtime\bootstrap.test.ts:973:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\runtime\bootstrap.test.ts:974:    process.env.ATOMIC_AGENT_GRAMMARS_DIR = join(process.cwd(), "grammars");
+src\runtime\bootstrap.test.ts:981:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\runtime\bootstrap.test.ts:982:    delete process.env.ATOMIC_AGENT_GRAMMARS_DIR;
+src\runtime\bootstrap-queued-turn.test.ts:59:    mkdirSync(join(workingDir, ".atomic-agent", "skills"), { recursive: true });
+src\runtime\bootstrap-queued-turn.test.ts:60:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\runtime\bootstrap-queued-turn.test.ts:61:    process.env.ATOMIC_AGENT_GRAMMARS_DIR = join(process.cwd(), "grammars");
+src\runtime\bootstrap-queued-turn.test.ts:68:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\runtime\bootstrap-queued-turn.test.ts:69:    delete process.env.ATOMIC_AGENT_GRAMMARS_DIR;
+src\llm\grammar\tool-call-grammar.ts:89:    process.env.ATOMIC_AGENT_TOOL_CALL_GRAMMAR;
+src\llm\grammar\tool-call-grammar.ts:105:    "tool-call.gbnf not found (set H0X_CLI_TOOL_CALL_GRAMMAR or legacy ATOMIC_AGENT_TOOL_CALL_GRAMMAR, install grammars next to the binary, or run from a dev tree)",
+src\local-llm\download-file.network-audit.test.ts:41:    await expect(downloadFile(url, "G:/h0xi/atomic-agent/.local/network-audit/never-written.bin"))
+src\local-llm\download-file.network-audit.test.ts:68:    await expect(downloadFile(url, "G:/h0xi/atomic-agent/.local/network-audit/never-written.bin"))
+src\local-llm\download-file.network-audit.test.ts:92:    await expect(downloadFile(firstUrl, "G:/h0xi/atomic-agent/.local/network-audit/never-written.bin"))
+src\local-llm\download-file.network-audit.test.ts:116:    await expect(downloadFile(firstUrl, "G:/h0xi/atomic-agent/.local/network-audit/never-written.bin"))
+src\local-llm\download-file.network-audit.test.ts:140:    await expect(downloadFile(firstUrl, "G:/h0xi/atomic-agent/.local/network-audit/never-written.bin"))
+src\local-llm\daemon-lifecycle.ts:293:    throw new Error("backend not downloaded; run 'atomic-agent models update'");
+src\local-llm\daemon-lifecycle.ts:300:      `model ${opts.modelId} not downloaded; run 'atomic-agent models pull ${opts.modelId}'`,
+src\local-llm\daemon-lifecycle.ts:494:      "backend not downloaded; run 'atomic-agent models update'",
+src\local-llm\daemon-lifecycle.ts:502:      `embedding model ${opts.modelId} not downloaded; run 'atomic-agent models pull-embedding ${opts.modelId}'`,
+src\local-llm\daemon-lifecycle.ts:657: * is recoverable with a single `atomic-agent models stop`.
+src\tui\chat-orchestrator.update.test.ts:20:      config: { update: { checkOnStartup: true, repo: "AtomicBot-ai/atomic-agent" } },
+src\tui\chat-orchestrator.update.test.ts:34:      value: process.platform === "win32" ? "G:\\tools\\atomic-agent.exe" : "/opt/bin/atomic-agent",
+src\tui\debug-bundle\write-debug-zip.test.ts:73:        join(outDir, "atomic-agent-debug-2026-04-24T12-34-56.789Z.zip"),
+src\tui\debug-bundle\build-snapshot.ts:58:  return `atomic-agent-debug-${debugBundleTimestamp(now)}.zip`;
+src\memory\memory-store.test.ts:19:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-notes-"));
+src\memory\memory-store-v2.test.ts:24:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-memv2-"));
+src\memory\memory-schema.test.ts:15:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-mem-"));
+src\memory\links\link-store.test.ts:19:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-links-"));
+src\tui\local-backend-readiness.test.ts:27:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\tui\local-backend-readiness.test.ts:34:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\tui\local-backend-readiness.test.ts:302:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\tui\local-backend-readiness.test.ts:308:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\llm\provider\subscription-cli\codex-cli-adapter.ts:16: * atomic-agent already built.
+src\llm\describe-llama-health-failure.ts:34:        `Set ATOMIC_AGENT_LLAMA_API_KEY in the state dir's .env and retry.`
+src\llm\describe-llama-health-failure.test.ts:43:    expect(line).toContain("ATOMIC_AGENT_LLAMA_API_KEY");
+src\llm\provider\subscription-cli\claude-cli-adapter.ts:21: * which competes with the complete two-zone prompt atomic-agent already
+src\llm\provider\subscription-cli\claude-cli-adapter.ts:49:    // atomic-agent's approval ladder.
+src\llm\provider\subscription-cli\claude-cli-adapter.ts:55:    // atomic-agent owns session state and re-sends the whole prompt each
+src\llm\provider\subscription-cli\claude-cli-adapter.ts:247:    // reaches the model exactly as atomic-agent built it.
+src\memory\profile-store.test.ts:18:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-profile-"));
+src\sidecar\steer-message.test.ts:40:    mkdirSync(join(workingDir, ".atomic-agent", "skills"), { recursive: true });
+src\sidecar\steer-message.test.ts:41:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\sidecar\steer-message.test.ts:42:    process.env.ATOMIC_AGENT_GRAMMARS_DIR = join(process.cwd(), "grammars");
+src\sidecar\steer-message.test.ts:50:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\sidecar\steer-message.test.ts:51:    delete process.env.ATOMIC_AGENT_GRAMMARS_DIR;
+src\sidecar\send-message-concurrency.test.ts:63:    mkdirSync(join(workingDir, ".atomic-agent", "skills"), { recursive: true });
+src\sidecar\send-message-concurrency.test.ts:64:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\sidecar\send-message-concurrency.test.ts:65:    process.env.ATOMIC_AGENT_GRAMMARS_DIR = join(process.cwd(), "grammars");
+src\sidecar\send-message-concurrency.test.ts:75:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\sidecar\send-message-concurrency.test.ts:76:    delete process.env.ATOMIC_AGENT_GRAMMARS_DIR;
+src\sidecar\main.ts:258:            ? "run atomic-agent models start"
+src\sidecar\main.ts:259:            : "check localModels.url or H0X_CLI_LLAMA_URL (or legacy ATOMIC_AGENT_LLAMA_URL)";
+src\sidecar\main.ts:433:    message: "atomic-agent sidecar booted",
+src\tui\components\cloud-provider-onboarding-mouse.test.tsx:26:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+src\tui\llm-panel\fallback\fallback-seam.test.ts:16:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+src\llm\provider\adapters\tool-call-adapter.ts:6: * Maps between atomic-agent tool descriptors and a provider's native
+src\llm\provider\adapters\tool-call-adapter.ts:14:  /** Restore the atomic-agent qualified name from a provider function name. */
+src\tui\llm-panel\fallback\fallback-orchestrator.test.ts:10:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+src\tools\browser\playwright-backend.ts:295:          "Install one, or set H0X_CLI_BROWSER_EXECUTABLE_PATH (or legacy ATOMIC_AGENT_BROWSER_EXECUTABLE_PATH) to the binary path.",
+src\tui\uninstall\uninstall-state.ts:55: * either: `atomic-agent` is what an operator types twenty times a day,
+src\tui\uninstall\uninstall-reducer.test.ts:13:      path: "/Users/op/.atomic-agent",
+src\tui\uninstall\uninstall-keys.test.ts:13:    { path: "/Users/op/.atomic-agent", label: "state", size: "1.7 GB", group: "data" },
+src\tools\browser\clear-stale-chrome-locks.ts:15: * Related: https://github.com/AtomicBot-ai/atomic-agent/issues/22
+src\tui\tui-state.ts:545:  /** State slice driving the Import tab (one-shot Hermes -> atomic-agent migration). */
+src\tools\browser\build-chrome-launch-args.ts:2: * Build the Chrome command-line flags used when atomic-agent spawns a
+src\tui\tui-command.ts:63: * CLI entry for `atomic-agent tui`. Boots the full runtime once and stays
+src\tui\tui-command.ts:129:    process.env.ATOMIC_AGENT_TUI_SKIP_LLAMA_SETUP === "1";
+src\tui\tui-command.ts:711:    // it as the command name ("unknown command: atomic-agent"). Plain node keeps
+src\tui\persist-embedding-hybrid-recall.test.ts:20:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\tui\persist-embedding-hybrid-recall.test.ts:28:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\tui\tui-command.mouse.test.ts:157:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\tui\tui-command.mouse.test.ts:172:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\tui\tui-args.ts:4: * Parsed flags for the `atomic-agent tui` subcommand. Kept separate from
+src\tui\tui-args.ts:108: * when the TUI can mount. A pipe (CI, cron, `echo hi | atomic-agent`, a
+src\tui\tui-args.ts:110: * React stack trace of minified bundle offsets — and bare `atomic-agent` /
+src\tui\tui-args.ts:111: * `atomic-agent tui` are exactly the commands new users and scripts run
+src\tui\persist-approval-level.test.ts:9:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+src\tools\memory\notes-recall.test.ts:24:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-notes-recall-tool-"));
+src\tools\memory\procedures-recall.test.ts:24:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-tool-procedures-"));
+src\tools\memory\notes-forget.test.ts:24:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-notes-forget-tool-"));
+src\tui\open-terminal-window.ts:128:        "no terminal emulator found — set $H0X_CLI_TERMINAL (or legacy $ATOMIC_AGENT_TERMINAL) to the one you use",
+src\tools\memory\lessons-recall.test.ts:24:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-tool-lessons-"));
+src\tui\tui-app.tsx:448:   * mutated — the operator restarts atomic-agent to drop the live
+src\tui\tui-app.tsx:544:   * `atomic-agent tui` in the same working directory.
+src\tui\open-terminal-window.test.ts:107:      "ATOMIC_AGENT_TERMINAL",
+src\tools\memory\notes-store.test.ts:24:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-notes-store-tool-"));
+src\tools\memory\profile-history.test.ts:24:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-tool-history-"));
+src\tools\memory\profile-list.test.ts:24:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-tool-profile-"));
+src\tools\memory\profile-remove.test.ts:24:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-tool-profile-"));
+src\tools\memory\profile-set.test.ts:24:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-tool-profile-"));
+src\tools\os\http-redirect-remediation.test.ts:7:const cwd = "G:/h0xi/atomic-agent";
+src\tools\os\fs-edit.ts:152:  const temp = resolve(dir, `.${suffix}.atomic-agent.tmp`);
+src\tools\os\fs-edit.test.ts:176:    expect(remaining.filter((name) => name.endsWith(".atomic-agent.tmp"))).toEqual([]);
+src\tools\os\fs-approval-scope.test.ts:192:      stateDir = join(home, ".atomic-agent");
+src\tools\os\fs-write-retarget.test.ts:77:    const outside = join(homedir(), ".atomic-agent-retarget-test", "out.txt");
+src\tools\os\fs-write-retarget.test.ts:101:      await rm(join(homedir(), ".atomic-agent-retarget-test"), {
+src\tools\os\fs-write-retarget.test.ts:142:              ? join(homedir(), ".atomic-agent-retarget-loop", `${hop}.txt`)
+src\tools\os\fs-write-retarget.test.ts:152:      await rm(join(homedir(), ".atomic-agent-retarget-loop"), {
+src\tui\providers\save-provider-wizard.test.ts:27:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\tui\providers\save-provider-wizard.test.ts:34:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\tui\components\onboarding-download-frame.test.tsx:21:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+src\tui\providers\providers-wizard-target.test.ts:28:  "ATOMIC_AGENT_OPENAI_API_KEY",
+src\tui\providers\providers-wizard-target.test.ts:164:    previousStateDir = process.env.ATOMIC_AGENT_STATE_DIR;
+src\tui\providers\providers-wizard-target.test.ts:166:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\tui\providers\providers-wizard-target.test.ts:174:      delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\tui\providers\providers-wizard-target.test.ts:176:      process.env.ATOMIC_AGENT_STATE_DIR = previousStateDir;
+src\tools\os\http-redirect.network-audit.test.ts:13:const cwd = "G:/h0xi/atomic-agent";
+src\tui\providers\providers-wizard-key-bindings.test.ts:638:      "ATOMIC_AGENT_OPENAI_API_KEY",
+src\tui\providers\providers-wizard-key-bindings.test.ts:720:      previousStateDir = process.env.ATOMIC_AGENT_STATE_DIR;
+src\tui\providers\providers-wizard-key-bindings.test.ts:722:      process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\tui\providers\providers-wizard-key-bindings.test.ts:730:        delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\tui\providers\providers-wizard-key-bindings.test.ts:732:        process.env.ATOMIC_AGENT_STATE_DIR = previousStateDir;
+src\tools\os\read-document\read-document.test.ts:26:    `atomic-agent-read-doc-${Math.random().toString(36).slice(2)}`,
+src\tui\onboarding\use-intro-input.test.tsx:19:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+src\tui\components\onboarding-screen.test.tsx:30:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+src\tui\components\onboarding-mouse.test.tsx:26:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+src\tui\onboarding\propose-second-backend.ts:25: * atomic-agent runs local and cloud side by side, and an operator who
+src\tui\components\update-modal.tsx:11: * Y/N offer shown at startup when a newer atomic-agent release is
+src\tui\components\uninstall-modal.test.tsx:12:      path: "/Users/op/.atomic-agent",
+src\tui\components\uninstall-modal.test.tsx:18:      path: "/Users/op/.local/bin/atomic-agent",
+src\tui\components\uninstall-modal.test.tsx:47:    expect(rendered).toContain("/Users/op/.atomic-agent");
+src\tui\onboarding\onboarding-step-keys.test.ts:19:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+src\tui\telegram\tui-telegram-orchestrator.test.ts:71:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\tui\telegram\tui-telegram-orchestrator.test.ts:77:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\tui\menu\menu-registry.ts:626:        "write debug zip (TUI snapshot + recent trace NDJSON) to ~/Documents/atomic-agent-debug",
+src\tui\menu\menu-registry.test.ts:27:      "write debug zip (TUI snapshot + recent trace NDJSON) to ~/Documents/atomic-agent-debug",
+src\tui\onboarding\needs-onboarding.test.ts:10:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+src\tui\mcp\mcp-panel-state.ts:67: * the next `atomic-agent` boot.
+src\tui\local-models\local-models-orchestrator-auto-update.test.ts:48:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\tui\local-models\local-models-orchestrator-auto-update.test.ts:58:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\tui\privacy\privacy-orchestrator.test.ts:10:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+src\tui\persist-user-local-models-config.ts:51: * drive a daemon you started yourself with `atomic-agent models start` —
+src\tui\local-models\local-models-orchestrator.test.ts:51:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\tui\local-models\local-models-orchestrator.test.ts:58:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\tui\local-models\local-models-orchestrator-pairing.test.ts:54:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\tui\local-models\local-models-orchestrator-pairing.test.ts:67:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\tui\persist-user-local-models-config.test.ts:40:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+src\tui\persist-user-local-models-config.test.ts:47:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+src\tui\persist-mcp-server.ts:238: * canonical atomic-agent `transport: { kind, ... }` envelope.
+src\tui\local-models\local-models-orchestrator.ts:216:    // launched via `atomic-agent models start` in another terminal has
+src\tui\local-models\local-models-orchestrator.ts:1676:   * `atomic-agent models start` in another terminal).
+src\tui\persist-onboarding-state.test.ts:9:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+src\tui\persist-mcp-server.test.ts:15:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+src\tui\synchronized-output.test.ts:62:      env: { ATOMIC_AGENT_NO_SYNC_OUTPUT: "1" },
+src\tui\synchronized-output.ts:29: * `H0X_CLI_NO_SYNC_OUTPUT=1` (or legacy `ATOMIC_AGENT_NO_SYNC_OUTPUT=1`)
+src\tui\synchronized-output.ts:86:    env.ATOMIC_AGENT_NO_SYNC_OUTPUT === "1"
+src\tools\os\read-document\extractors\doc-extractor.ts:58:    `atomic-agent-doc-${Date.now()}-${Math.random().toString(36).slice(2)}.doc`,
+src\tui\skills\skills-orchestrator.ts:220:        line: `${name} is a project-local skill — remove it from .atomic-agent/skills instead`,
+docs\rebrand\remaining-branding-scan.raw.txt:1:.env.example:3:#   atomic-agent config get
+docs\rebrand\remaining-branding-scan.raw.txt:2:.env.example:4:#   atomic-agent config set '<full-json-payload>'
+docs\rebrand\remaining-branding-scan.raw.txt:3:.env.example:9:# Bootstrap / optional env only. Not managed by `atomic-agent config`.
+docs\rebrand\remaining-branding-scan.raw.txt:4:.env.example:10:ATOMIC_AGENT_STATE_DIR=~/.atomic-agent
+docs\rebrand\remaining-branding-scan.raw.txt:5:.env.example:11:ATOMIC_AGENT_LLAMA_API_KEY=
+docs\rebrand\remaining-branding-scan.raw.txt:6:.env.example:14:ATOMIC_AGENT_BROWSER_CHANNEL=chrome
+docs\rebrand\remaining-branding-scan.raw.txt:7:.env.example:15:ATOMIC_AGENT_BROWSER_HEADLESS=false
+docs\rebrand\remaining-branding-scan.raw.txt:8:.env.example:16:ATOMIC_AGENT_BROWSER_CDP_URL=
+docs\rebrand\remaining-branding-scan.raw.txt:9:.env.example:17:ATOMIC_AGENT_BROWSER_LAUNCH_TIMEOUT_MS=30000
+docs\rebrand\remaining-branding-scan.raw.txt:10:.env.example:19:# Skills (auto-discovered from STATE_DIR/skills and ./.atomic-agent/skills)
+docs\rebrand\remaining-branding-scan.raw.txt:11:.env.example:20:ATOMIC_AGENT_SKILLS_CATALOG_BUDGET=512
+docs\rebrand\remaining-branding-scan.raw.txt:12:PROMPT.md:1:# atomic-agent — system prompt anatomy
+docs\rebrand\remaining-branding-scan.raw.txt:13:PROMPT.md:251:  `atomic-agent trace replay <sessionId>` and compare `stablePrefixHash`.
+docs\rebrand\remaining-branding-scan.raw.txt:14:BUNDLING.md:8:`atomic-agent-sidecar` when installed from npm; it is not the SEA
+docs\rebrand\remaining-branding-scan.raw.txt:15:BUNDLING.md:10:HTTP (`ATOMIC_AGENT_LLAMA_URL`) or use `atomic-agent models` for managed
+docs\rebrand\remaining-branding-scan.raw.txt:16:BUNDLING.md:78:The output lands at `bundle/atomic-agent-<slug>.<ext>` and
+docs\rebrand\remaining-branding-scan.raw.txt:17:BUNDLING.md:79:`bundle/atomic-agent-<slug>.<ext>.sha256` (for `shasum -a 256 -c`).
+docs\rebrand\remaining-branding-scan.raw.txt:18:BUNDLING.md:91:  codesign -dv ./bundle/darwin-arm64/atomic-agent
+docs\rebrand\remaining-branding-scan.raw.txt:19:BUNDLING.md:98:  **`./bundle/.../atomic-agent`** is killed, the problem is the SEA binary
+docs\rebrand\remaining-branding-scan.raw.txt:20:BUNDLING.md:127:curl -fsSL "https://raw.githubusercontent.com/OWNER/atomic-agent/BRANCH/scripts/install.sh" | sh
+docs\rebrand\remaining-branding-scan.raw.txt:21:BUNDLING.md:130:Set `ATOMIC_AGENT_REPO=owner/atomic-agent` if the default in
+docs\rebrand\remaining-branding-scan.raw.txt:22:BUNDLING.md:132:Optional: `ATOMIC_AGENT_VERSION`, `ATOMIC_AGENT_INSTALL_DIR`.
+docs\rebrand\remaining-branding-scan.raw.txt:23:BUNDLING.md:143:atomic-agent[.exe]            # SEA binary (CLI entry)
+docs\rebrand\remaining-branding-scan.raw.txt:24:BUNDLING.md:162:- **Override:** set `ATOMIC_AGENT_RG_PATH=/path/to/rg` to point the agent
+docs\rebrand\remaining-branding-scan.raw.txt:25:BUNDLING.md:222:  `ATOMIC_AGENT_LLAMA_URL=http://host:port` as needed.
+docs\rebrand\remaining-branding-scan.raw.txt:26:BUNDLING.md:226:  to the `atomic-agent` binary for window-management and reliable keyboard
+docs\rebrand\remaining-branding-scan.raw.txt:27:BUNDLING.md:230:- **Skills** live under `$ATOMIC_AGENT_STATE_DIR/skills/` and
+docs\rebrand\remaining-branding-scan.raw.txt:28:BUNDLING.md:231:  `./.atomic-agent/skills/`. The redistributable ships a `starter-skills/`
+docs\rebrand\remaining-branding-scan.raw.txt:29:README.md:7:This is a development-stage fork of [Atomic Agent](https://github.com/AtomicBot-ai/atomic-agent). Its history, MIT license, upstream copyright, and third-party attribution are preserved. This first stage changes the command identity and terminal branding, not the agent's core behavior or protocols. Public releases and h0x distribution packaging are not ready.
+docs\rebrand\remaining-branding-scan.raw.txt:30:README.md:13:Use Node **25.7 or newer** from a G-drive directory. In this workspace, Node 25.7.0 is unpacked at `G:\h0xi\atomic-agent\.local\runtime\node-v25.7.0-win-x64`. A fresh clone needs that runtime installed first; it is not committed.
+docs\rebrand\remaining-branding-scan.raw.txt:31:README.md:15:From `G:\h0xi\atomic-agent` in PowerShell:
+docs\rebrand\remaining-branding-scan.raw.txt:32:README.md:39:Compatibility aliases remain: `atomic-agent`, `atag`, and `atomic-agent-sidecar`. New installs default to `~/.h0x-cli`; a legacy default `~/.atomic-agent` state directory is copied forward on first h0x default boot without deleting the old data. `H0X_CLI_*` environment variables take precedence over matching legacy `ATOMIC_AGENT_*` aliases.
+docs\rebrand\remaining-branding-scan.raw.txt:33:README.md:53:The following results and graphics are historical **upstream Atomic Agent** evaluations. They have not been rerun or certified as h0x-cli benchmarks.
+docs\rebrand\remaining-branding-scan.raw.txt:34:README.md:55:On the public **GAIA validation Level 1** split (53 tasks), Atomic Agent and Hermes drove the **same** local `qwen-3.6-35b-a3b` (`llama-server`, UD-Q4_K_XL), with the same step budget and timeout. The only variable is the agent loop.
+docs\rebrand\remaining-branding-scan.raw.txt:35:README.md:57:![GAIA Level 1 benchmark: Atomic Agent 69.8% vs Hermes 58.5%](assets/gaia-l1-benchmark.png)
+docs\rebrand\remaining-branding-scan.raw.txt:36:README.md:59:| Metric | Atomic Agent | Hermes |
+docs\rebrand\remaining-branding-scan.raw.txt:37:README.md:72:    x-axis ["Atomic Agent", "Hermes"]
+docs\rebrand\remaining-branding-scan.raw.txt:38:README.md:81:    x-axis ["Atomic Agent", "Hermes"]
+docs\rebrand\remaining-branding-scan.raw.txt:39:README.md:90:The same loop holds up as the local model shrinks. Same GAIA L1 split, Atomic Agent alone:
+docs\rebrand\remaining-branding-scan.raw.txt:40:README.md:98:Even a 9B model clears half of GAIA L1 through the same context-frugal loop. (Different Atomic Agent versions per row; see the write-up for provenance.)
+docs\rebrand\remaining-branding-scan.raw.txt:41:README.md:100:Full reproducible write-up: [`GAIA-L1-EXPERIMENT.md`](eval-agents/docs/GAIA-L1-EXPERIMENT.md) · Raw artifacts (matrices, NDJSON traces, logs): [gaia-l1-eval-2026-06-11 release](https://github.com/AtomicBot-ai/atomic-agent/releases/tag/gaia-l1-eval-2026-06-11).
+docs\rebrand\remaining-branding-scan.raw.txt:42:README.md:138:Managed local models currently use the upstream TurboQuant `llama.cpp` ([`AtomicBot-ai/atomic-llama-cpp-turboquant-nightly`](https://github.com/AtomicBot-ai/atomic-llama-cpp-turboquant-nightly)):
+docs\rebrand\remaining-branding-scan.raw.txt:43:README.md:293:export ATOMIC_AGENT_LLAMA_URL=http://127.0.0.1:8080
+docs\rebrand\remaining-branding-scan.raw.txt:44:README.md:347:  --api-key "$ATOMIC_AGENT_API_KEY"
+docs\rebrand\remaining-branding-scan.raw.txt:45:README.md:458:- the TUI checks GitHub Releases for a newer version at startup (set `ATOMIC_AGENT_UPDATE_CHECK_ON_STARTUP=false` to skip);
+docs\rebrand\remaining-branding-scan.raw.txt:46:README.md:491:- `H0X_CLI_STATE_DIR`: state, config, skills, browser profile, memory, tasks, traces. Default: `~/.h0x-cli`; matching `ATOMIC_AGENT_STATE_DIR` remains a compatibility alias.
+docs\rebrand\remaining-branding-scan.raw.txt:47:README.md:499:For every h0x variable above, the matching legacy `ATOMIC_AGENT_*` name still works when the h0x name is absent.
+docs\rebrand\remaining-branding-scan.raw.txt:48:scripts\bundle-sea.ts:70:      __ATOMIC_AGENT_VERSION__: JSON.stringify(version),
+docs\rebrand\remaining-branding-scan.raw.txt:49:docs\rebrand\decisions.md:9:The product is a fork of Atomic Agent. The goal is surface rebranding first, distribution/core rebranding later, then launch and original features. [PRODUCT.md](../../PRODUCT.md) is the identity register: **h0x - CLI**, command/package/banner **h0x-cli**, **Built by TEAM PAVii.Ai**, website **pavii.tech**, and temporary **https://pavii.tech/docs**. Label that docs address as a placeholder; do not imply it is live.
+docs\rebrand\remaining-branding-scan.raw.txt:50:docs\rebrand\decisions.md:14:- Keep `atomic-agent`, `atag`, and `atomic-agent-sidecar` as compatibility commands. Retain the current version, config keys, environment-variable names, and storage discovery. No sidecar NDJSON or HTTP API changes.
+docs\rebrand\remaining-branding-scan.raw.txt:51:docs\rebrand\decisions.md:64:| Local install | `scripts/install-local.ps1` generates four launchers in `.local/bin`: `h0x-cli`, `atomic-agent`, `atag`, and `atomic-agent-sidecar`. Launchers pin runtime/state to G-drive paths and do not change cwd. Installation SUCCESS: build exit 0, npm link exit 0, four aliases installed. Local CLI smoke passed 8/8; live sidecar smoke was not run. |
+docs\rebrand\remaining-branding-scan.raw.txt:52:docs\rebrand\decisions.md:91:Installed local command smoke: GREEN, 8/8 actual `.local/bin/*.cmd` invocations. `h0x-cli`, `atomic-agent`, and `atag` returned identical help and version output (`h0x-cli 0.4.2`); `update --check` returned the expected unavailable message with exit 1; blank piped stdin returned the expected interactive-TTY refusal with exit 1. Caller cwd remained unchanged in all eight cases. See [smoke summary](../../.local/reports/rebrand-local-command-smoke-summary.md) and [captured JSON](../../.local/reports/rebrand-local-command-smoke.json). The smoke used absolute wrapper paths, so it does not establish fresh-shell PATH discovery. Sidecar alias mapping is covered by earlier tests, but live sidecar NDJSON smoke was not run. These checks do not establish interactive keyboard/restoration behavior.
+docs\rebrand\remaining-branding-scan.raw.txt:53:docs\rebrand\decisions.md:99:Windows verification environment: a bootstrap grant test failed with `spawn ls ENOENT` because PowerShell's `ls` alias is not an executable available to Node subprocesses. Rawls confirmed the installed `C:\Program Files\Git\usr\bin\ls.exe` works read-only. For reproducible reruns, put `G:\h0xi\atomic-agent\.local\runtime\node-v25.7.0-win-x64` FIRST on the test process PATH, retain the inherited PATH, and APPEND `C:\Program Files\Git\usr\bin`. Keep temporary files, caches, and outputs under the G-drive repo as before. This is process-scoped test setup only: no C-drive writes, no user/global PATH mutation, and no fixture or production edits for this environment issue. Do not confuse it with the separate local installer's user-PATH setup. Bootstrap and final focused reruns passed with this environment.
+docs\rebrand\remaining-branding-scan.raw.txt:54:docs\rebrand\decisions.md:161:- All generated audit artifacts, temporary data, caches, logs, and reports must stay under `G:\h0xi\atomic-agent` or another explicitly approved G-drive folder. Reading installed tools from C is permitted; writing project artifacts there is not. Do not include secret values in documentation.
+docs\rebrand\remaining-branding-scan.raw.txt:55:docs\rebrand\decisions.md:243:Decision: new default persistent state is `~/.h0x-cli`; legacy default `~/.atomic-agent` is copied into the new default on the first h0x default boot when the h0x directory does not already exist. The copy is idempotent, writes `migration.json`, and never deletes the legacy state. If both old and new state directories exist, h0x uses the new directory and does not overwrite it.
+docs\rebrand\remaining-branding-scan.raw.txt:56:docs\rebrand\decisions.md:245:Decision: matching `H0X_CLI_*` environment variables take precedence over legacy `ATOMIC_AGENT_*` names. Legacy names remain supported for compatibility. Direct env consumers outside `loadConfig` were updated for the same h0x-first policy where scoped to this stage: TUI terminal selection/skip flags, synchronized-output opt-out, CLI debug/API key, ripgrep override, llama sampling knobs, grammar override, starter skills source, and OpenAI-compatible fallback API key.
+docs\rebrand\remaining-branding-scan.raw.txt:57:docs\rebrand\decisions.md:247:Decision: new project-local skills default to `.h0x-cli/skills`; legacy `.atomic-agent/skills` remains readable. Runtime, CLI skill listing/showing/disable checks, and trace replay pass both directories to the skill loader. The loader now accepts multiple project directories, dedupes identical resolved paths, and preserves the existing global-skip guard when a project path equals the global skills dir.
+docs\rebrand\remaining-branding-scan.raw.txt:58:docs\rebrand\decisions.md:249:Decision: stable-prefix salt changed from `atomic-agent-v1` to `h0x-cli-v1`, intentionally invalidating prior llama.cpp KV slots once. Config and dotenv notices now use `h0x-cli`; config-help and top-level CLI help teach h0x env names while documenting legacy aliases.
+docs\rebrand\remaining-branding-scan.raw.txt:59:docs\rebrand\decisions.md:266:Decision: release defaults now point at `vjk7989/h0x-cli-v3`, and generated SEA artifacts use `h0x-cli` archive and binary names. Compatibility aliases remain intentional for CLI entrypoints and installers: `atomic-agent`, `atag`, and the existing `atomic-agent-sidecar` sidecar command are preserved where already supported.
+docs\rebrand\remaining-branding-scan.raw.txt:60:docs\rebrand\decisions.md:268:Decision: install scripts document `https://pavii.tech` examples and h0x environment names, with legacy `ATOMIC_AGENT_*` install overrides still accepted. POSIX and Windows installers install `h0x-cli` as the primary binary and create only the intentional compatibility aliases. Bundle README output includes TEAM PAVii.Ai, the website, and the h0x GitHub repository.
+docs\rebrand\remaining-branding-scan.raw.txt:61:docs\network-audit\dependencies-and-build.md:3:Date: 2026-08-31. Workspace: `G:\h0xi\atomic-agent`.
+docs\rebrand\remaining-branding-scan.raw.txt:62:docs\network-audit\dependencies-and-build.md:9:- Read project operating rules in `AGENTS.md`; used the local `atomic-agent` knowledge graph for symbol discovery and the inbound trace of `createJudgeClient`. Read local files for exact evidence. Used literal/config searches for endpoints and scripts, including installed dependency code not covered by the graph.
+docs\rebrand\remaining-branding-scan.raw.txt:63:docs\network-audit\dependencies-and-build.md:17:1. **Source and release metadata can leave during SEA builds.** A nonempty `SENTRY_AUTH_TOKEN` enables source-map upload to the hardcoded upstream organization `atomic-agent`, project `cli`, independently of runtime analytics/crash-report settings. Maps include original source content by default. The installed plugin also defaults to release creation, finalization, and automatic commit association. See the Sentry section below.
+docs\rebrand\remaining-branding-scan.raw.txt:64:docs\network-audit\dependencies-and-build.md:19:3. **Eval can disclose task content to a hosted judge.** `eval/harness/judge-client.ts:9` defaults to OpenRouter; lines 43-45 select an available key. Lines 76-103 transmit task, reply, and rubric assembled by `eval/harness/build-judge-prompt.ts:28`. An explicit `ATOMIC_AGENT_JUDGE_URL` override still receives the selected key at line 89, including if the destination is local. Endpoint selection and key scoping need to be assessed together.
+docs\rebrand\remaining-branding-scan.raw.txt:65:docs\network-audit\dependencies-and-build.md:20:4. **The download installers still target the upstream repository.** `scripts/install.sh:20` and `scripts/install.ps1:37` default to `AtomicBot-ai/atomic-agent`, despite this working tree's `h0x-cli` package identity and repository at `package.json:2` and line 8. Running those installers without `ATOMIC_AGENT_REPO` would fetch upstream release artifacts, not prove installation of this fork. Header examples also retain `atomicagent.io`.
+docs\rebrand\remaining-branding-scan.raw.txt:66:docs\network-audit\dependencies-and-build.md:78:- **Recipient:** organization `atomic-agent`, project `cli` (`scripts/bundle-sea.ts:32`); base URL defaults to `https://sentry.io`, with `SENTRY_URL` override honored by `node_modules/@sentry/bundler-plugins/build/esm/core/options-mapping.js:9`. Org/project are explicitly passed, so those two environment overrides do not replace the hardcoded values. Auth is provided to the Sentry CLI; its native API routing and server-provided chunk-upload URLs were not observed.
+docs\rebrand\remaining-branding-scan.raw.txt:67:docs\network-audit\dependencies-and-build.md:112:| Judge and memory judge | Default `https://openrouter.ai/api/v1/chat/completions`, model `openai/gpt-4o-mini`; bearer credential, task, assistant reply, rubric, sampling parameters. OpenRouter also receives `HTTP-Referer` and `X-Title` attribution, defaulting to upstream repo and `atomic-agent eval`. | `eval/harness/judge-client.ts:9`, line 13, line 43, line 77, line 89, line 99; `eval/harness/build-judge-prompt.ts:28`. `ATOMIC_AGENT_JUDGE_DISABLED=1` returns null at line 39. Memory eval reuses it via `eval-memory/harness/judge.ts:48`; graph traced callers in E2-E6 and LoCoMo. |
+docs\rebrand\remaining-branding-scan.raw.txt:68:docs\network-audit\dependencies-and-build.md:128:- Read-only check of `C:\Users\vijay\.atomic-agent\skills` found the same **17 manifest/script files**, all byte-identical. No C-drive artifacts were written. Project-local `.atomic-agent/skills` did not exist at the initial check. Other `.local/readability-visual-state/.../skills` copies appeared in discovery but were not independently established as active runtime roots or fully compared; concurrent cleanup/state changes are possible.
+docs\rebrand\remaining-branding-scan.raw.txt:69:docs\rebrand\failure-plan.md:7:- [Full log](G:/h0xi/atomic-agent/.local/reports/rebrand-stage5-full.log), [JSON assertions](G:/h0xi/atomic-agent/.local/reports/rebrand-stage5-full.json): exit 1; 618 files, 608 passed, 10 failed; 6527 tests, 6509 passed, 14 failed, 4 skipped; 300.81 seconds.
+docs\rebrand\remaining-branding-scan.raw.txt:70:docs\rebrand\failure-plan.md:18:[uninstall-targets.test.ts:109](G:/h0xi/atomic-agent/src/uninstall/uninstall-targets.test.ts:109): `isSafeToRemove refuses a one-segment system directory`; `/usr` is accepted instead of rejected.
+docs\rebrand\remaining-branding-scan.raw.txt:71:docs\rebrand\failure-plan.md:20:Evidence: confirmed unchanged guard/test; direct read-only Node path probe shows Windows resolves `/usr` to `G:\usr`, split segments `["G:", "usr"]`. The guard in [uninstall-targets.ts](G:/h0xi/atomic-agent/src/uninstall/uninstall-targets.ts) counts the drive as a directory. `C:\Windows` likewise has two segments and passes the shallow-directory condition despite the source comment explicitly intending rejection. This is a pre-existing Windows safety defect in the predicate, not merely a POSIX test fixture. No destructive operation was attempted; broader exploitability was not assessed.
+docs\rebrand\remaining-branding-scan.raw.txt:72:docs\rebrand\failure-plan.md:28:[send-message-concurrency.test.ts:139](G:/h0xi/atomic-agent/src/sidecar/send-message-concurrency.test.ts:139): `serialises two rapid send_message calls FIFO without crossing state`; observed `[m1,m2,m3]`, expected `[m1,m2]`.
+docs\rebrand\remaining-branding-scan.raw.txt:73:docs\rebrand\failure-plan.md:30:Evidence: confirmed unchanged test and exact match to [.github/workflows/test.yml:110](G:/h0xi/atomic-agent/.github/workflows/test.yml:110), which documents this failure on unmodified main and issue #203. CI calls it a sidecar behavior question, not a timing flake. The stub ignores reflection-prefixed sessions but labels other completion calls as user-message inferences. Whether the third call is legitimate auxiliary work has NOT been proven.
+docs\rebrand\remaining-branding-scan.raw.txt:74:docs\rebrand\failure-plan.md:38:[local-backend-readiness.test.ts](G:/h0xi/atomic-agent/src/tui/local-backend-readiness.test.ts) fails these `isCloudTextProviderReady` cases with true instead of false:
+docs\rebrand\remaining-branding-scan.raw.txt:75:docs\rebrand\failure-plan.md:45:Evidence: unchanged tests/readiness/resolver. Current diagnostic process has OPENAI_API_KEY present; OPENAI_COMPAT_API_KEY and ATOMIC_AGENT_OPENAI_API_KEY absent (values never printed). [resolve-llm-api-key.ts](G:/h0xi/atomic-agent/src/config/resolve-llm-api-key.ts) intentionally consults these for openai-compatible entries. Test setup clears OPENROUTER_API_KEY only, leaving its supposedly keyless fixtures exposed. Inherited-runner leakage is strongly supported; the completed runner's exact environment was not captured by this agent.
+docs\rebrand\remaining-branding-scan.raw.txt:76:docs\rebrand\failure-plan.md:53:- [skill-script-runner.test.ts:100](G:/h0xi/atomic-agent/src/skills/skill-script-runner.test.ts:100): `runs a bash script by .sh extension`; exit 1 instead of 0.
+docs\rebrand\remaining-branding-scan.raw.txt:77:docs\rebrand\failure-plan.md:54:- [skill-tools.test.ts:126](G:/h0xi/atomic-agent/src/tools/skill/skill-tools.test.ts:126): `skill.run_script auto-approves the read-only gog setup check`; error instead of ok.
+docs\rebrand\remaining-branding-scan.raw.txt:78:docs\rebrand\failure-plan.md:64:[pdf-extractor.canvas-warnings.test.ts](G:/h0xi/atomic-agent/src/tools/os/read-document/extractors/pdf-extractor.canvas-warnings.test.ts):
+docs\rebrand\remaining-branding-scan.raw.txt:79:docs\rebrand\failure-plan.md:69:Evidence: unchanged test copies pdfjs into tmpdir but does not block ancestor node_modules resolution. With G-repository-local TMP, the sandbox remains below this checkout. A read-only createRequire probe anchored under G:\h0xi\atomic-agent\.local\tmp resolves canvas from G:\h0xi\atomic-agent\node_modules\@napi-rs\canvas\index.js. This defeats the no-canvas premise, consistent with both reported failures; the product extraction path itself succeeds.
+docs\rebrand\remaining-branding-scan.raw.txt:80:docs\rebrand\failure-plan.md:77:[open-terminal-window.test.ts:130](G:/h0xi/atomic-agent/src/tui/open-terminal-window.test.ts:130): `isOnPath finds a binary that exists on PATH`; false instead of true.
+docs\rebrand\remaining-branding-scan.raw.txt:81:docs\rebrand\failure-plan.md:87:[fs-approval-scope.test.ts:71](G:/h0xi/atomic-agent/src/tools/os/fs-approval-scope.test.ts:71): `a symlink inside the workspace that points outside is NOT workspace`; second assertion returns outside instead of home.
+docs\rebrand\remaining-branding-scan.raw.txt:82:docs\rebrand\failure-plan.md:97:[stream-cli-completion.test.ts:232](G:/h0xi/atomic-agent/src/llm/provider/subscription-cli/stream-cli-completion.test.ts:232): `force-kills a child that traps SIGTERM instead of orphaning it`; alive(pid) is false immediately after iterator.return, expected true.
+docs\rebrand\remaining-branding-scan.raw.txt:83:docs\rebrand\failure-plan.md:107:[backend-installer.test.ts:480](G:/h0xi/atomic-agent/src/local-llm/backend-installer.test.ts:480): `updates on a variant change even though the tag is unchanged`; updateAvailable false instead of true.
+docs\rebrand\remaining-branding-scan.raw.txt:84:docs\rebrand\failure-plan.md:109:Evidence: unchanged test mocks Windows/x64, installs a CUDA 13.3 asset, and supplies a release containing Vulkan only. [windows-backend-variant.ts](G:/h0xi/atomic-agent/src/local-llm/windows-backend-variant.ts) still performs cached real nvidia-smi detection. If it selects CUDA, the mocked release has no matching desired asset and the installer returns no available update. Real GPU selection in the failed worker was not captured; cause remains inferred, not confirmed.
+docs\rebrand\remaining-branding-scan.raw.txt:85:docs\rebrand\failure-plan.md:121:5. Runner, not this analyst, executes the specified focused files with G:\h0xi\atomic-agent\.local\runtime\node-v25.7.0-win-x64\node.exe and the existing Vitest entrypoint, reports exit codes/assertions, then tsc. After all approved focused repairs pass, rerun the FULL suite with no exclusions and bail 0; retain G log/JSON outputs and require exit 0 with no unhandled errors. Existing full-suite failure evidence remains retained.
+docs\rebrand\remaining-branding-scan.raw.txt:86:src\agent\agent-loop-steering.test.ts:123:    workingDir = mkdtempSync(join(tmpdir(), "atomic-agent-steer-"));
+docs\rebrand\remaining-branding-scan.raw.txt:87:docs\rebrand\handoff.md:223:uses `~/.h0x-cli`, legacy default `~/.atomic-agent` is copied forward once
+docs\rebrand\remaining-branding-scan.raw.txt:88:docs\rebrand\handoff.md:225:over legacy `ATOMIC_AGENT_*` names. New project skills live under
+docs\rebrand\remaining-branding-scan.raw.txt:89:docs\rebrand\handoff.md:226:`.h0x-cli/skills`; legacy `.atomic-agent/skills` remains readable through the
+docs\rebrand\remaining-branding-scan.raw.txt:90:docs\rebrand\handoff.md:245:install `h0x-cli` while preserving the intentional `atomic-agent` and `atag`
+docs\rebrand\remaining-branding-scan.raw.txt:91:docs\network-audit\findings.md:161:The standalone bundler configures Sentry org `atomic-agent`, project `cli`, and
+docs\rebrand\remaining-branding-scan.raw.txt:92:docs\network-audit\findings.md:176:upstream names. MCP advertises `atomic-agent` version `0.1.0`, not the installed
+docs\rebrand\remaining-branding-scan.raw.txt:93:docs\network-audit\verification.md:80:- TEMP, TMP, TMPDIR: `G:\h0xi\atomic-agent\.local\tmp`.
+docs\rebrand\remaining-branding-scan.raw.txt:94:docs\network-audit\verification.md:81:- ATOMIC_AGENT_STATE_DIR: `G:\h0xi\atomic-agent\.local\network-audit\state`.
+docs\rebrand\remaining-branding-scan.raw.txt:95:docs\network-audit\verification.md:107:All commands run from `G:\h0xi\atomic-agent` using the runner above. Vitest
+docs\rebrand\remaining-branding-scan.raw.txt:96:docs\network-audit\verification.md:293:Node runtime under `G:\h0xi\atomic-agent`:
+docs\rebrand\remaining-branding-scan.raw.txt:97:docs\network-audit\endpoint-ledger.md:31:| R05 configured local-llama endpoint; default `127.0.0.1:8080` | Health/props, completion, tokenize/slot/model operations; startup, turns, auxiliary memory work | Prompt/context/tool outputs; optional `ATOMIC_AGENT_LLAMA_API_KEY` | Selected legacy local-llama fallback in launcher configuration. Origin is loopback; server behavior beyond that hop not audited | Preserve local function. Do not assume a custom LAN/remote URL is local. `src/llm/llama-server-client.ts:180`, `src/llm/provider/registry/provider-types.ts`, `src/config/load-config.ts:134` |
+docs\rebrand\remaining-branding-scan.raw.txt:98:docs\network-audit\endpoint-ledger.md:49:| R23 `api.github.com/repos/AtomicBot-ai/atomic-llama-cpp-turboquant-nightly/releases` plus returned asset/CDN hosts | Local-model panel refresh/backend check; managed backend install/auto-update | Release GETs, selected asset, User-Agent; `GITHUB_TOKEN`/`GH_TOKEN` when present | Backend auto-update flag true; check occurs on refresh even independently of auto-install gate. No GitHub token observed | Upstream supply-chain dependency remains. Own artifact pipeline needed before replacing. `src/local-llm/backend-installer.ts:15`, `:97`, `:285`; `src/tui/local-models/local-models-orchestrator.ts:261` |
+docs\rebrand\remaining-branding-scan.raw.txt:99:src\agent\agent-loop.test.ts:69:    workingDir = mkdtempSync(join(tmpdir(), "atomic-agent-loop-"));
+docs\rebrand\remaining-branding-scan.raw.txt:100:src\agent\agent-loop.test.ts:1050:    workingDir = mkdtempSync(join(tmpdir(), "atomic-agent-loop-reflect-"));
+docs\rebrand\remaining-branding-scan.raw.txt:101:scripts\install-local.ps1:37:  'atomic-agent' = 'cli/index.js'
+docs\rebrand\remaining-branding-scan.raw.txt:102:scripts\install-local.ps1:39:  'atomic-agent-sidecar' = 'sidecar/main.js'
+docs\rebrand\remaining-branding-scan.raw.txt:103:scripts\install-local.ps1:50:set "ATOMIC_AGENT_STATE_DIR=$local\state"
+docs\rebrand\remaining-branding-scan.raw.txt:104:scripts\install.sh:21:REPO="${H0X_CLI_REPO:-${ATOMIC_AGENT_REPO:-$REPO_DEFAULT}}"
+docs\rebrand\remaining-branding-scan.raw.txt:105:scripts\install.sh:22:VERSION="${H0X_CLI_VERSION:-${ATOMIC_AGENT_VERSION:-}}"
+docs\rebrand\remaining-branding-scan.raw.txt:106:scripts\install.sh:23:INSTALL_DIR="${H0X_CLI_INSTALL_DIR:-${ATOMIC_AGENT_INSTALL_DIR:-$HOME/.local/bin}}"
+docs\rebrand\remaining-branding-scan.raw.txt:107:scripts\install.sh:261:# that as a hang and pressed Ctrl-C -- which left them with no atomic-agent at
+docs\rebrand\remaining-branding-scan.raw.txt:108:scripts\install.sh:271:VERIFY_TIMEOUT="${H0X_CLI_VERIFY_TIMEOUT:-${ATOMIC_AGENT_VERIFY_TIMEOUT:-20}}"
+docs\rebrand\remaining-branding-scan.raw.txt:109:scripts\install.sh:481:  link_alias h0x-cli "$INSTALL_DIR/atomic-agent"
+docs\rebrand\remaining-branding-scan.raw.txt:110:scripts\install.sh:484:  link_alias h0x-cli.exe "$INSTALL_DIR/atomic-agent.exe"
+docs\rebrand\remaining-branding-scan.raw.txt:111:scripts\install.sh:515:  if [ "${H0X_CLI_NO_PATH:-${ATOMIC_AGENT_NO_PATH:-0}}" = "1" ]; then
+docs\rebrand\remaining-branding-scan.raw.txt:112:scripts\install.sh:584:echo "(plus compatibility aliases 'atomic-agent' and 'atag' next to it)"
+docs\rebrand\remaining-branding-scan.raw.txt:113:scripts\install.sh:589:    echo "  atomic-agent   # compatibility alias"
+docs\rebrand\remaining-branding-scan.raw.txt:114:scripts\install.sh:596:    echo "  atomic-agent   # compatibility alias"
+docs\rebrand\remaining-branding-scan.raw.txt:115:scripts\install.sh:603:    echo "  atomic-agent   # compatibility alias"
+docs\rebrand\remaining-branding-scan.raw.txt:116:scripts\network-audit-baseline.mjs:49:  "OPENAI_API_KEY", "OPENAI_COMPAT_API_KEY", "ATOMIC_AGENT_OPENAI_API_KEY",
+docs\rebrand\remaining-branding-scan.raw.txt:117:scripts\network-audit-baseline.mjs:51:  "ANTHROPIC_API_KEY", "ATOMIC_AGENT_LLAMA_API_KEY", "EXA_API_KEY", "BRAVE_SEARCH_API_KEY",
+docs\rebrand\remaining-branding-scan.raw.txt:118:scripts\network-audit-baseline.mjs:89:    browserEnabled: boolEnv("ATOMIC_AGENT_BROWSER_ENABLED", true),
+docs\rebrand\remaining-branding-scan.raw.txt:119:scripts\network-audit-baseline.mjs:90:    browserCdpConfigured: present("ATOMIC_AGENT_BROWSER_CDP_URL"),
+docs\rebrand\remaining-branding-scan.raw.txt:120:scripts\network-audit-baseline.mjs:107:    productOverrideNames: Object.keys(process.env).filter((key) => key.startsWith("ATOMIC_AGENT_")).sort(),
+docs\rebrand\remaining-branding-scan.raw.txt:121:scripts\install.ps1:38:$Repo = if ($env:H0X_CLI_REPO) { $env:H0X_CLI_REPO } elseif ($env:ATOMIC_AGENT_REPO) { $env:ATOMIC_AGENT_REPO } else { $RepoDefault }
+docs\rebrand\remaining-branding-scan.raw.txt:122:scripts\install.ps1:39:$Version = if ($env:H0X_CLI_VERSION) { $env:H0X_CLI_VERSION } else { $env:ATOMIC_AGENT_VERSION }
+docs\rebrand\remaining-branding-scan.raw.txt:123:scripts\install.ps1:42:} elseif ($env:ATOMIC_AGENT_INSTALL_DIR) {
+docs\rebrand\remaining-branding-scan.raw.txt:124:scripts\install.ps1:43:  $env:ATOMIC_AGENT_INSTALL_DIR
+docs\rebrand\remaining-branding-scan.raw.txt:125:scripts\install.ps1:381:  Set-Content -LiteralPath (Join-Path $InstallDir "atomic-agent.cmd") -Encoding ASCII -Value @(
+docs\rebrand\remaining-branding-scan.raw.txt:126:scripts\install.ps1:388:  Write-Info "(plus compatibility aliases 'atomic-agent' and 'atag' next to it)"
+docs\rebrand\remaining-branding-scan.raw.txt:127:scripts\install.ps1:414:  if ($env:H0X_CLI_NO_PATH -eq "1" -or $env:ATOMIC_AGENT_NO_PATH -eq "1") {
+docs\rebrand\remaining-branding-scan.raw.txt:128:scripts\install.ps1:436:    Write-Info "  atomic-agent   # compatibility alias"
+docs\rebrand\remaining-branding-scan.raw.txt:129:scripts\install.ps1:443:    Write-Info "  atomic-agent   # compatibility alias"
+docs\rebrand\remaining-branding-scan.raw.txt:130:scripts\install.ps1:450:    Write-Info "  atomic-agent   # compatibility alias"
+docs\rebrand\remaining-branding-scan.raw.txt:131:scripts\package-bundle.ts:297:    "./.h0x-cli/skills/. Legacy ./.atomic-agent/skills/ remains readable.",
+docs\rebrand\remaining-branding-scan.raw.txt:132:scripts\package-bundle.ts:309:    "  # run the separate `atomic-agent-sidecar` compatibility entry, not this SEA bundle.",
+docs\rebrand\remaining-branding-scan.raw.txt:133:src\channels\telegram\inbound-handler.test.ts:235:    expect(api.sent[0]!.text).toContain("atomic-agent");
+docs\rebrand\remaining-branding-scan.raw.txt:134:src\bundling\release-matrix-alignment.test.ts:64:    expect(yml).not.toContain("bundle/atomic-agent-${{ matrix.slug }}*");
+docs\rebrand\remaining-branding-scan.raw.txt:135:src\bundling\release-matrix-alignment.test.ts:73:    expect(script).not.toContain("`atomic-agent-${target.slug}.${target.archiveExt}`");
+docs\rebrand\remaining-branding-scan.raw.txt:136:src\bundling\release-matrix-alignment.test.ts:79:    expect(script).not.toContain('const SENTRY_ORG = "atomic-agent"');
+docs\rebrand\remaining-branding-scan.raw.txt:137:src\channels\telegram\inbound-handler.ts:113:  "atomic-agent — Telegram remote control\n\n" +
+docs\rebrand\remaining-branding-scan.raw.txt:138:src\version.ts:12:declare const __ATOMIC_AGENT_VERSION__: string | undefined;
+docs\rebrand\remaining-branding-scan.raw.txt:139:src\version.ts:19: * Resolve the running atomic-agent version. Prefers the build-time
+docs\rebrand\remaining-branding-scan.raw.txt:140:src\version.ts:28:  if (typeof __ATOMIC_AGENT_VERSION__ === "string") {
+docs\rebrand\remaining-branding-scan.raw.txt:141:src\version.ts:29:    cached = __ATOMIC_AGENT_VERSION__;
+docs\rebrand\remaining-branding-scan.raw.txt:142:src\channels\telegram\welcome-message.ts:23:  "You can now control Atomic Agent from this chat.",
+docs\rebrand\remaining-branding-scan.raw.txt:143:src\error-reporting\sentry-envelope.ts:163:    `sentry_client=atomic-agent/${release}`,
+docs\rebrand\remaining-branding-scan.raw.txt:144:src\import\openclaw\openclaw-importer.ts:38: * Orchestrates a one-shot OpenClaw -> atomic-agent import. Each option is
+docs\rebrand\remaining-branding-scan.raw.txt:145:src\agent\step-executor.test.ts:1268:    process.env.ATOMIC_AGENT_MAX_PARALLEL_TOOL_CALLS = "1";
+docs\rebrand\remaining-branding-scan.raw.txt:146:src\agent\step-executor.test.ts:1285:      delete process.env.ATOMIC_AGENT_MAX_PARALLEL_TOOL_CALLS;
+docs\rebrand\remaining-branding-scan.raw.txt:147:src\agent\step-executor.test.ts:1613:  const originalEnv = process.env.ATOMIC_AGENT_MAX_PARALLEL_TOOL_CALLS;
+docs\rebrand\remaining-branding-scan.raw.txt:148:src\agent\step-executor.test.ts:1616:    process.env.ATOMIC_AGENT_MAX_PARALLEL_TOOL_CALLS = originalEnv;
+docs\rebrand\remaining-branding-scan.raw.txt:149:src\agent\step-executor.test.ts:1648:      process.env.ATOMIC_AGENT_MAX_PARALLEL_TOOL_CALLS =
+docs\rebrand\remaining-branding-scan.raw.txt:150:src\http\openai-chunks.ts:7: * hermes gateway will work unchanged against atomic-agent.
+docs\rebrand\remaining-branding-scan.raw.txt:151:src\http\openai-chat-completions.ts:33: * Opt-in toggle for atomic-agent-specific SSE extensions on the streaming
+docs\rebrand\remaining-branding-scan.raw.txt:152:src\http\openai-chat-completions.ts:41:const MODEL_DEFAULT = "atomic-agent";
+docs\rebrand\remaining-branding-scan.raw.txt:153:src\update\run-app-update.test.ts:18:    expect(canSelfUpdate("linux", "/home/u/.local/bin/atomic-agent")).toBe(false);
+docs\rebrand\remaining-branding-scan.raw.txt:154:src\update\run-app-update.test.ts:19:    expect(canSelfUpdate("darwin", "/Users/u/.local/bin/atomic-agent")).toBe(
+docs\rebrand\remaining-branding-scan.raw.txt:155:src\update\run-app-update.test.ts:26:      canSelfUpdate("win32", "C:\\Users\\u\\AppData\\Local\\atomic-agent\\atomic-agent.exe"),
+docs\rebrand\remaining-branding-scan.raw.txt:156:src\update\run-app-update.test.ts:43:    for (const name of ["h0x-cli", "h0x-cli.exe", "atomic-agent", "atomic-agent.exe", "atag", "node", "tsx"]) {
+docs\rebrand\remaining-branding-scan.raw.txt:157:src\update\run-app-update.test.ts:55:  it.each([undefined, { repo: "AtomicBot-ai/atomic-agent" }, { repo: "fork/example", version: "v9.9.9" }])(
+docs\rebrand\remaining-branding-scan.raw.txt:158:src\update\run-app-update.test.ts:59:      vi.stubEnv("ATOMIC_AGENT_REPO", "AtomicBot-ai/atomic-agent");
+docs\rebrand\remaining-branding-scan.raw.txt:159:src\update\run-app-update.test.ts:97:    expect(inv.env.ATOMIC_AGENT_REPO).toBeUndefined();
+docs\rebrand\remaining-branding-scan.raw.txt:160:src\http\openai-chat-completions.test.ts:64:    const response = await postChat(harness.baseUrl, { model: "atomic-agent" });
+docs\rebrand\remaining-branding-scan.raw.txt:161:src\http\openai-chat-completions.test.ts:72:      model: "atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:162:src\http\openai-chat-completions.test.ts:91:      model: "atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:163:src\http\openai-chat-completions.test.ts:105:        model: "atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:164:src\http\openai-chat-completions.test.ts:209:      if (!params.prompt.includes("You are atomic-agent")) {
+docs\rebrand\remaining-branding-scan.raw.txt:165:src\http\openai-chat-completions.test.ts:336:          model: "atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:166:src\http\openai-chat-completions.test.ts:356:  it("omits atomic-agent SSE extensions by default so OpenAI clients validate cleanly", async () => {
+docs\rebrand\remaining-branding-scan.raw.txt:167:src\http\openai-chat-completions.test.ts:362:        model: "atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:168:src\http\openai-chat-completions.test.ts:388:        model: "atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:169:src\http\openai-chat-completions.test.ts:414:          model: "atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:170:src\http\openai-chat-completions.test.ts:467:          model: "atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:171:src\update\check-app-update.test.ts:18:    vi.stubEnv("ATOMIC_AGENT_REPO", "AtomicBot-ai/atomic-agent");
+docs\rebrand\remaining-branding-scan.raw.txt:172:src\update\check-app-update.test.ts:19:    vi.stubEnv("ATOMIC_AGENT_UPDATE_CHECK_ON_STARTUP", "1");
+docs\rebrand\remaining-branding-scan.raw.txt:173:src\update\check-app-update.test.ts:39:    { repo: "AtomicBot-ai/atomic-agent" },
+docs\rebrand\remaining-branding-scan.raw.txt:174:src\http\http-server.test.ts:29:      expect(body.data[0]?.id).toBe("atomic-agent");
+docs\rebrand\remaining-branding-scan.raw.txt:175:src\http\route-approval.ts:21: * atomic-agent grows a per-tool trust store.
+docs\rebrand\remaining-branding-scan.raw.txt:176:src\http\approval-bus.ts:8: * approvals do not need cross-worker coordination in atomic-agent.
+docs\rebrand\remaining-branding-scan.raw.txt:177:src\mcp\mcp-types.ts:4: * atomic-agent is an MCP **client only** — it connects to external
+docs\rebrand\remaining-branding-scan.raw.txt:178:src\http\route-models.ts:17:          id: "atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:179:src\http\route-models.ts:20:          owned_by: "atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:180:src\http\route-health.ts:34:      runtime: "atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:181:src\cli\update-command.ts:25:   * answer is read from stdin, and `atomic-agent update < /dev/null`
+docs\rebrand\remaining-branding-scan.raw.txt:182:src\cli\update-command.ts:102: * `atomic-agent update` — check GitHub Releases and re-run the canonical
+docs\rebrand\remaining-branding-scan.raw.txt:183:src\http\route-table.ts:41: * Build the full atomic-agent HTTP route table. All handlers are
+docs\rebrand\remaining-branding-scan.raw.txt:184:src\config\windows-acl.test.ts:5:const PATH = "C:\\Users\\u\\.atomic-agent\\.env";
+docs\rebrand\remaining-branding-scan.raw.txt:185:src\cli\update-command.test.ts:58:      getRepo: () => "AtomicBot-ai/atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:186:src\cli\update-command.test.ts:151:        repo: "AtomicBot-ai/atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:187:src\cli\update-command.test.ts:161:        opts?.onLine?.("downloading atomic-agent");
+docs\rebrand\remaining-branding-scan.raw.txt:188:src\cli\update-command.test.ts:162:        opts?.onLine?.("installed atomic-agent to /tmp/install");
+docs\rebrand\remaining-branding-scan.raw.txt:189:src\cli\update-command.test.ts:167:    expect(stdout()).toMatch(/\[update\] downloading atomic-agent/);
+docs\rebrand\remaining-branding-scan.raw.txt:190:src\cli\update-command.test.ts:168:    expect(stdout()).toMatch(/\[update\] installed atomic-agent/);
+docs\rebrand\remaining-branding-scan.raw.txt:191:src\cli\update-command.test.ts:235:      getRepo: () => "AtomicBot-ai/atomic-agent", isTTY: () => true, confirm,
+docs\rebrand\remaining-branding-scan.raw.txt:192:src\config\state-dir-migration.ts:6:export const LEGACY_STATE_DIR_DEFAULT = "~/.atomic-agent";
+docs\rebrand\remaining-branding-scan.raw.txt:193:src\cli\uninstall-command.ts:130: * `atomic-agent uninstall` — the one command that undoes the install,
+docs\rebrand\remaining-branding-scan.raw.txt:194:src\config\state-dir-migration.test.ts:14:const originalAtomicStateDir = process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:195:src\config\state-dir-migration.test.ts:47:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:196:src\config\state-dir-migration.test.ts:54:      delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:197:src\config\state-dir-migration.test.ts:56:      process.env.ATOMIC_AGENT_STATE_DIR = originalAtomicStateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:198:src\config\state-dir-migration.test.ts:68:  it("migrates an old default ~/.atomic-agent config into the new ~/.h0x-cli state dir", async () => {
+docs\rebrand\remaining-branding-scan.raw.txt:199:src\config\state-dir-migration.test.ts:69:    const legacyDir = join(homeDir, ".atomic-agent");
+docs\rebrand\remaining-branding-scan.raw.txt:200:src\config\state-dir-migration.test.ts:89:    const legacyDir = join(homeDir, ".atomic-agent");
+docs\rebrand\remaining-branding-scan.raw.txt:201:src\config\state-dir-migration.test.ts:115:    expect(existsSync(join(homeDir, ".atomic-agent", "config.json"))).toBe(false);
+docs\rebrand\remaining-branding-scan.raw.txt:202:src\cli\uninstall-command.test.ts:14:      path: "/Users/op/.atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:203:src\cli\uninstall-command.test.ts:19:      path: "/Users/op/.local/bin/atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:204:src\cli\uninstall-command.test.ts:56:      getStateDir: () => "/Users/op/.atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:205:src\cli\uninstall-command.test.ts:69:    expect(stdout()).toContain("/Users/op/.atomic-agent");
+docs\rebrand\remaining-branding-scan.raw.txt:206:src\config\resolve-llm-api-key.ts:43:      process.env.ATOMIC_AGENT_OPENAI_API_KEY;
+docs\rebrand\remaining-branding-scan.raw.txt:207:src\mcp\mcp-sampling-handler.ts:5: * their behalf via `sampling/createMessage`. atomic-agent forwards
+docs\rebrand\remaining-branding-scan.raw.txt:208:src\uninstall\uninstall-targets.ts:28:  /** `getConfig().paths.stateDir` — honours `ATOMIC_AGENT_STATE_DIR`. */
+docs\rebrand\remaining-branding-scan.raw.txt:209:src\uninstall\uninstall-targets.ts:35:   * Whether `<installDir>/atomic-agent` exists. Every `program` target is
+docs\rebrand\remaining-branding-scan.raw.txt:210:src\uninstall\uninstall-targets.ts:87:  return exe.startsWith("atomic-agent");
+docs\rebrand\remaining-branding-scan.raw.txt:211:src\uninstall\uninstall-targets.ts:91: * Everything `atomic-agent uninstall` would remove, in the order it is
+docs\rebrand\remaining-branding-scan.raw.txt:212:src\uninstall\uninstall-targets.ts:108:      path: path.resolve(input.homeDir, "Documents", "atomic-agent-debug"),
+docs\rebrand\remaining-branding-scan.raw.txt:213:src\uninstall\uninstall-targets.ts:123:    path: path.resolve(installDir, `atomic-agent${exeSuffix}`),
+docs\rebrand\remaining-branding-scan.raw.txt:214:src\http\test-harness.ts:150:  mkdirSync(join(workingDir, ".atomic-agent", "skills"), { recursive: true });
+docs\rebrand\remaining-branding-scan.raw.txt:215:src\http\test-harness.ts:151:  process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:216:src\http\test-harness.ts:152:  process.env.ATOMIC_AGENT_GRAMMARS_DIR = join(process.cwd(), "grammars");
+docs\rebrand\remaining-branding-scan.raw.txt:217:src\http\test-harness.ts:242:      delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:218:src\http\test-harness.ts:243:      delete process.env.ATOMIC_AGENT_GRAMMARS_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:219:src\cli\trace-formatter.ts:10: * suitable for `atomic-agent trace show`. Long payloads (prompt tail,
+docs\rebrand\remaining-branding-scan.raw.txt:220:src\session\session-store.test.ts:13:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-sess-"));
+docs\rebrand\remaining-branding-scan.raw.txt:221:src\cli\trace-file-io.ts:54: * (when present) so `atomic-agent trace list` can show a meaningful
+docs\rebrand\remaining-branding-scan.raw.txt:222:src\uninstall\uninstall-targets.test.ts:12:    stateDir: "/Users/op/.atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:223:src\uninstall\uninstall-targets.test.ts:13:    execPath: "/Users/op/.local/bin/atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:224:src\uninstall\uninstall-targets.test.ts:25:      "/Users/op/.atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:225:src\uninstall\uninstall-targets.test.ts:26:      "/Users/op/Documents/atomic-agent-debug",
+docs\rebrand\remaining-branding-scan.raw.txt:226:src\uninstall\uninstall-targets.test.ts:35:      "/Users/op/.local/bin/atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:227:src\uninstall\uninstall-targets.test.ts:50:        execPath: "C:\\Users\\op\\bin\\atomic-agent.exe",
+docs\rebrand\remaining-branding-scan.raw.txt:228:src\uninstall\uninstall-targets.test.ts:55:      "C:/Users/op/bin/atomic-agent.exe",
+docs\rebrand\remaining-branding-scan.raw.txt:229:src\uninstall\uninstall-targets.test.ts:80:    ["/Users/op/.local/bin/atomic-agent", true],
+docs\rebrand\remaining-branding-scan.raw.txt:230:src\uninstall\uninstall-targets.test.ts:81:    ["/Users/op/.local/bin/atomic-agent.exe", true],
+docs\rebrand\remaining-branding-scan.raw.txt:231:src\uninstall\uninstall-targets.test.ts:94:    expect(isSafeToRemove("/Users/op/.atomic-agent", home)).toBe(true);
+docs\rebrand\remaining-branding-scan.raw.txt:232:src\http\webhook-template.test.ts:14:      { repository: { full_name: "atomicbot/atomic-agent" } },
+docs\rebrand\remaining-branding-scan.raw.txt:233:src\http\webhook-template.test.ts:16:    expect(out).toBe("repo=atomicbot/atomic-agent");
+docs\rebrand\remaining-branding-scan.raw.txt:234:src\session\session-state.ts:30: * Both entry points that own an exit code — `atomic-agent run` and the
+docs\rebrand\remaining-branding-scan.raw.txt:235:src\uninstall\strip-installer-path-line.ts:7:export const INSTALLER_PATH_MARKER = "# added by atomic-agent installer";
+docs\rebrand\remaining-branding-scan.raw.txt:236:src\import\hermes\hermes-importer.ts:45: * Orchestrates a one-shot Hermes -> atomic-agent import. Each option is
+docs\rebrand\remaining-branding-scan.raw.txt:237:src\cli\trace-command.test.ts:99:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:238:src\cli\trace-command.test.ts:108:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:239:src\uninstall\run-uninstall.ts:68:        error: "refused: not a path atomic-agent installs",
+docs\rebrand\remaining-branding-scan.raw.txt:240:src\cli\task-command.test.ts:26:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:241:src\cli\task-command.test.ts:42:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:242:src\mcp\mcp-client.network-audit.test.ts:70:      kind: "stdio", command: "G:/h0xi/atomic-agent/never-execute-audit.exe",
+docs\rebrand\remaining-branding-scan.raw.txt:243:src\mcp\mcp-client.network-audit.test.ts:71:      cwd: "G:/h0xi/atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:244:src\mcp\mcp-client.network-audit.test.ts:109:        inherited: true, overridden: true, added: true, cwd: "G:/h0xi/atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:245:src\config\load-dotenv-retry.test.ts:132:      "C:\\Users\\u\\.atomic-agent\\.env",
+docs\rebrand\remaining-branding-scan.raw.txt:246:src\config\load-dotenv-retry.test.ts:136:    expect(text).toContain("C:\\Users\\u\\.atomic-agent\\.env");
+docs\rebrand\remaining-branding-scan.raw.txt:247:src\config\load-dotenv-retry.test.ts:145:    const text = formatDotenvReadWarning("/home/u/.atomic-agent/.env", failure, "linux");
+docs\rebrand\remaining-branding-scan.raw.txt:248:src\uninstall\run-uninstall.test.ts:32:    const stateDir = join(home, ".atomic-agent");
+docs\rebrand\remaining-branding-scan.raw.txt:249:src\uninstall\run-uninstall.test.ts:35:    const binary = join(home, "bin", "atomic-agent");
+docs\rebrand\remaining-branding-scan.raw.txt:250:src\uninstall\run-uninstall.test.ts:71:    const stateDir = join(home, ".atomic-agent");
+docs\rebrand\remaining-branding-scan.raw.txt:251:src\uninstall\run-uninstall.test.ts:109:    const doomed = join(home, ".atomic-agent");
+docs\rebrand\remaining-branding-scan.raw.txt:252:src\uninstall\run-uninstall.test.ts:123:    const stateDir = join(home, ".atomic-agent");
+docs\rebrand\remaining-branding-scan.raw.txt:253:src\uninstall\resolve-uninstall-plan.ts:58:    (await exists(resolve(installDir, `atomic-agent${exeSuffix}`)));
+docs\rebrand\remaining-branding-scan.raw.txt:254:src\cli\skill.test.ts:62:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:255:src\cli\skill.test.ts:78:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:256:src\uninstall\measure-uninstall-plan.ts:21: * models" stops a stray Enter in a way "~/.atomic-agent" does not.
+docs\rebrand\remaining-branding-scan.raw.txt:257:src\config\load-config.ts:36:  if (!key.startsWith("ATOMIC_AGENT_")) return null;
+docs\rebrand\remaining-branding-scan.raw.txt:258:src\config\load-config.ts:37:  return `H0X_CLI_${key.slice("ATOMIC_AGENT_".length)}`;
+docs\rebrand\remaining-branding-scan.raw.txt:259:src\config\load-config.ts:82:  const explicit = readEnv("ATOMIC_AGENT_STATE_DIR");
+docs\rebrand\remaining-branding-scan.raw.txt:260:src\config\load-config.ts:142:  const grammarsDir = resolveAssetDir("ATOMIC_AGENT_GRAMMARS_DIR", "grammars");
+docs\rebrand\remaining-branding-scan.raw.txt:261:src\config\load-config.ts:145:    "ATOMIC_AGENT_BROWSER_CHANNEL",
+docs\rebrand\remaining-branding-scan.raw.txt:262:src\config\load-config.ts:164:      apiKey: readEnv("ATOMIC_AGENT_LLAMA_API_KEY") ?? null,
+docs\rebrand\remaining-branding-scan.raw.txt:263:src\config\load-config.ts:168:        "ATOMIC_AGENT_LLAMA_MAX_TOKENS",
+docs\rebrand\remaining-branding-scan.raw.txt:264:src\config\load-config.ts:174:        "ATOMIC_AGENT_LLAMA_HEALTH_TIMEOUT_MS",
+docs\rebrand\remaining-branding-scan.raw.txt:265:src\config\load-config.ts:178:        "ATOMIC_AGENT_LLAMA_REQUEST_TIMEOUT_MS",
+docs\rebrand\remaining-branding-scan.raw.txt:266:src\config\load-config.ts:182:        "ATOMIC_AGENT_LLAMA_HEALTH_RETRIES",
+docs\rebrand\remaining-branding-scan.raw.txt:267:src\config\load-config.ts:186:        "ATOMIC_AGENT_LLAMA_HEALTH_BACKOFF_MS",
+docs\rebrand\remaining-branding-scan.raw.txt:268:src\config\load-config.ts:190:        "ATOMIC_AGENT_LLAMA_COMPLETION_RETRIES",
+docs\rebrand\remaining-branding-scan.raw.txt:269:src\config\load-config.ts:194:        "ATOMIC_AGENT_LLAMA_COMPLETION_RETRY_BACKOFF_MS",
+docs\rebrand\remaining-branding-scan.raw.txt:270:src\config\load-config.ts:198:        "ATOMIC_AGENT_LLAMA_DEFAULT_SLOT",
+docs\rebrand\remaining-branding-scan.raw.txt:271:src\config\load-config.ts:224:        readEnv("ATOMIC_AGENT_STABLE_PREFIX_SALT") ??
+docs\rebrand\remaining-branding-scan.raw.txt:272:src\config\load-config.ts:230:        "ATOMIC_AGENT_LOADED_TOOLS_CAP",
+docs\rebrand\remaining-branding-scan.raw.txt:273:src\config\load-config.ts:236:        "ATOMIC_AGENT_LOADED_TOOLS_MAX_TOKENS",
+docs\rebrand\remaining-branding-scan.raw.txt:274:src\config\load-config.ts:242:        "ATOMIC_AGENT_AUTO_EXPAND_RARE_ON_ERROR",
+docs\rebrand\remaining-branding-scan.raw.txt:275:src\config\load-config.ts:246:        "ATOMIC_AGENT_MAX_PARALLEL_TOOL_CALLS",
+docs\rebrand\remaining-branding-scan.raw.txt:276:src\config\load-config.ts:252:        "ATOMIC_AGENT_BATCH_TOOL_RESULT_CHAR_CAP",
+docs\rebrand\remaining-branding-scan.raw.txt:277:src\config\load-config.ts:258:        "ATOMIC_AGENT_LOOP_WARNING_THRESHOLD",
+docs\rebrand\remaining-branding-scan.raw.txt:278:src\config\load-config.ts:264:        "ATOMIC_AGENT_LOOP_CRITICAL_THRESHOLD",
+docs\rebrand\remaining-branding-scan.raw.txt:279:src\config\load-config.ts:270:        "ATOMIC_AGENT_LOOP_BREAKER_VETO_STREAK",
+docs\rebrand\remaining-branding-scan.raw.txt:280:src\config\load-config.ts:276:        "ATOMIC_AGENT_LOOP_HISTORY_SIZE",
+docs\rebrand\remaining-branding-scan.raw.txt:281:src\config\load-config.ts:282:        "ATOMIC_AGENT_LOOP_WANDERING_THRESHOLD",
+docs\rebrand\remaining-branding-scan.raw.txt:282:src\config\load-config.ts:288:        "ATOMIC_AGENT_LOOP_WANDERING_ESCALATION",
+docs\rebrand\remaining-branding-scan.raw.txt:283:src\config\load-config.ts:296:        "ATOMIC_AGENT_BROWSER_ENABLED",
+docs\rebrand\remaining-branding-scan.raw.txt:284:src\config\load-config.ts:301:        "ATOMIC_AGENT_BROWSER_HEADLESS",
+docs\rebrand\remaining-branding-scan.raw.txt:285:src\config\load-config.ts:304:      cdpUrl: readEnv("ATOMIC_AGENT_BROWSER_CDP_URL") ?? null,
+docs\rebrand\remaining-branding-scan.raw.txt:286:src\config\load-config.ts:305:      executablePath: readEnv("ATOMIC_AGENT_BROWSER_EXECUTABLE_PATH") ?? null,
+docs\rebrand\remaining-branding-scan.raw.txt:287:src\config\load-config.ts:307:        "ATOMIC_AGENT_BROWSER_NO_SANDBOX",
+docs\rebrand\remaining-branding-scan.raw.txt:288:src\config\load-config.ts:311:        "ATOMIC_AGENT_BROWSER_LAUNCH_TIMEOUT_MS",
+docs\rebrand\remaining-branding-scan.raw.txt:289:src\config\load-config.ts:317:        "ATOMIC_AGENT_SKILLS_CATALOG_BUDGET",
+docs\rebrand\remaining-branding-scan.raw.txt:290:src\config\load-config.ts:340:      enabled: readBool("ATOMIC_AGENT_TASKS_ENABLED", ENV_DEFAULTS.TASKS_ENABLED),
+docs\rebrand\remaining-branding-scan.raw.txt:291:src\config\load-config.ts:342:        "ATOMIC_AGENT_TASKS_MAX_ATTEMPTS",
+docs\rebrand\remaining-branding-scan.raw.txt:292:src\config\load-config.ts:346:        "ATOMIC_AGENT_TASKS_BACKOFF_INITIAL_MS",
+docs\rebrand\remaining-branding-scan.raw.txt:293:src\config\load-config.ts:350:        "ATOMIC_AGENT_TASKS_BACKOFF_MAX_MS",
+docs\rebrand\remaining-branding-scan.raw.txt:294:src\config\load-config.ts:354:        "ATOMIC_AGENT_TASKS_RUN_ON_CREATE",
+docs\rebrand\remaining-branding-scan.raw.txt:295:src\config\load-config.ts:358:        "ATOMIC_AGENT_TASKS_STALE_AFTER_MS",
+docs\rebrand\remaining-branding-scan.raw.txt:296:src\config\load-config.ts:362:        "ATOMIC_AGENT_TASKS_SCHEDULER_ENABLED",
+docs\rebrand\remaining-branding-scan.raw.txt:297:src\config\load-config.ts:366:        "ATOMIC_AGENT_TASKS_SCHEDULER_TICK_MS",
+docs\rebrand\remaining-branding-scan.raw.txt:298:src\config\load-config.ts:370:        "ATOMIC_AGENT_TASKS_SCHEDULER_BATCH",
+docs\rebrand\remaining-branding-scan.raw.txt:299:src\config\load-config.ts:374:        "ATOMIC_AGENT_TASKS_AGENT_TOOLS_ENABLED",
+docs\rebrand\remaining-branding-scan.raw.txt:300:src\config\load-config.ts:378:        "ATOMIC_AGENT_TASKS_MIN_INTERVAL_MS",
+docs\rebrand\remaining-branding-scan.raw.txt:301:src\config\load-config.ts:384:        "ATOMIC_AGENT_UPDATE_CHECK_ON_STARTUP",
+docs\rebrand\remaining-branding-scan.raw.txt:302:src\config\load-config.ts:387:      repo: readEnv("ATOMIC_AGENT_REPO") ?? ENV_DEFAULTS.UPDATE_REPO,
+docs\rebrand\remaining-branding-scan.raw.txt:303:src\import\hermes\map-secrets.ts:4: * atomic-agent `.env`. Both names are identical across the two projects,
+docs\rebrand\remaining-branding-scan.raw.txt:304:src\cli\serve-command.ts:37:    "                      (falls back to env ATOMIC_AGENT_API_KEY when flag is omitted)",
+docs\rebrand\remaining-branding-scan.raw.txt:305:src\cli\serve-command.ts:108:      process.env.H0X_CLI_API_KEY ?? process.env.ATOMIC_AGENT_API_KEY;
+docs\rebrand\remaining-branding-scan.raw.txt:306:src\config\load-config.test.ts:23:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:307:src\config\load-config.test.ts:30:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:308:src\config\load-config.test.ts:32:    delete process.env.ATOMIC_AGENT_LLAMA_API_KEY;
+docs\rebrand\remaining-branding-scan.raw.txt:309:src\config\load-config.test.ts:34:    delete process.env.ATOMIC_AGENT_LLAMA_MAX_TOKENS;
+docs\rebrand\remaining-branding-scan.raw.txt:310:src\config\load-config.test.ts:36:    delete process.env.ATOMIC_AGENT_BROWSER_CHANNEL;
+docs\rebrand\remaining-branding-scan.raw.txt:311:src\config\load-config.test.ts:38:    delete process.env.ATOMIC_AGENT_GRAMMARS_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:312:src\config\load-config.test.ts:40:    delete process.env.ATOMIC_AGENT_STABLE_PREFIX_SALT;
+docs\rebrand\remaining-branding-scan.raw.txt:313:src\config\load-config.test.ts:59:  it("maps ATOMIC_AGENT_LLAMA_MAX_TOKENS to completionMaxTokens with bounds", () => {
+docs\rebrand\remaining-branding-scan.raw.txt:314:src\config\load-config.test.ts:60:    process.env.ATOMIC_AGENT_LLAMA_MAX_TOKENS = "8192";
+docs\rebrand\remaining-branding-scan.raw.txt:315:src\config\load-config.test.ts:63:    process.env.ATOMIC_AGENT_LLAMA_MAX_TOKENS = "10";
+docs\rebrand\remaining-branding-scan.raw.txt:316:src\config\load-config.test.ts:66:    process.env.ATOMIC_AGENT_LLAMA_MAX_TOKENS = "999999999";
+docs\rebrand\remaining-branding-scan.raw.txt:317:src\config\load-config.test.ts:83:  it("ATOMIC_AGENT_LLAMA_MAX_TOKENS overrides the file value", () => {
+docs\rebrand\remaining-branding-scan.raw.txt:318:src\config\load-config.test.ts:91:    process.env.ATOMIC_AGENT_LLAMA_MAX_TOKENS = "16384";
+docs\rebrand\remaining-branding-scan.raw.txt:319:src\config\load-config.test.ts:97:    process.env.ATOMIC_AGENT_LLAMA_MAX_TOKENS = "8192";
+docs\rebrand\remaining-branding-scan.raw.txt:320:src\config\load-config.test.ts:128:    process.env.ATOMIC_AGENT_LLAMA_API_KEY = "secret";
+docs\rebrand\remaining-branding-scan.raw.txt:321:src\config\load-config.test.ts:129:    process.env.ATOMIC_AGENT_BROWSER_CHANNEL = "msedge";
+docs\rebrand\remaining-branding-scan.raw.txt:322:src\config\load-config.test.ts:136:    process.env.ATOMIC_AGENT_LLAMA_API_KEY = "legacy-secret";
+docs\rebrand\remaining-branding-scan.raw.txt:323:src\config\load-config.test.ts:138:    process.env.ATOMIC_AGENT_BROWSER_CHANNEL = "chrome";
+docs\rebrand\remaining-branding-scan.raw.txt:324:src\config\load-config.test.ts:149:    process.env.ATOMIC_AGENT_LLAMA_API_KEY = "legacy-secret";
+docs\rebrand\remaining-branding-scan.raw.txt:325:src\config\load-config.test.ts:150:    process.env.ATOMIC_AGENT_BROWSER_CHANNEL = "chromium";
+docs\rebrand\remaining-branding-scan.raw.txt:326:src\config\load-config.test.ts:169:  it("uses H0X_CLI_STATE_DIR before ATOMIC_AGENT_STATE_DIR", () => {
+docs\rebrand\remaining-branding-scan.raw.txt:327:src\config\load-config.test.ts:172:      process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:328:src\config\load-config.test.ts:198:      process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:329:src\config\load-config.test.ts:320:  it("still lets ATOMIC_AGENT_GRAMMARS_DIR win over the packaged copy", () => {
+docs\rebrand\remaining-branding-scan.raw.txt:330:src\config\load-config.test.ts:323:    process.env.ATOMIC_AGENT_GRAMMARS_DIR = override;
+docs\rebrand\remaining-branding-scan.raw.txt:331:src\config\load-config.test.ts:333:    process.env.ATOMIC_AGENT_GRAMMARS_DIR = legacy;
+docs\rebrand\remaining-branding-scan.raw.txt:332:src\config\load-config.test.ts:343:    process.env.ATOMIC_AGENT_STABLE_PREFIX_SALT = "legacy-salt";
+docs\rebrand\remaining-branding-scan.raw.txt:333:src\cli\run-agent.test.ts:167:    mkdirSync(join(workingDir, ".atomic-agent", "skills"), { recursive: true });
+docs\rebrand\remaining-branding-scan.raw.txt:334:src\cli\run-agent.test.ts:169:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:335:src\cli\run-agent.test.ts:170:    process.env.ATOMIC_AGENT_GRAMMARS_DIR = join(process.cwd(), "grammars");
+docs\rebrand\remaining-branding-scan.raw.txt:336:src\cli\run-agent.test.ts:188:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:337:src\cli\run-agent.test.ts:189:    delete process.env.ATOMIC_AGENT_GRAMMARS_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:338:src\scheduler\scheduler.ts:117:   * `atomic-agent task tick` CLI so operators can drain due tasks
+docs\rebrand\remaining-branding-scan.raw.txt:339:src\cli\models-search-command.test.ts:75:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:340:src\cli\models-search-command.test.ts:91:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:341:src\prompt\stable-prefix.ts:86:  "You are atomic-agent, a local operator. Each step emits exactly one JSON array matching the tool grammar — no other prose.",
+docs\rebrand\remaining-branding-scan.raw.txt:342:src\cli\models-command.test.ts:44:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:343:src\cli\models-command.test.ts:60:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:344:src\test-setup.ts:8: * `~/.atomic-agent/`. Tests that need a specific state dir override
+docs\rebrand\remaining-branding-scan.raw.txt:345:src\test-setup.ts:9: * `process.env.ATOMIC_AGENT_STATE_DIR` in their own `beforeEach`.
+docs\rebrand\remaining-branding-scan.raw.txt:346:src\test-setup.ts:11:if (!process.env.ATOMIC_AGENT_STATE_DIR) {
+docs\rebrand\remaining-branding-scan.raw.txt:347:src\test-setup.ts:12:  process.env.ATOMIC_AGENT_STATE_DIR = mkdtempSync(
+docs\rebrand\remaining-branding-scan.raw.txt:348:src\test-setup.ts:13:    join(tmpdir(), "atomic-agent-test-"),
+docs\rebrand\remaining-branding-scan.raw.txt:349:src\cli\index.ts:134:    "  atomic-agent <command> [options] (compatibility alias)",
+docs\rebrand\remaining-branding-scan.raw.txt:350:src\cli\index.ts:145:    "Bootstrap env (H0X_CLI_* wins; matching ATOMIC_AGENT_* names are compatibility aliases):",
+docs\rebrand\remaining-branding-scan.raw.txt:351:src\cli\index.ts:161:    process.env.ATOMIC_AGENT_DEBUG_ARGV === "1"
+docs\rebrand\remaining-branding-scan.raw.txt:352:src\cli\index.ts:169:  // whatever path the shell used to invoke the binary (e.g. `./atomic-agent`);
+docs\rebrand\remaining-branding-scan.raw.txt:353:src\cli\index.test.ts:67:    expect(output).toContain("atomic-agent <command> [options]");
+docs\rebrand\remaining-branding-scan.raw.txt:354:src\cli\index.test.ts:82:  it.each(["h0x-cli", "atomic-agent", "atag"])("%s without arguments opens the same TUI in the caller's cwd", async (name) => {
+docs\rebrand\remaining-branding-scan.raw.txt:355:src\config\config-schema.ts:123: * systems (e.g. a GitHub hook, a cron-like SaaS) at atomic-agent
+docs\rebrand\remaining-branding-scan.raw.txt:356:src\config\config-schema.ts:263:     * by `loadedAt`). Env-only: `ATOMIC_AGENT_LOADED_TOOLS_CAP`.
+docs\rebrand\remaining-branding-scan.raw.txt:357:src\config\config-schema.ts:268:     * Env-only: `ATOMIC_AGENT_LOADED_TOOLS_MAX_TOKENS`.
+docs\rebrand\remaining-branding-scan.raw.txt:358:src\config\config-schema.ts:274:     * `ATOMIC_AGENT_AUTO_EXPAND_RARE_ON_ERROR`.
+docs\rebrand\remaining-branding-scan.raw.txt:359:src\config\config-schema.ts:282:     * `ATOMIC_AGENT_MAX_PARALLEL_TOOL_CALLS`. Hard upper bound: 16.
+docs\rebrand\remaining-branding-scan.raw.txt:360:src\config\config-schema.ts:290:     * `ATOMIC_AGENT_BATCH_TOOL_RESULT_CHAR_CAP`.
+docs\rebrand\remaining-branding-scan.raw.txt:361:src\config\config-schema.ts:296:     * `### notice` (env `ATOMIC_AGENT_LOOP_WARNING_THRESHOLD`).
+docs\rebrand\remaining-branding-scan.raw.txt:362:src\config\config-schema.ts:298:     * the call before dispatch (env `ATOMIC_AGENT_LOOP_CRITICAL_THRESHOLD`).
+docs\rebrand\remaining-branding-scan.raw.txt:363:src\config\config-schema.ts:300:     * force a graceful reply (env `ATOMIC_AGENT_LOOP_BREAKER_VETO_STREAK`).
+docs\rebrand\remaining-branding-scan.raw.txt:364:src\config\config-schema.ts:302:     * ring (env `ATOMIC_AGENT_LOOP_HISTORY_SIZE`).
+docs\rebrand\remaining-branding-scan.raw.txt:365:src\config\config-schema.ts:305:     * (env `ATOMIC_AGENT_LOOP_WANDERING_THRESHOLD`).
+docs\rebrand\remaining-branding-scan.raw.txt:366:src\config\config-schema.ts:307:     * forced graceful reply (env `ATOMIC_AGENT_LOOP_WANDERING_ESCALATION`).
+docs\rebrand\remaining-branding-scan.raw.txt:367:src\config\config-schema.ts:325:     * still drive them. Env `ATOMIC_AGENT_BROWSER_ENABLED`, default `true`.
+docs\rebrand\remaining-branding-scan.raw.txt:368:src\config\config-schema.ts:472:     * `ATOMIC_AGENT_UPDATE_CHECK_ON_STARTUP`. Set to `false` to disable
+docs\rebrand\remaining-branding-scan.raw.txt:369:src\config\config-schema.ts:478:     * `install.sh` source. Env-only: `ATOMIC_AGENT_REPO`.
+docs\rebrand\remaining-branding-scan.raw.txt:370:src\config\config-schema.ts:962:   * sessions; the operator stops it via `atomic-agent models stop`.
+docs\rebrand\remaining-branding-scan.raw.txt:371:src\config\config-schema.ts:978: * (`atomic-agent models start` brings both up, `models stop` brings
+docs\rebrand\remaining-branding-scan.raw.txt:372:src\config\config-schema.ts:1018:     * without juggling the `ATOMIC_AGENT_LLAMA_MAX_TOKENS` env var.
+docs\rebrand\remaining-branding-scan.raw.txt:373:src\config\config-schema.ts:2028:  LEGACY_PROJECT_SKILLS_DIR: ".atomic-agent/skills",
+docs\rebrand\remaining-branding-scan.raw.txt:374:src\config\config-paths.ts:7: * Dotted-key addressing for `atomic-agent config get|set|unset|list`.
+docs\rebrand\remaining-branding-scan.raw.txt:375:src\tui\app-key-bindings.ts:69:  /** Open a fresh OS terminal window running atomic-agent (Ctrl+N, `/window`). */
+docs\rebrand\remaining-branding-scan.raw.txt:376:src\tui\app-key-bindings.ts:536:  // Ctrl+N opens a fresh OS terminal window running atomic-agent in the
+docs\rebrand\remaining-branding-scan.raw.txt:377:src\cli\config-help.ts:34:    "legacy ATOMIC_AGENT_STATE_DIR, or defaults to ~/.h0x-cli).",
+docs\rebrand\remaining-branding-scan.raw.txt:378:src\config\config-file.ts:176:      `${err.reason} (in ${path}) — edit or delete that file to start from defaults, or point H0X_CLI_STATE_DIR (or legacy ATOMIC_AGENT_STATE_DIR) elsewhere`,
+docs\rebrand\remaining-branding-scan.raw.txt:379:src\cli\config-command.test.ts:20:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:380:src\cli\config-command.test.ts:36:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:381:src\cli\bin-alias.test.ts:33:      "atomic-agent": "dist/cli/index.js",
+docs\rebrand\remaining-branding-scan.raw.txt:382:src\cli\bin-alias.test.ts:35:      "atomic-agent-sidecar": "dist/sidecar/main.js",
+docs\rebrand\remaining-branding-scan.raw.txt:383:src\cli\bin-alias.test.ts:41:    expect(script).toContain('link_alias h0x-cli "$INSTALL_DIR/atomic-agent"');
+docs\rebrand\remaining-branding-scan.raw.txt:384:src\cli\bin-alias.test.ts:53:    expect(script).toContain('Join-Path $InstallDir "atomic-agent.cmd"');
+docs\rebrand\remaining-branding-scan.raw.txt:385:src\llm\model-profile-manager.ts:55: * behind `llama-server` without restarting atomic-agent.
+docs\rebrand\remaining-branding-scan.raw.txt:386:src\tasks\task-store.test.ts:20:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-tasks-"));
+docs\rebrand\remaining-branding-scan.raw.txt:387:src\llm\llama-server-health.test.ts:30:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:388:src\llm\llama-server-health.test.ts:36:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:389:src\tui\build-terminal-launch.ts:141: * Every `H0X_CLI_*` and `ATOMIC_AGENT_*` variable travels into the new window, sorted so
+docs\rebrand\remaining-branding-scan.raw.txt:390:src\tui\build-terminal-launch.ts:153:        pair[0].startsWith("ATOMIC_AGENT_")) &&
+docs\rebrand\remaining-branding-scan.raw.txt:391:src\tui\build-terminal-launch.ts:200:    input.env.ATOMIC_AGENT_TERMINAL ??
+docs\rebrand\remaining-branding-scan.raw.txt:392:src\llm\llama-server-client.ts:39:    process.env.ATOMIC_AGENT_LLAMA_TEMPERATURE,
+docs\rebrand\remaining-branding-scan.raw.txt:393:src\llm\llama-server-client.ts:42:  process.env.H0X_CLI_LLAMA_TOP_P ?? process.env.ATOMIC_AGENT_LLAMA_TOP_P,
+docs\rebrand\remaining-branding-scan.raw.txt:394:src\llm\llama-server-client.ts:45:  process.env.H0X_CLI_LLAMA_TOP_K ?? process.env.ATOMIC_AGENT_LLAMA_TOP_K,
+docs\rebrand\remaining-branding-scan.raw.txt:395:src\llm\llama-server-client.ts:48:  process.env.H0X_CLI_LLAMA_SEED ?? process.env.ATOMIC_AGENT_LLAMA_SEED,
+docs\rebrand\remaining-branding-scan.raw.txt:396:src\tui\build-terminal-launch.test.ts:38:          execPath: "/usr/local/bin/atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:397:src\tui\build-terminal-launch.test.ts:39:          argv: ["/usr/local/bin/atomic-agent", "/usr/local/bin/atomic-agent"],
+docs\rebrand\remaining-branding-scan.raw.txt:398:src\tui\build-terminal-launch.test.ts:42:    ).toEqual(["/usr/local/bin/atomic-agent", "tui"]);
+docs\rebrand\remaining-branding-scan.raw.txt:399:src\tui\build-terminal-launch.test.ts:46:    // The parent may have been started as `atomic-agent` with no args.
+docs\rebrand\remaining-branding-scan.raw.txt:400:src\tui\build-terminal-launch.test.ts:79:      input({ env: { ATOMIC_AGENT_STATE_DIR: "/tmp/state dir" } }),
+docs\rebrand\remaining-branding-scan.raw.txt:401:src\tui\build-terminal-launch.test.ts:82:      "ATOMIC_AGENT_STATE_DIR='/tmp/state dir'",
+docs\rebrand\remaining-branding-scan.raw.txt:402:src\tui\build-terminal-launch.test.ts:121:  it("honours $ATOMIC_AGENT_TERMINAL over the probe order", () => {
+docs\rebrand\remaining-branding-scan.raw.txt:403:src\tui\build-terminal-launch.test.ts:125:        env: { ATOMIC_AGENT_TERMINAL: "foot", TERMINAL: "xterm" },
+docs\rebrand\remaining-branding-scan.raw.txt:404:src\tasks\task-runner.test.ts:73:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-runner-"));
+docs\rebrand\remaining-branding-scan.raw.txt:405:src\runtime\ripgrep-resolver.ts:9: *      `process.env.ATOMIC_AGENT_RG_PATH` — explicit override (tests, CI,
+docs\rebrand\remaining-branding-scan.raw.txt:406:src\runtime\ripgrep-resolver.ts:19: * `H0X_CLI_RG_PATH`, or `ATOMIC_AGENT_RG_PATH`.
+docs\rebrand\remaining-branding-scan.raw.txt:407:src\runtime\ripgrep-resolver.ts:51:  const override = env.H0X_CLI_RG_PATH ?? env.ATOMIC_AGENT_RG_PATH;
+docs\rebrand\remaining-branding-scan.raw.txt:408:src\runtime\ripgrep-resolver.ts:124:  "ripgrep (`rg`) was not found. Install it via `brew install ripgrep`, `apt install ripgrep`, or `choco install ripgrep`, or set H0X_CLI_RG_PATH (or legacy ATOMIC_AGENT_RG_PATH) to a binary path.";
+docs\rebrand\remaining-branding-scan.raw.txt:409:src\tui\chat-orchestrator.ts:50:const DEBUG_BUNDLE_DIR_NAME = "atomic-agent-debug";
+docs\rebrand\remaining-branding-scan.raw.txt:410:src\tui\chat-orchestrator.ts:76:   * `~/.atomic-agent` state.
+docs\rebrand\remaining-branding-scan.raw.txt:411:src\tui\chat-orchestrator.ts:1078:   * most recent sessions into `~/Documents/atomic-agent-debug/`. The
+docs\rebrand\remaining-branding-scan.raw.txt:412:src\local-llm\backend-installer.ts:16:const GITHUB_REPO = "AtomicBot-ai/atomic-llama-cpp-turboquant-nightly";
+docs\rebrand\remaining-branding-scan.raw.txt:413:src\runtime\ripgrep-resolver.test.ts:13:  it("prefers ATOMIC_AGENT_RG_PATH override when it exists", () => {
+docs\rebrand\remaining-branding-scan.raw.txt:414:src\runtime\ripgrep-resolver.test.ts:16:      env: { ATOMIC_AGENT_RG_PATH: override, PATH: "/usr/bin" },
+docs\rebrand\remaining-branding-scan.raw.txt:415:src\runtime\ripgrep-resolver.test.ts:17:      execPath: "/opt/app/atomic-agent-sidecar",
+docs\rebrand\remaining-branding-scan.raw.txt:416:src\runtime\ripgrep-resolver.test.ts:26:    const execPath = "/opt/app/atomic-agent-sidecar";
+docs\rebrand\remaining-branding-scan.raw.txt:417:src\runtime\ripgrep-resolver.test.ts:42:    const execPath = "/app/atomic-agent-sidecar.exe";
+docs\rebrand\remaining-branding-scan.raw.txt:418:src\runtime\ripgrep-resolver.test.ts:109:        env: { ATOMIC_AGENT_RG_PATH: "/does/not/exist", PATH: "/usr/bin" },
+docs\rebrand\remaining-branding-scan.raw.txt:419:src\skills\skill-loader.ts:75:    // `globalDir` (e.g. a relative `ATOMIC_AGENT_STATE_DIR=.atomic-agent`
+docs\rebrand\remaining-branding-scan.raw.txt:420:src\skills\skill-loader.ts:76:    // run from the repo root makes both `<cwd>/.atomic-agent/skills`), the
+docs\rebrand\remaining-branding-scan.raw.txt:421:src\skills\skill-loader.test.ts:83:    // A relative `ATOMIC_AGENT_STATE_DIR=.atomic-agent` run from the repo
+docs\rebrand\remaining-branding-scan.raw.txt:422:src\skills\seed-starter-skills.ts:89:    process.env.ATOMIC_AGENT_STARTER_SKILLS_DIR
+docs\rebrand\remaining-branding-scan.raw.txt:423:src\runtime\bootstrap.ts:609: * (`atomic-agent run`) and the sidecar (`atomic-agent-sidecar`) go
+docs\rebrand\remaining-branding-scan.raw.txt:424:src\runtime\bootstrap.ts:2979: * NDJSON sink so `atomic-agent trace show` can read the session back —
+docs\rebrand\remaining-branding-scan.raw.txt:425:src\memory\voting\vote-store.test.ts:22:  const tmp = mkdtempSync(join(tmpdir(), "atomic-agent-vote-"));
+docs\rebrand\remaining-branding-scan.raw.txt:426:src\runtime\bootstrap.test.ts:105:    mkdirSync(join(workingDir, ".atomic-agent", "skills"), { recursive: true });
+docs\rebrand\remaining-branding-scan.raw.txt:427:src\runtime\bootstrap.test.ts:106:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:428:src\runtime\bootstrap.test.ts:107:    process.env.ATOMIC_AGENT_GRAMMARS_DIR = join(process.cwd(), "grammars");
+docs\rebrand\remaining-branding-scan.raw.txt:429:src\runtime\bootstrap.test.ts:115:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:430:src\runtime\bootstrap.test.ts:116:    delete process.env.ATOMIC_AGENT_GRAMMARS_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:431:src\runtime\bootstrap.test.ts:248:        `atomic-agent-e2e-${randomBytes(6).toString("hex")}.txt`,
+docs\rebrand\remaining-branding-scan.raw.txt:432:src\runtime\bootstrap.test.ts:652:  it("loads legacy .atomic-agent project skills after the h0x project dir rename", async () => {
+docs\rebrand\remaining-branding-scan.raw.txt:433:src\runtime\bootstrap.test.ts:654:      join(workingDir, ".atomic-agent", "skills"),
+docs\rebrand\remaining-branding-scan.raw.txt:434:src\runtime\bootstrap.test.ts:727:    process.env.ATOMIC_AGENT_TASKS_ENABLED = "false";
+docs\rebrand\remaining-branding-scan.raw.txt:435:src\runtime\bootstrap.test.ts:741:      delete process.env.ATOMIC_AGENT_TASKS_ENABLED;
+docs\rebrand\remaining-branding-scan.raw.txt:436:src\runtime\bootstrap.test.ts:972:    mkdirSync(join(workingDir, ".atomic-agent", "skills"), { recursive: true });
+docs\rebrand\remaining-branding-scan.raw.txt:437:src\runtime\bootstrap.test.ts:973:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:438:src\runtime\bootstrap.test.ts:974:    process.env.ATOMIC_AGENT_GRAMMARS_DIR = join(process.cwd(), "grammars");
+docs\rebrand\remaining-branding-scan.raw.txt:439:src\runtime\bootstrap.test.ts:981:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:440:src\runtime\bootstrap.test.ts:982:    delete process.env.ATOMIC_AGENT_GRAMMARS_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:441:src\runtime\bootstrap-queued-turn.test.ts:59:    mkdirSync(join(workingDir, ".atomic-agent", "skills"), { recursive: true });
+docs\rebrand\remaining-branding-scan.raw.txt:442:src\runtime\bootstrap-queued-turn.test.ts:60:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:443:src\runtime\bootstrap-queued-turn.test.ts:61:    process.env.ATOMIC_AGENT_GRAMMARS_DIR = join(process.cwd(), "grammars");
+docs\rebrand\remaining-branding-scan.raw.txt:444:src\runtime\bootstrap-queued-turn.test.ts:68:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:445:src\runtime\bootstrap-queued-turn.test.ts:69:    delete process.env.ATOMIC_AGENT_GRAMMARS_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:446:src\llm\grammar\tool-call-grammar.ts:89:    process.env.ATOMIC_AGENT_TOOL_CALL_GRAMMAR;
+docs\rebrand\remaining-branding-scan.raw.txt:447:src\llm\grammar\tool-call-grammar.ts:105:    "tool-call.gbnf not found (set H0X_CLI_TOOL_CALL_GRAMMAR or legacy ATOMIC_AGENT_TOOL_CALL_GRAMMAR, install grammars next to the binary, or run from a dev tree)",
+docs\rebrand\remaining-branding-scan.raw.txt:448:src\local-llm\download-file.network-audit.test.ts:41:    await expect(downloadFile(url, "G:/h0xi/atomic-agent/.local/network-audit/never-written.bin"))
+docs\rebrand\remaining-branding-scan.raw.txt:449:src\local-llm\download-file.network-audit.test.ts:68:    await expect(downloadFile(url, "G:/h0xi/atomic-agent/.local/network-audit/never-written.bin"))
+docs\rebrand\remaining-branding-scan.raw.txt:450:src\local-llm\download-file.network-audit.test.ts:92:    await expect(downloadFile(firstUrl, "G:/h0xi/atomic-agent/.local/network-audit/never-written.bin"))
+docs\rebrand\remaining-branding-scan.raw.txt:451:src\local-llm\download-file.network-audit.test.ts:116:    await expect(downloadFile(firstUrl, "G:/h0xi/atomic-agent/.local/network-audit/never-written.bin"))
+docs\rebrand\remaining-branding-scan.raw.txt:452:src\local-llm\download-file.network-audit.test.ts:140:    await expect(downloadFile(firstUrl, "G:/h0xi/atomic-agent/.local/network-audit/never-written.bin"))
+docs\rebrand\remaining-branding-scan.raw.txt:453:src\local-llm\daemon-lifecycle.ts:293:    throw new Error("backend not downloaded; run 'atomic-agent models update'");
+docs\rebrand\remaining-branding-scan.raw.txt:454:src\local-llm\daemon-lifecycle.ts:300:      `model ${opts.modelId} not downloaded; run 'atomic-agent models pull ${opts.modelId}'`,
+docs\rebrand\remaining-branding-scan.raw.txt:455:src\local-llm\daemon-lifecycle.ts:494:      "backend not downloaded; run 'atomic-agent models update'",
+docs\rebrand\remaining-branding-scan.raw.txt:456:src\local-llm\daemon-lifecycle.ts:502:      `embedding model ${opts.modelId} not downloaded; run 'atomic-agent models pull-embedding ${opts.modelId}'`,
+docs\rebrand\remaining-branding-scan.raw.txt:457:src\local-llm\daemon-lifecycle.ts:657: * is recoverable with a single `atomic-agent models stop`.
+docs\rebrand\remaining-branding-scan.raw.txt:458:src\tui\chat-orchestrator.update.test.ts:20:      config: { update: { checkOnStartup: true, repo: "AtomicBot-ai/atomic-agent" } },
+docs\rebrand\remaining-branding-scan.raw.txt:459:src\tui\chat-orchestrator.update.test.ts:34:      value: process.platform === "win32" ? "G:\\tools\\atomic-agent.exe" : "/opt/bin/atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:460:src\tui\debug-bundle\write-debug-zip.test.ts:73:        join(outDir, "atomic-agent-debug-2026-04-24T12-34-56.789Z.zip"),
+docs\rebrand\remaining-branding-scan.raw.txt:461:src\tui\debug-bundle\build-snapshot.ts:58:  return `atomic-agent-debug-${debugBundleTimestamp(now)}.zip`;
+docs\rebrand\remaining-branding-scan.raw.txt:462:src\memory\memory-store.test.ts:19:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-notes-"));
+docs\rebrand\remaining-branding-scan.raw.txt:463:src\memory\memory-store-v2.test.ts:24:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-memv2-"));
+docs\rebrand\remaining-branding-scan.raw.txt:464:src\memory\memory-schema.test.ts:15:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-mem-"));
+docs\rebrand\remaining-branding-scan.raw.txt:465:src\memory\links\link-store.test.ts:19:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-links-"));
+docs\rebrand\remaining-branding-scan.raw.txt:466:src\tui\local-backend-readiness.test.ts:27:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:467:src\tui\local-backend-readiness.test.ts:34:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:468:src\tui\local-backend-readiness.test.ts:302:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:469:src\tui\local-backend-readiness.test.ts:308:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:470:src\llm\provider\subscription-cli\codex-cli-adapter.ts:16: * atomic-agent already built.
+docs\rebrand\remaining-branding-scan.raw.txt:471:src\llm\describe-llama-health-failure.ts:34:        `Set ATOMIC_AGENT_LLAMA_API_KEY in the state dir's .env and retry.`
+docs\rebrand\remaining-branding-scan.raw.txt:472:src\llm\describe-llama-health-failure.test.ts:43:    expect(line).toContain("ATOMIC_AGENT_LLAMA_API_KEY");
+docs\rebrand\remaining-branding-scan.raw.txt:473:src\llm\provider\subscription-cli\claude-cli-adapter.ts:21: * which competes with the complete two-zone prompt atomic-agent already
+docs\rebrand\remaining-branding-scan.raw.txt:474:src\llm\provider\subscription-cli\claude-cli-adapter.ts:49:    // atomic-agent's approval ladder.
+docs\rebrand\remaining-branding-scan.raw.txt:475:src\llm\provider\subscription-cli\claude-cli-adapter.ts:55:    // atomic-agent owns session state and re-sends the whole prompt each
+docs\rebrand\remaining-branding-scan.raw.txt:476:src\llm\provider\subscription-cli\claude-cli-adapter.ts:247:    // reaches the model exactly as atomic-agent built it.
+docs\rebrand\remaining-branding-scan.raw.txt:477:src\memory\profile-store.test.ts:18:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-profile-"));
+docs\rebrand\remaining-branding-scan.raw.txt:478:src\sidecar\steer-message.test.ts:40:    mkdirSync(join(workingDir, ".atomic-agent", "skills"), { recursive: true });
+docs\rebrand\remaining-branding-scan.raw.txt:479:src\sidecar\steer-message.test.ts:41:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:480:src\sidecar\steer-message.test.ts:42:    process.env.ATOMIC_AGENT_GRAMMARS_DIR = join(process.cwd(), "grammars");
+docs\rebrand\remaining-branding-scan.raw.txt:481:src\sidecar\steer-message.test.ts:50:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:482:src\sidecar\steer-message.test.ts:51:    delete process.env.ATOMIC_AGENT_GRAMMARS_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:483:src\sidecar\send-message-concurrency.test.ts:63:    mkdirSync(join(workingDir, ".atomic-agent", "skills"), { recursive: true });
+docs\rebrand\remaining-branding-scan.raw.txt:484:src\sidecar\send-message-concurrency.test.ts:64:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:485:src\sidecar\send-message-concurrency.test.ts:65:    process.env.ATOMIC_AGENT_GRAMMARS_DIR = join(process.cwd(), "grammars");
+docs\rebrand\remaining-branding-scan.raw.txt:486:src\sidecar\send-message-concurrency.test.ts:75:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:487:src\sidecar\send-message-concurrency.test.ts:76:    delete process.env.ATOMIC_AGENT_GRAMMARS_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:488:src\sidecar\main.ts:258:            ? "run atomic-agent models start"
+docs\rebrand\remaining-branding-scan.raw.txt:489:src\sidecar\main.ts:259:            : "check localModels.url or H0X_CLI_LLAMA_URL (or legacy ATOMIC_AGENT_LLAMA_URL)";
+docs\rebrand\remaining-branding-scan.raw.txt:490:src\sidecar\main.ts:433:    message: "atomic-agent sidecar booted",
+docs\rebrand\remaining-branding-scan.raw.txt:491:src\tui\components\cloud-provider-onboarding-mouse.test.tsx:26:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+docs\rebrand\remaining-branding-scan.raw.txt:492:src\tui\llm-panel\fallback\fallback-seam.test.ts:16:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+docs\rebrand\remaining-branding-scan.raw.txt:493:src\llm\provider\adapters\tool-call-adapter.ts:6: * Maps between atomic-agent tool descriptors and a provider's native
+docs\rebrand\remaining-branding-scan.raw.txt:494:src\llm\provider\adapters\tool-call-adapter.ts:14:  /** Restore the atomic-agent qualified name from a provider function name. */
+docs\rebrand\remaining-branding-scan.raw.txt:495:src\tui\llm-panel\fallback\fallback-orchestrator.test.ts:10:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+docs\rebrand\remaining-branding-scan.raw.txt:496:src\tools\browser\playwright-backend.ts:295:          "Install one, or set H0X_CLI_BROWSER_EXECUTABLE_PATH (or legacy ATOMIC_AGENT_BROWSER_EXECUTABLE_PATH) to the binary path.",
+docs\rebrand\remaining-branding-scan.raw.txt:497:src\tui\uninstall\uninstall-state.ts:55: * either: `atomic-agent` is what an operator types twenty times a day,
+docs\rebrand\remaining-branding-scan.raw.txt:498:src\tui\uninstall\uninstall-reducer.test.ts:13:      path: "/Users/op/.atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:499:src\tui\uninstall\uninstall-keys.test.ts:13:    { path: "/Users/op/.atomic-agent", label: "state", size: "1.7 GB", group: "data" },
+docs\rebrand\remaining-branding-scan.raw.txt:500:src\tools\browser\clear-stale-chrome-locks.ts:15: * Related: https://github.com/AtomicBot-ai/atomic-agent/issues/22
+docs\rebrand\remaining-branding-scan.raw.txt:501:src\tui\tui-state.ts:545:  /** State slice driving the Import tab (one-shot Hermes -> atomic-agent migration). */
+docs\rebrand\remaining-branding-scan.raw.txt:502:src\tools\browser\build-chrome-launch-args.ts:2: * Build the Chrome command-line flags used when atomic-agent spawns a
+docs\rebrand\remaining-branding-scan.raw.txt:503:src\tui\tui-command.ts:63: * CLI entry for `atomic-agent tui`. Boots the full runtime once and stays
+docs\rebrand\remaining-branding-scan.raw.txt:504:src\tui\tui-command.ts:129:    process.env.ATOMIC_AGENT_TUI_SKIP_LLAMA_SETUP === "1";
+docs\rebrand\remaining-branding-scan.raw.txt:505:src\tui\tui-command.ts:711:    // it as the command name ("unknown command: atomic-agent"). Plain node keeps
+docs\rebrand\remaining-branding-scan.raw.txt:506:src\tui\persist-embedding-hybrid-recall.test.ts:20:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:507:src\tui\persist-embedding-hybrid-recall.test.ts:28:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:508:src\tui\tui-command.mouse.test.ts:157:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:509:src\tui\tui-command.mouse.test.ts:172:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:510:src\tui\tui-args.ts:4: * Parsed flags for the `atomic-agent tui` subcommand. Kept separate from
+docs\rebrand\remaining-branding-scan.raw.txt:511:src\tui\tui-args.ts:108: * when the TUI can mount. A pipe (CI, cron, `echo hi | atomic-agent`, a
+docs\rebrand\remaining-branding-scan.raw.txt:512:src\tui\tui-args.ts:110: * React stack trace of minified bundle offsets — and bare `atomic-agent` /
+docs\rebrand\remaining-branding-scan.raw.txt:513:src\tui\tui-args.ts:111: * `atomic-agent tui` are exactly the commands new users and scripts run
+docs\rebrand\remaining-branding-scan.raw.txt:514:src\tui\persist-approval-level.test.ts:9:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+docs\rebrand\remaining-branding-scan.raw.txt:515:src\tools\memory\notes-recall.test.ts:24:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-notes-recall-tool-"));
+docs\rebrand\remaining-branding-scan.raw.txt:516:src\tools\memory\procedures-recall.test.ts:24:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-tool-procedures-"));
+docs\rebrand\remaining-branding-scan.raw.txt:517:src\tools\memory\notes-forget.test.ts:24:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-notes-forget-tool-"));
+docs\rebrand\remaining-branding-scan.raw.txt:518:src\tui\open-terminal-window.ts:128:        "no terminal emulator found — set $H0X_CLI_TERMINAL (or legacy $ATOMIC_AGENT_TERMINAL) to the one you use",
+docs\rebrand\remaining-branding-scan.raw.txt:519:src\tools\memory\lessons-recall.test.ts:24:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-tool-lessons-"));
+docs\rebrand\remaining-branding-scan.raw.txt:520:src\tui\tui-app.tsx:448:   * mutated — the operator restarts atomic-agent to drop the live
+docs\rebrand\remaining-branding-scan.raw.txt:521:src\tui\tui-app.tsx:544:   * `atomic-agent tui` in the same working directory.
+docs\rebrand\remaining-branding-scan.raw.txt:522:src\tui\open-terminal-window.test.ts:107:      "ATOMIC_AGENT_TERMINAL",
+docs\rebrand\remaining-branding-scan.raw.txt:523:src\tools\memory\notes-store.test.ts:24:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-notes-store-tool-"));
+docs\rebrand\remaining-branding-scan.raw.txt:524:src\tools\memory\profile-history.test.ts:24:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-tool-history-"));
+docs\rebrand\remaining-branding-scan.raw.txt:525:src\tools\memory\profile-list.test.ts:24:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-tool-profile-"));
+docs\rebrand\remaining-branding-scan.raw.txt:526:src\tools\memory\profile-remove.test.ts:24:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-tool-profile-"));
+docs\rebrand\remaining-branding-scan.raw.txt:527:src\tools\memory\profile-set.test.ts:24:    tmp = mkdtempSync(join(tmpdir(), "atomic-agent-tool-profile-"));
+docs\rebrand\remaining-branding-scan.raw.txt:528:src\tools\os\http-redirect-remediation.test.ts:7:const cwd = "G:/h0xi/atomic-agent";
+docs\rebrand\remaining-branding-scan.raw.txt:529:src\tools\os\fs-edit.ts:152:  const temp = resolve(dir, `.${suffix}.atomic-agent.tmp`);
+docs\rebrand\remaining-branding-scan.raw.txt:530:src\tools\os\fs-edit.test.ts:176:    expect(remaining.filter((name) => name.endsWith(".atomic-agent.tmp"))).toEqual([]);
+docs\rebrand\remaining-branding-scan.raw.txt:531:src\tools\os\fs-approval-scope.test.ts:192:      stateDir = join(home, ".atomic-agent");
+docs\rebrand\remaining-branding-scan.raw.txt:532:src\tools\os\fs-write-retarget.test.ts:77:    const outside = join(homedir(), ".atomic-agent-retarget-test", "out.txt");
+docs\rebrand\remaining-branding-scan.raw.txt:533:src\tools\os\fs-write-retarget.test.ts:101:      await rm(join(homedir(), ".atomic-agent-retarget-test"), {
+docs\rebrand\remaining-branding-scan.raw.txt:534:src\tools\os\fs-write-retarget.test.ts:142:              ? join(homedir(), ".atomic-agent-retarget-loop", `${hop}.txt`)
+docs\rebrand\remaining-branding-scan.raw.txt:535:src\tools\os\fs-write-retarget.test.ts:152:      await rm(join(homedir(), ".atomic-agent-retarget-loop"), {
+docs\rebrand\remaining-branding-scan.raw.txt:536:src\tui\providers\save-provider-wizard.test.ts:27:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:537:src\tui\providers\save-provider-wizard.test.ts:34:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:538:src\tui\components\onboarding-download-frame.test.tsx:21:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+docs\rebrand\remaining-branding-scan.raw.txt:539:src\tui\providers\providers-wizard-target.test.ts:28:  "ATOMIC_AGENT_OPENAI_API_KEY",
+docs\rebrand\remaining-branding-scan.raw.txt:540:src\tui\providers\providers-wizard-target.test.ts:164:    previousStateDir = process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:541:src\tui\providers\providers-wizard-target.test.ts:166:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:542:src\tui\providers\providers-wizard-target.test.ts:174:      delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:543:src\tui\providers\providers-wizard-target.test.ts:176:      process.env.ATOMIC_AGENT_STATE_DIR = previousStateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:544:src\tools\os\http-redirect.network-audit.test.ts:13:const cwd = "G:/h0xi/atomic-agent";
+docs\rebrand\remaining-branding-scan.raw.txt:545:src\tui\providers\providers-wizard-key-bindings.test.ts:638:      "ATOMIC_AGENT_OPENAI_API_KEY",
+docs\rebrand\remaining-branding-scan.raw.txt:546:src\tui\providers\providers-wizard-key-bindings.test.ts:720:      previousStateDir = process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:547:src\tui\providers\providers-wizard-key-bindings.test.ts:722:      process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:548:src\tui\providers\providers-wizard-key-bindings.test.ts:730:        delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:549:src\tui\providers\providers-wizard-key-bindings.test.ts:732:        process.env.ATOMIC_AGENT_STATE_DIR = previousStateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:550:src\tools\os\read-document\read-document.test.ts:26:    `atomic-agent-read-doc-${Math.random().toString(36).slice(2)}`,
+docs\rebrand\remaining-branding-scan.raw.txt:551:src\tui\onboarding\use-intro-input.test.tsx:19:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+docs\rebrand\remaining-branding-scan.raw.txt:552:src\tui\components\onboarding-screen.test.tsx:30:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+docs\rebrand\remaining-branding-scan.raw.txt:553:src\tui\components\onboarding-mouse.test.tsx:26:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+docs\rebrand\remaining-branding-scan.raw.txt:554:src\tui\onboarding\propose-second-backend.ts:25: * atomic-agent runs local and cloud side by side, and an operator who
+docs\rebrand\remaining-branding-scan.raw.txt:555:src\tui\components\update-modal.tsx:11: * Y/N offer shown at startup when a newer atomic-agent release is
+docs\rebrand\remaining-branding-scan.raw.txt:556:src\tui\components\uninstall-modal.test.tsx:12:      path: "/Users/op/.atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:557:src\tui\components\uninstall-modal.test.tsx:18:      path: "/Users/op/.local/bin/atomic-agent",
+docs\rebrand\remaining-branding-scan.raw.txt:558:src\tui\components\uninstall-modal.test.tsx:47:    expect(rendered).toContain("/Users/op/.atomic-agent");
+docs\rebrand\remaining-branding-scan.raw.txt:559:src\tui\onboarding\onboarding-step-keys.test.ts:19:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+docs\rebrand\remaining-branding-scan.raw.txt:560:src\tui\telegram\tui-telegram-orchestrator.test.ts:71:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:561:src\tui\telegram\tui-telegram-orchestrator.test.ts:77:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:562:src\tui\menu\menu-registry.ts:626:        "write debug zip (TUI snapshot + recent trace NDJSON) to ~/Documents/atomic-agent-debug",
+docs\rebrand\remaining-branding-scan.raw.txt:563:src\tui\menu\menu-registry.test.ts:27:      "write debug zip (TUI snapshot + recent trace NDJSON) to ~/Documents/atomic-agent-debug",
+docs\rebrand\remaining-branding-scan.raw.txt:564:src\tui\onboarding\needs-onboarding.test.ts:10:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+docs\rebrand\remaining-branding-scan.raw.txt:565:src\tui\mcp\mcp-panel-state.ts:67: * the next `atomic-agent` boot.
+docs\rebrand\remaining-branding-scan.raw.txt:566:src\tui\local-models\local-models-orchestrator-auto-update.test.ts:48:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:567:src\tui\local-models\local-models-orchestrator-auto-update.test.ts:58:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:568:src\tui\privacy\privacy-orchestrator.test.ts:10:const STATE_DIR_ENV = "ATOMIC_AGENT_STATE_DIR";
+docs\rebrand\remaining-branding-scan.raw.txt:569:src\tui\persist-user-local-models-config.ts:51: * drive a daemon you started yourself with `atomic-agent models start` —
+docs\rebrand\remaining-branding-scan.raw.txt:570:src\tui\local-models\local-models-orchestrator.test.ts:51:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:571:src\tui\local-models\local-models-orchestrator.test.ts:58:    delete process.env.ATOMIC_AGENT_STATE_DIR;
+docs\rebrand\remaining-branding-scan.raw.txt:572:src\tui\local-models\local-models-orchestrator-pairing.test.ts:54:    process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
+docs\rebrand\remaining-branding-scan.raw.txt:573:src\tui\local-models\local-models-orchestrator-pairing.test.ts:67:    delete process.env.ATOMIC_AGENT_STATE_DIR;

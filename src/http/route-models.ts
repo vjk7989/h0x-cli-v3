@@ -1,7 +1,8 @@
 import { sendJson, type HttpHandler } from "./request-context.js";
+import { APP_MACHINE_NAME } from "../brand/index.js";
 
 /**
- * `GET /v1/models` — OpenAI-compatible model catalog. Atomic-agent is
+ * `GET /v1/models` — OpenAI-compatible model catalog. h0x-cli is
  * a single-model front for whatever model the external llama-server
  * has loaded, so we advertise one synthetic entry. The `created`
  * field is pinned so lazy caches keyed on it stay stable.
@@ -14,10 +15,10 @@ export function createModelsHandler(): HttpHandler {
       object: "list",
       data: [
         {
-          id: "atomic-agent",
+          id: APP_MACHINE_NAME,
           object: "model",
           created: MODEL_CREATED,
-          owned_by: "atomic-agent",
+          owned_by: APP_MACHINE_NAME,
         },
       ],
     });

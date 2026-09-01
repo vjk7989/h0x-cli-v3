@@ -26,6 +26,10 @@ describe("isCloudTextProviderReady", () => {
     stateDir = mkdtempSync(join(tmpdir(), "startup-gate-"));
     process.env.ATOMIC_AGENT_STATE_DIR = stateDir;
     delete process.env.OPENROUTER_API_KEY;
+    delete process.env.OPENAI_COMPAT_API_KEY;
+    delete process.env.OPENAI_API_KEY;
+    delete process.env.H0X_CLI_OPENAI_API_KEY;
+    delete process.env.ATOMIC_AGENT_OPENAI_API_KEY;
     resetConfigCache();
   });
 
@@ -33,6 +37,10 @@ describe("isCloudTextProviderReady", () => {
     rmSync(stateDir, { recursive: true, force: true });
     delete process.env.ATOMIC_AGENT_STATE_DIR;
     delete process.env.OPENROUTER_API_KEY;
+    delete process.env.OPENAI_COMPAT_API_KEY;
+    delete process.env.OPENAI_API_KEY;
+    delete process.env.H0X_CLI_OPENAI_API_KEY;
+    delete process.env.ATOMIC_AGENT_OPENAI_API_KEY;
     resetConfigCache();
   });
 

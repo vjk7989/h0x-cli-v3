@@ -8,7 +8,9 @@ remain unchanged. Only audit scripts, tests and documentation are added.
 
 ## Executive finding
 
-Runtime PostHog/Sentry ingestion and application self-update remain disabled.
+Runtime PostHog now points at a PAVii PostHog EU Cloud project and is enabled by
+default unless the user opts out with `analytics.enabled: false`. Sentry runtime
+ingestion and application self-update remain disabled.
 Nevertheless, the product is not offline: startup catalogs, optional model/search/
 browser services, backend checks and external subprocesses can contact other hosts.
 The scan also identified credential-handling defects that matter more than changing

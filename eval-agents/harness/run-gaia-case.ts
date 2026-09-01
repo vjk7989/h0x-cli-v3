@@ -1,9 +1,13 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+
 import type { AgentAdapter } from "./agent-adapter.js";
 import type { GaiaRow, GaiaAgentRunResult } from "./gaia-types.js";
 import { buildGaiaUserPrompt, extractFinalAnswer } from "./extract-answer.js";
 import { questionScorer } from "./score-gaia.js";
 import { createGaiaWorkspace } from "./temp-workspace.js";
 import { preserveTraceFiles } from "./preserve-traces.js";
+import { buildXlsxGridAnalysis } from "./xlsx-grid-analysis.js";
 
 export interface RunGaiaCaseOptions {
   adapter: AgentAdapter;
@@ -38,7 +42,7 @@ export async function runGaiaCase(opts: RunGaiaCaseOptions): Promise<GaiaAgentRu
 
   const workspace = createGaiaWorkspace(opts.row.task_id, opts.row, opts.split ?? "validation");
   try {
-    const attachmentHint = opts.row.file_name || null;
+    const attachmentHint = await buildAttachmentHint(workspace.workingDir, opts.row);
     const prompt = buildGaiaUserPrompt(opts.row.Question, attachmentHint);
     const raw = await opts.adapter.runQuestion({
       row: opts.row,
@@ -53,6 +57,9 @@ export async function runGaiaCase(opts: RunGaiaCaseOptions): Promise<GaiaAgentRu
 
     const extracted = extractFinalAnswer(raw.rawReply);
     const correct = questionScorer(extracted, opts.row["Final answer"]);
+    const formatError = isInvalidFinalFormat(raw.rawReply, extracted)
+      ? "invalid_final_format"
+      : null;
 
     return {
       agentId: opts.adapter.id,
@@ -63,7 +70,7 @@ export async function runGaiaCase(opts: RunGaiaCaseOptions): Promise<GaiaAgentRu
       metrics: raw.metrics,
       skipped: false,
       skipReason: null,
-      error: raw.error,
+      error: raw.error ?? formatError,
     };
   } finally {
     if (opts.tracesOutDir) {
@@ -71,6 +78,39 @@ export async function runGaiaCase(opts: RunGaiaCaseOptions): Promise<GaiaAgentRu
     }
     workspace.cleanup();
   }
+}
+
+function isInvalidFinalFormat(rawReply: string, extractedAnswer: string): boolean {
+  if (rawReply.trim().length === 0) return false;
+  if (/FINAL\s+ANSWER\s*:/i.test(rawReply)) return false;
+  const answer = extractedAnswer.trim();
+  if (answer.length === 0) return false;
+  if (/^```/.test(rawReply.trim())) return true;
+  if (/^\[?\s*\{\s*"tool"\s*:/i.test(answer)) return true;
+  if (/^json\s+\[?\s*\{\s*"tool"\s*:/i.test(answer)) return true;
+  return false;
+}
+
+export async function buildAttachmentHint(workingDir: string, row: GaiaRow): Promise<string | null> {
+  if (!row.file_name) return null;
+  if (!row.file_name.toLowerCase().endsWith(".xlsx")) return row.file_name;
+
+  try {
+    const { xlsxExtractor } = await import("../../src/tools/os/read-document/extractors/xlsx-extractor.js");
+    const sourcePath = join(workingDir, row.file_name);
+    const data = await readFile(sourcePath);
+    const extracted = await xlsxExtractor({ data, sourcePath });
+    const summary = collapseWhitespace(extracted.text).slice(0, 12_000);
+    const gridAnalysis = await buildXlsxGridAnalysis(sourcePath, row.Question);
+    const gridHint = gridAnalysis ? ` ${gridAnalysis}` : "";
+    return `${row.file_name}. Pre-extracted workbook summary: ${summary}${gridHint}`;
+  } catch {
+    return row.file_name;
+  }
+}
+
+function collapseWhitespace(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
 }
 
 function emptyMetrics(): GaiaAgentRunResult["metrics"] {

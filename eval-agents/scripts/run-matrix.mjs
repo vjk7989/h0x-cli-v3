@@ -5,13 +5,14 @@ import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { loadEnv } from "./_lib.mjs";
+import { loadEnv, readEvalEnv } from "./_lib.mjs";
 
 const HERE = fileURLToPath(new URL(".", import.meta.url));
 
 loadEnv();
-const source = process.env.ATOMIC_AGENT_GAIA_SOURCE ?? "fixtures";
-const script = source === "hf" ? "run-level1.mjs" : "run-smoke.mjs";
+const source = readEvalEnv("H0X_CLI_GAIA_SOURCE", "ATOMIC_AGENT_GAIA_SOURCE") ?? "fixtures";
+const split = readEvalEnv("H0X_CLI_GAIA_SPLIT", "ATOMIC_AGENT_GAIA_SPLIT") ?? "validation";
+const script = source !== "hf" ? "run-smoke.mjs" : split === "test" ? "run-test.mjs" : "run-validation.mjs";
 const path = resolve(HERE, script);
 
 const r = spawnSync(process.execPath, [path, ...process.argv.slice(2)], {

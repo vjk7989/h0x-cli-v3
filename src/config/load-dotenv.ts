@@ -167,7 +167,7 @@ export function formatDotenvReadWarning(
   const fix =
     platform === "win32"
       ? `Fix: clear the file's read-only attribute (right-click the file, Properties), add an antivirus exclusion for the folder, or reset its permissions: icacls "${path}" /reset`
-      : `Fix: check the file's owner and permissions (ls -l "${path}"), then chmod 600 "${path}" as the user that runs atomic-agent.`;
+      : `Fix: check the file's owner and permissions (ls -l "${path}"), then chmod 600 "${path}" as the user that runs h0x-cli.`;
   return [
     `Could not read secrets file: ${path} (${code} after ${attempts}).`,
     "Saved API keys and tokens from .env were NOT loaded this run.",
@@ -214,7 +214,7 @@ export function loadDotenvFromStateDir(
   if (read.kind === "failed") {
     result.error = read.failure;
     process.stderr.write(
-      `atomic-agent: ${formatDotenvReadWarning(path, read.failure)}\n`,
+      `h0x-cli: ${formatDotenvReadWarning(path, read.failure)}\n`,
     );
     return result;
   }
@@ -224,7 +224,7 @@ export function loadDotenvFromStateDir(
   const lines = read.raw.split(/\r?\n/);
   for (let i = 0; i < lines.length; i += 1) {
     const parsed = parseLine(lines[i] ?? "", i + 1, (reason) => {
-      process.stderr.write(`atomic-agent: skipping ${path} entry — ${reason}\n`);
+      process.stderr.write(`h0x-cli: skipping ${path} entry — ${reason}\n`);
     });
     if (parsed === null) continue;
 

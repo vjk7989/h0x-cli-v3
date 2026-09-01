@@ -110,7 +110,7 @@ export interface InboundContext {
 const TYPING_KEEPALIVE_MS = 4_000;
 
 const HELP_TEXT =
-  "atomic-agent — Telegram remote control\n\n" +
+  "h0x-cli — Telegram remote control\n\n" +
   "Send me a message and I'll act on it.\n\n" +
   "Commands:\n" +
   "  /start, /help — this message\n" +

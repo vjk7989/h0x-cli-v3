@@ -62,6 +62,7 @@ describe("OpenRouterEmbeddingProvider", () => {
     await provider.embed({ text: "hello" });
 
     expect(sent?.get("HTTP-Referer")).toBe("https://example.com");
+    expect(sent?.get("X-OpenRouter-Title")).toBe("Example App");
     expect(sent?.get("X-Title")).toBe("Example App");
     expect(sent?.get("X-OpenRouter-Categories")).toBe("cli-agent,personal-agent");
   });

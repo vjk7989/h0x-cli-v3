@@ -1,4 +1,4 @@
-# atomic-agent — system prompt anatomy
+# h0x-cli — system prompt anatomy
 
 This document is the source-of-truth for how the prompt sent to `llama-server`
 on every step is assembled. It complements:
@@ -248,7 +248,7 @@ If a section seems wrong, look here:
   automatically; `browser.click` / `browser.type` / `browser.scroll` do
   not, by design.
 - Cache hits dropped between steps → run
-  `atomic-agent trace replay <sessionId>` and compare `stablePrefixHash`.
+  `h0x-cli trace replay <sessionId>` and compare `stablePrefixHash`.
   If it drifted, something added per-turn data to the upper prompt; if it
   did not, look at the tail boundary (most likely `### loaded-skills`
   being recomputed because a fact got into the loaded-skills budget

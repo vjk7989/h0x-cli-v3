@@ -114,7 +114,7 @@ export class Scheduler {
 
   /**
    * Execute one tick explicitly. Exposed for tests and for the
-   * `atomic-agent task tick` CLI so operators can drain due tasks
+   * `h0x-cli task tick` CLI so operators can drain due tasks
    * without waiting for the interval. Re-entry guard identical to the
    * interval-driven path.
    */

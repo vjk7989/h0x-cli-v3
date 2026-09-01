@@ -11,12 +11,12 @@ function makePlan(
 ): ResolvedUninstallPlan {
   const targets = [
     {
-      path: "/Users/op/.atomic-agent",
+      path: "/Users/op/.h0x-cli",
       label: "config, memory, sessions",
       group: "data" as const,
     },
     {
-      path: "/Users/op/.local/bin/atomic-agent",
+      path: "/Users/op/.local/bin/h0x-cli",
       label: "the binary",
       group: "program" as const,
     },
@@ -53,7 +53,7 @@ describe("h0x-cli uninstall", () => {
     deps = {
       resolvePlan: resolvePlan as unknown as UninstallCommandDeps["resolvePlan"],
       run: run as unknown as UninstallCommandDeps["run"],
-      getStateDir: () => "/Users/op/.atomic-agent",
+      getStateDir: () => "/Users/op/.h0x-cli",
       isTTY: () => true,
       ask,
       write: (text) => void out.push(text),
@@ -66,7 +66,7 @@ describe("h0x-cli uninstall", () => {
 
   it("prints the plan with sizes before asking anything", async () => {
     await uninstallCommand([], deps);
-    expect(stdout()).toContain("/Users/op/.atomic-agent");
+    expect(stdout()).toContain("/Users/op/.h0x-cli");
     expect(stdout()).toContain("h0x-cli uninstall will remove:");
     expect(stdout()).toContain("1 KB");
     expect(stdout()).toContain("total: 2 KB");

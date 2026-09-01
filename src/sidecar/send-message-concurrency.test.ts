@@ -41,10 +41,12 @@ function makeSendMessageHandler(
             `active session changed during queued send_message for ${sessionId}`,
           );
         }
-        return runtime.executeTurn(active.session, text, {
+        const result = await runtime.executeTurn(active.session, text, {
           maxSteps: maxSteps ?? runtime.config.agent.maxSteps,
           signal: controller.signal,
         });
+        active.session = result.session;
+        return result;
       },
     });
     active.session = result.session;
@@ -85,8 +87,9 @@ describe("sidecar send_message concurrency", () => {
     const llamaComplete = async (params: {
       sessionId: string;
     }): Promise<CompletionResult> => {
-      // Reflection completes immediately; only block on user turns.
-      if (params.sessionId.startsWith("reflection:")) {
+      // Reflection/maintenance sub-calls complete immediately; only
+      // block and count user turns.
+      if (params.sessionId.startsWith("reflection:") || params.responseFormat) {
         return reply("ignored");
       }
       userCallCount += 1;
@@ -150,7 +153,7 @@ describe("sidecar send_message concurrency", () => {
 
 function reply(text: string): CompletionResult {
   return {
-    content: JSON.stringify({ tool: "reply", args: { text } }),
+    content: JSON.stringify([{ tool: "reply", args: { text } }]),
     reasoningContent: "",
     stop: true,
     truncated: false,

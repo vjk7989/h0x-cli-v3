@@ -47,7 +47,7 @@ import { createHeapGuard } from "../runtime/heap-guard.js";
 import type { SessionPickerEntry, TuiState } from "./tui-state.js";
 
 const DEBUG_BUNDLE_TRACE_LIMIT = 10;
-const DEBUG_BUNDLE_DIR_NAME = "atomic-agent-debug";
+const DEBUG_BUNDLE_DIR_NAME = "h0x-cli-debug";
 
 /**
  * Hard cap on messages parked behind the running turn.
@@ -73,7 +73,7 @@ export interface ChatOrchestratorOptions {
    * Facts source for the pre-turn local-model gate. Injectable so tests
    * stay hermetic — the default reads live config + disk, and a test
    * that never passes this would silently depend on the developer's own
-   * `~/.atomic-agent` state.
+   * legacy `~/.atomic-agent` state.
    */
   readGateFacts?: () => LocalTurnGateFacts;
 }
@@ -1075,7 +1075,7 @@ export class ChatOrchestrator {
 
   /**
    * Dump a zipped snapshot of the TUI state plus NDJSON traces for the
-   * most recent sessions into `~/Documents/atomic-agent-debug/`. The
+   * most recent sessions into `~/Documents/h0x-cli-debug/`. The
    * heavy work (readFile + zip compression) is off-thread via
    * `Promise`, but we stash the snapshot synchronously so the archive
    * reflects the exact UI state at the moment `/dump` was submitted.

@@ -20,6 +20,7 @@ import {
 } from "./backend-installer.js";
 import { resolveServerBinPath } from "./backend-paths.js";
 import { readBackendVersion, writeBackendVersion } from "./backend-version.js";
+import { resolveDownloadAsset } from "./windows-backend-variant.js";
 
 /** Minimal GitHub releases-list payload for the macOS arm64 asset. */
 function releasesResponse(
@@ -462,7 +463,7 @@ describe("backend-installer", () => {
     writeBackendVersion(dir, {
       tag: "turboquant-win",
       downloadedAt: "2026-06-02T00:00:00.000Z",
-      asset: "llama-turboquant-windows-x64-cuda-13.3.zip",
+      asset: "legacy-windows-build.zip",
       releasedAt: "2026-06-01T00:00:00Z",
     });
     globalThis.fetch = vi.fn(async () =>
@@ -470,7 +471,7 @@ describe("backend-installer", () => {
         {
           tag: "turboquant-win",
           publishedAt: "2026-06-01T00:00:00Z",
-          assetName: "llama-turboquant-windows-x64-vulkan.zip",
+          assetName: resolveDownloadAsset("win32", "x64").assetName,
         },
       ]),
     ) as typeof fetch;
@@ -531,6 +532,57 @@ describe("backend-installer", () => {
       // OS TCP timeout, so the request has to carry an abort signal.
       expect(seenSignal).toBeInstanceOf(AbortSignal);
       expect(seenSignal?.aborted).toBe(false);
+    } finally {
+      platformSpy.mockRestore();
+      archSpy.mockRestore();
+    }
+  });
+
+  it("identifies h0x-cli when fetching backend release metadata", async () => {
+    const platformSpy = vi.spyOn(process, "platform", "get").mockReturnValue("darwin");
+    const archSpy = vi.spyOn(process, "arch", "get").mockReturnValue("arm64");
+    let userAgent: string | null = null;
+    globalThis.fetch = vi.fn(async (_url: string | URL, init?: RequestInit) => {
+      userAgent = new Headers(init?.headers).get("user-agent");
+      return releasesResponse([
+        { tag: "turboquant-x", publishedAt: "2026-07-01T00:00:00Z" },
+      ]);
+    }) as typeof fetch;
+
+    try {
+      await checkForBackendUpdate(dir);
+      expect(userAgent).toMatch(/^h0x-cli(?:\/|$)/);
+    } finally {
+      platformSpy.mockRestore();
+      archSpy.mockRestore();
+    }
+  });
+
+  it("identifies h0x-cli when downloading the backend archive", async () => {
+    const platformSpy = vi.spyOn(process, "platform", "get").mockReturnValue("darwin");
+    const archSpy = vi.spyOn(process, "arch", "get").mockReturnValue("arm64");
+    const zip = new JSZip();
+    zip.file("llama-server", Buffer.from("#!/bin/sh\necho ok\n"));
+    const zipBuf = await zip.generateAsync({ type: "nodebuffer" });
+    let archiveUserAgent: string | null = null;
+
+    globalThis.fetch = vi.fn(async (url: string | URL, init?: RequestInit) => {
+      const u = String(url);
+      if (u.includes("/releases")) {
+        return releasesResponse([
+          { tag: "turboquant-x", publishedAt: "2026-07-01T00:00:00Z" },
+        ]);
+      }
+      archiveUserAgent = new Headers(init?.headers).get("user-agent");
+      return new Response(zipBuf, {
+        status: 200,
+        headers: { "content-length": String(zipBuf.length) },
+      });
+    }) as typeof fetch;
+
+    try {
+      await downloadBackend(dir);
+      expect(archiveUserAgent).toMatch(/^h0x-cli(?:\/|$)/);
     } finally {
       platformSpy.mockRestore();
       archSpy.mockRestore();

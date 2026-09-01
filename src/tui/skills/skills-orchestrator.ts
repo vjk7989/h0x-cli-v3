@@ -217,7 +217,7 @@ export class SkillsOrchestrator {
     if (entry.record.source !== "global") {
       this.bus.emit({
         type: "runtime_info",
-        line: `${name} is a project-local skill — remove it from .atomic-agent/skills instead`,
+        line: `${name} is a project-local skill — remove it from .h0x-cli/skills instead`,
       });
       return;
     }

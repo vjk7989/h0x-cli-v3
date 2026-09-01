@@ -32,6 +32,7 @@ describe("network audit: download URL origin authentication", () => {
     const fetchMock = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
       expect(String(input)).toBe(url);
       expect(new Headers(init?.headers).get("authorization")).toBe(`Bearer ${token}`);
+      expect(new Headers(init?.headers).get("user-agent")).toMatch(/^h0x-cli(?:\/|$)/);
       expect(init?.redirect).toBe("manual");
       // Rejected before streaming starts; even a regression cannot write a file.
       return new Response(null, { status: 401, statusText: "Synthetic Unauthorized" });
@@ -59,6 +60,7 @@ describe("network audit: download URL origin authentication", () => {
     const fetchMock = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
       expect(String(input)).toBe(url);
       expect(new Headers(init?.headers).get("authorization")).toBeNull();
+      expect(new Headers(init?.headers).get("user-agent")).toMatch(/^h0x-cli(?:\/|$)/);
       expect(init?.redirect).toBe("manual");
       return new Response(null, { status: 401, statusText: "Synthetic Unauthorized" });
     });

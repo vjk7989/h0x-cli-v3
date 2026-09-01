@@ -37,6 +37,8 @@ export type LlmProviderConfigEntry = {
   supportsTools?: boolean;
   supportsVision?: boolean;
   requestTimeoutMs?: number;
+  maxTokensField?: "max_tokens" | "max_completion_tokens";
+  omitTemperature?: boolean;
   promptCache?: "auto" | "off" | "explicit-markers";
   providerPreferences?: Record<string, unknown>;
   /**

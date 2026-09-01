@@ -147,7 +147,7 @@ Focused coverage is in `src/tools/os/http-request.test.ts`, `src/tools/os/shell.
 ### Remaining Boundaries
 
 - The previous full-suite blocker remains separate and is not cleared by F01-F03 focused remediation.
-- Runtime PostHog/Sentry reporting remains disabled pending an explicit reporting policy.
+- Runtime PostHog reporting was later changed to the PAVii EU Cloud project with enabled-by-default/opt-out policy; Sentry remains disabled pending an explicit DSN and reporting policy.
 - MCP environment inheritance, connector identity migration, automatic catalog/backend checks, release packaging, source-map upload settings, and live process-tree packet capture are still later tasks.
 - Update [network-audit/verification.md](../network-audit/verification.md) when parent-owned final commands, type checking, build, install, or full-suite results are available; this architecture record intentionally stores decisions and navigation only.
 
@@ -157,7 +157,7 @@ Date: 2026-08-31. Status: **final controlled verification complete; security fin
 
 - Scope is source/test/docs audit only, including read-only inspection of existing distribution artifacts. Production fixes, connector migration, provider replacement, release publication, and changes to remote services are not authorized by this audit. No remediation was performed; proposed fixes and ownership requirements in the audit documents remain proposals for a later approved task.
 - Identity target remains **h0x-cli by PAVii.Ai**, website **pavii.tech**, with the fuller identity register in [PRODUCT.md](../../PRODUCT.md). Branding does not establish ownership of inherited endpoints, accounts, credentials, or connector infrastructure. Do not relabel third-party services as fork-owned.
-- Upstream PostHog/Sentry reporting remains disabled through the existing `PLACEHOLDER` sentinels. Preserve the disabled application-update path. Neither decision means that all outbound networking is disabled: configured providers, tools, MCP servers, downloads, and build infrastructure require separate assessment.
+- Upstream PostHog/Sentry reporting was disabled during this audit stage. PostHog was later pointed to the PAVii EU Cloud project; Sentry and application self-update remain disabled. Neither decision means that all outbound networking is disabled: configured providers, tools, MCP servers, downloads, and build infrastructure require separate assessment.
 - All generated audit artifacts, temporary data, caches, logs, and reports must stay under `G:\h0xi\atomic-agent` or another explicitly approved G-drive folder. Reading installed tools from C is permitted; writing project artifacts there is not. Do not include secret values in documentation.
 - This architecture agent owns only this appended entry in `docs/rebrand/decisions.md` and performs read-only inspection plus documentation editing. It runs no tests, builds, or network requests. The parent owns findings, endpoint ledger, and ownership; other audit agents own verification and dependencies/build analysis. A separate handoff agent owns `handoff.md`; this entry neither edits nor replaces it. This narrower assignment supersedes the older architecture-agent ownership note above for the current audit.
 
@@ -201,3 +201,111 @@ Uncontained runtime and live probes remain explicit verification gaps: full TUI/
 | [Dependencies and build](../network-audit/dependencies-and-build.md) | Dependency/build audit agent: package, installer, download, signing, and CI analysis. |
 
 Documentation verification for this entry is limited to reading the existing architecture/identity records, graph/source inspection, and reviewing the appended text. No current-audit test, build, network observation, or complete-audit claim is made by this agent.
+
+## Telemetry Policy: PAVii PostHog
+
+Date: 2026-09-01. Status: **source implementation in progress; verification recorded separately**. Policy selected: use the PAVii-owned PostHog EU Cloud project for product analytics, enabled by default through the existing `analytics.enabled` flag, with opt-out via `/privacy analytics off` or `analytics.enabled: false`.
+
+Decision: `src/analytics/posthog-config.ts` carries only the public PostHog project ingestion token and `https://eu.i.posthog.com`. The private/personal PostHog API key must not appear in source, docs, tests, logs, config, or release artifacts and should be rotated because it was pasted into chat. No private PostHog API, dashboard, or authenticated project verification is part of this stage.
+
+Sentry remains disabled by `SENTRY_DSN = "PLACEHOLDER"`. The existing analytics privacy toggle still gates both analytics and Sentry factory creation, but with Sentry placeholder-gated only PostHog can become active. Existing event hardening stays in place: no message content, paths, tool args, or request bodies are analytics payloads; events retain `disableGeoip: true` and `$ip: "0.0.0.0"`.
+
+Relevant code map: `src/analytics/posthog-config.ts`, `src/analytics/analytics-client.ts`, `src/error-reporting/sentry-config.ts`, `src/runtime/bootstrap.ts`, and the TUI privacy commands under `src/tui/privacy/`.
+
+## Connector Ownership Rebrand
+
+Date: 2026-09-01. Status: **source implementation in progress; verification recorded separately**. This entry records the first-party connector identity decisions for the approved ownership-rebrand stage. It does not create provider accounts, migrate dashboards, enable reporting, publish packages, or change third-party service endpoints.
+
+Decision: use `src/brand/identity.ts` as the small first-party identity source for machine name `h0x-cli`, display name `h0x-cli by PAVii.Ai`, website `https://pavii.tech`, repository `https://github.com/vjk7989/h0x-cli-v3`, and the versioned `h0x-cli/<version>` User-Agent token. Connector code imports these constants/helpers rather than duplicating literals.
+
+OpenRouter attribution now follows the documented contract in source: `HTTP-Referer` is `https://pavii.tech`, `X-OpenRouter-Title` is `h0x-cli by PAVii.Ai`, and `X-Title` remains as the existing compatibility header. Categories remain `cli-agent,personal-agent`. This applies through the chat provider, embedding provider, registry defaults, and provider-wizard verification headers. OpenRouter remains the real provider and its API endpoint is unchanged.
+
+AI/ML API source attribution now sends `X-AIMLAPI-Source: agent/h0x-cli` and does not restore a partner or referral header. MCP initialize now advertises `clientInfo.name: h0x-cli` and uses `getAppVersion()` for the runtime/package version instead of the old hardcoded `0.1.0`. Server names, tool namespaces, resource names, prompt names, and MCP protocol fields are intentionally preserved.
+
+First-party User-Agent strings for local backend release metadata, backend archive download, Hugging Face model metadata/download helpers, GitHub skill hub requests, and ClawHub requests now identify as `h0x-cli/<version>` with optional component comments. Provider names and destinations remain unchanged.
+
+Codebase map for this stage:
+
+| Area | Files |
+| --- | --- |
+| First-party identity | `src/brand/identity.ts`, `src/brand/index.ts` |
+| OpenRouter attribution | `src/llm/provider/openrouter/openrouter-provider.ts`, `src/memory/embeddings/openai-embedding-provider.ts`, `src/tui/providers/providers-wizard-target.ts` |
+| AI/ML API attribution | `src/llm/provider/aimlapi/aimlapi-provider.ts` |
+| MCP client identity | `src/mcp/mcp-client.ts` |
+| User-Agent identity | `src/local-llm/backend-installer.ts`, `src/local-llm/download-file.ts`, `src/local-llm/huggingface-api.ts`, `src/skills/hub/github-skill-client.ts`, `src/skills/clawhub/clawhub-client.ts` |
+
+Verification belongs in [network-audit/verification.md](../network-audit/verification.md). Preserve the prior full-suite blocker separately; passing focused connector tests does not authorize a release.
+
+## Deep Config And Storage Rebrand
+
+Date: 2026-09-01. Status: **Stage 1 focused gate green**. This stage changes new first-party defaults and env aliases only; package/release metadata, updater URLs, installer artifacts, and product features remain deferred.
+
+Decision: new default persistent state is `~/.h0x-cli`; legacy default `~/.atomic-agent` is copied into the new default on the first h0x default boot when the h0x directory does not already exist. The copy is idempotent, writes `migration.json`, and never deletes the legacy state. If both old and new state directories exist, h0x uses the new directory and does not overwrite it.
+
+Decision: matching `H0X_CLI_*` environment variables take precedence over legacy `ATOMIC_AGENT_*` names. Legacy names remain supported for compatibility. Direct env consumers outside `loadConfig` were updated for the same h0x-first policy where scoped to this stage: TUI terminal selection/skip flags, synchronized-output opt-out, CLI debug/API key, ripgrep override, llama sampling knobs, grammar override, starter skills source, and OpenAI-compatible fallback API key.
+
+Decision: new project-local skills default to `.h0x-cli/skills`; legacy `.atomic-agent/skills` remains readable. Runtime, CLI skill listing/showing/disable checks, and trace replay pass both directories to the skill loader. The loader now accepts multiple project directories, dedupes identical resolved paths, and preserves the existing global-skip guard when a project path equals the global skills dir.
+
+Decision: stable-prefix salt changed from `atomic-agent-v1` to `h0x-cli-v1`, intentionally invalidating prior llama.cpp KV slots once. Config and dotenv notices now use `h0x-cli`; config-help and top-level CLI help teach h0x env names while documenting legacy aliases.
+
+Codebase map for this stage:
+
+| Area | Files |
+| --- | --- |
+| Defaults and env resolution | `src/config/config-schema.ts`, `src/config/load-config.ts`, `src/config/state-dir-migration.ts`, `src/config/config-file.ts`, `src/config/load-dotenv.ts` |
+| Direct env aliases | `src/config/resolve-llm-api-key.ts`, `src/runtime/ripgrep-resolver.ts`, `src/llm/llama-server-client.ts`, `src/llm/grammar/tool-call-grammar.ts`, `src/skills/seed-starter-skills.ts`, `src/tui/build-terminal-launch.ts`, `src/tui/tui-command.ts`, `src/tui/synchronized-output.ts`, `src/cli/index.ts`, `src/cli/serve-command.ts`, `src/tui/open-terminal-window.ts` |
+| Project skill compatibility | `src/skills/skill-loader.ts`, `src/runtime/bootstrap.ts`, `src/cli/skill.ts`, `src/cli/trace-command.ts` |
+| Visible/API identity | `src/cli/config-help.ts`, `src/cli/index.ts`, `src/http/route-capabilities.ts`, `README.md` |
+
+Verification: focused Stage 1 tests passed with 241 tests and two skipped across nine files; typecheck and build passed. The test-writing, failure-analysis, and test-running agents completed. The previous Windows `spawn ls ENOENT` bootstrap fixture was classified as unrelated and fixed test-only with a portable `process.execPath` command before rerunning the focused gate. This does not clear the older full-suite blocker or authorize release/publication.
+
+## Package And Release Preparation
+
+Date: 2026-09-01. Status: **Stage 2 focused gate green; publication still blocked**. This stage prepares release identity and artifact names only. It does not publish npm packages, create GitHub releases, sign/notarize artifacts locally, upload source maps, or contact authenticated production services.
+
+Decision: release defaults now point at `vjk7989/h0x-cli-v3`, and generated SEA artifacts use `h0x-cli` archive and binary names. Compatibility aliases remain intentional for CLI entrypoints and installers: `atomic-agent`, `atag`, and the existing `atomic-agent-sidecar` sidecar command are preserved where already supported.
+
+Decision: install scripts document `https://pavii.tech` examples and h0x environment names, with legacy `ATOMIC_AGENT_*` install overrides still accepted. POSIX and Windows installers install `h0x-cli` as the primary binary and create only the intentional compatibility aliases. Bundle README output includes TEAM PAVii.Ai, the website, and the h0x GitHub repository.
+
+Decision: self-update remains unavailable in this development build. The dormant invocation builder now uses `H0X_CLI_*` environment variables and h0x repo/script URLs, but `checkForAppUpdate`, `runAppUpdate`, and `canSelfUpdate` still fail closed until real h0x release artifacts exist and are verified.
+
+Decision: Sentry source-map upload is disabled for h0x release preparation. The release workflow no longer passes `SENTRY_AUTH_TOKEN` into bundling, and `scripts/bundle-sea.ts` does not configure the old upstream Sentry org/project. Future source-map upload requires a PAVii-owned Sentry project, CI token, retention/error policy, and explicit approval.
+
+Codebase map for this stage:
+
+| Area | Files |
+| --- | --- |
+| Release defaults and dormant updater | `src/config/config-schema.ts`, `src/update/check-app-update.ts`, `src/update/run-app-update.ts` |
+| Bundle and archive identity | `scripts/bundle-targets.ts`, `scripts/package-bundle.ts`, `scripts/bundle-sea.ts` |
+| Installers and version bump script | `scripts/install.sh`, `scripts/install.ps1`, `scripts/release.sh` |
+| GitHub release workflow | `.github/workflows/release.yml` |
+| Release-prep tests | `src/bundling/release-matrix-alignment.test.ts`, `src/cli/bin-alias.test.ts`, `src/config/config-schema.test.ts`, `src/update/check-app-update.test.ts`, `src/update/run-app-update.test.ts` |
+
+Verification: focused Stage 2 tests passed with 170 tests across five files; `npx tsc -p tsconfig.json --noEmit` passed; `npm run build` passed and copied starter skills to `dist/starter-skills`; `git diff --check` passed with line-ending warnings only. The independent test-running agent also owns a separate verification report in its final status. The older full-suite blocker remains separate and publication remains unauthorized.
+
+## Deep Rebrand: CLI Core, Prompt Identity, And Backend Fork
+
+Date: 2026-09-01. Status: **CLI core focused gate green; backend fork prep local-only**. This stage continues the compatibility-first deep rebrand and keeps product feature work blocked.
+
+Decision: the stable system prompt now identifies the assistant as `h0x-cli`, built by `TEAM PAVii.Ai`, and says identity questions should answer as `h0x-cli by PAVii.Ai`. It also adds a concise YAGNI rule: implement only what the current task requires and avoid speculative abstractions, broad refactors, and unused configurability. Prompt mechanics are otherwise preserved: ordering, grammar-constrained array tool calls, reasoning profile framing, token-budget structure, and sidecar/runtime behavior are unchanged. This is an intentional stable-prefix/KV-cache invalidation.
+
+Decision: active user-facing CLI/TUI/runtime surfaces now prefer h0x names in Telegram copy, debug bundle names, local model hints, sidecar boot/hints, HTTP health/model identity, serve/help text, uninstall targets, `.env.example`, `PROMPT.md`, `BUNDLING.md`, and README active instructions. Compatibility aliases remain intentional for `atomic-agent`, `atag`, `atomic-agent-sidecar`, `ATOMIC_AGENT_*`, `.atomic-agent`, `X-Atomic-*`, stored schema fields, and historical benchmark/provenance docs.
+
+Decision: the remaining-branding classification is captured in [deep-rebrand-ledger.md](deep-rebrand-ledger.md). Treat that ledger as the navigation record for future passes instead of globally replacing strings. Provider names and endpoints stay real; historical upstream attribution is preserved.
+
+Decision: the TurboQuant backend is a separate fork, not vendored into this monorepo. It was cloned at `G:\h0xi\h0x-llama-cpp-turboquant-nightly`, with `upstream` set to `AtomicBot-ai/atomic-llama-cpp-turboquant-nightly` and `origin` set to `vjk7989/h0x-llama-cpp-turboquant-nightly`. Only fork-owned surfaces were changed there: a PAVii README wrapper and `h0x-turboquant` release artifact/workflow names. Backend kernels, quantization, server APIs, ABI, build flags, model formats, and runtime defaults were not changed.
+
+Codebase map for this stage:
+
+| Area | Files |
+| --- | --- |
+| Prompt identity and YAGNI | `src/prompt/stable-prefix.ts`, `src/prompt/build-prompt.test.ts` |
+| Telegram active copy | `src/channels/telegram/welcome-message.ts`, `src/channels/telegram/inbound-handler.ts` and tests |
+| Debug bundle identity | `src/tui/debug-bundle/build-snapshot.ts`, `src/tui/chat-orchestrator.ts`, `src/tui/menu/menu-registry.ts` and tests |
+| HTTP runtime identity | `src/http/route-health.ts`, `src/http/route-models.ts`, `src/http/openai-chat-completions.ts` and tests |
+| CLI/runtime hints | `src/sidecar/main.ts`, `src/local-llm/daemon-lifecycle.ts`, `src/llm/describe-llama-health-failure.ts`, `src/cli/serve-command.ts` |
+| Uninstall identity and compatibility | `src/uninstall/*`, `src/cli/uninstall-command.ts`, `src/tui/components/uninstall-modal.test.tsx` |
+| Active docs and env examples | `README.md`, `PROMPT.md`, `BUNDLING.md`, `.env.example` |
+| Backend fork prep | `G:\h0xi\h0x-llama-cpp-turboquant-nightly\README.md`, `.github/workflows/tqp-release.yml`, `.github/workflows/tqp-linux-release.yml` |
+
+Verification: focused CLI deep-rebrand tests passed with 230 tests across 15 files using the pinned G-drive Node runtime invoked directly through Vitest. Typecheck passed with `tsc -p tsconfig.json --noEmit`; build passed with `tsc -p tsconfig.json` plus `scripts/copy-starter-skills.mjs`; full suite passed with 627 test files, 6653 tests, and 5 skips. `git diff --check` passed for both the CLI repo and backend fork with line-ending warnings only. Backend verification confirmed only README/workflow files changed and no performance-sensitive source files changed. Publication, signing, source-map upload, releases, authenticated service probes, and backend download default changes remain unauthorized.

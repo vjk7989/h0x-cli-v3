@@ -32,6 +32,8 @@ export interface TraceMetrics {
   failureCategory: string | null;
   /** Last `error.message`, useful for the report row. */
   failureMessage: string | null;
+  /** True when the trace reached a normal turn completion event. */
+  turnFinished: boolean;
 }
 
 export async function collectTraceMetrics(path: string): Promise<TraceMetrics> {
@@ -49,6 +51,7 @@ export async function collectTraceMetrics(path: string): Promise<TraceMetrics> {
     toolInvocations: [],
     failureCategory: null,
     failureMessage: null,
+    turnFinished: false,
   };
   if (!existsSync(path)) return empty;
 
@@ -100,6 +103,8 @@ export async function collectTraceMetrics(path: string): Promise<TraceMetrics> {
       if (typeof event.message === "string") {
         metrics.failureMessage = event.message;
       }
+    } else if (type === "turn_finished") {
+      metrics.turnFinished = true;
     }
   }
 

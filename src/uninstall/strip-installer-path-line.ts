@@ -4,7 +4,8 @@
  * across a shell script and a TypeScript module, so the test asserts
  * the marker is still present in `scripts/install.sh`.
  */
-export const INSTALLER_PATH_MARKER = "# added by atomic-agent installer";
+export const INSTALLER_PATH_MARKER = "# added by h0x-cli installer";
+const LEGACY_INSTALLER_PATH_MARKER = "# added by atomic-agent installer";
 
 export interface StripResult {
   readonly content: string;
@@ -27,7 +28,8 @@ export function stripInstallerPathLine(content: string): StripResult {
   const out: string[] = [];
   let changed = false;
   for (let i = 0; i < lines.length; i += 1) {
-    if (lines[i]?.trim() !== INSTALLER_PATH_MARKER) {
+    const line = lines[i]?.trim();
+    if (line !== INSTALLER_PATH_MARKER && line !== LEGACY_INSTALLER_PATH_MARKER) {
       out.push(lines[i] ?? "");
       continue;
     }

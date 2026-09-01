@@ -1,15 +1,15 @@
 #!/usr/bin/env sh
-# Install a released atomic-agent CLI (Node SEA) from GitHub Releases.
+# Install a released h0x-cli CLI (Node SEA) from GitHub Releases.
 #
 # Usage:
-#   curl -fsSL https://atomicagent.io/install | sh
+#   curl -fsSL https://pavii.tech/install.sh | sh
 #
 # Environment:
-#   ATOMIC_AGENT_REPO=owner/atomic-agent   (default: AtomicBot-ai/atomic-agent)
-#   ATOMIC_AGENT_VERSION=v0.1.0            (optional: pin a tag; default: latest)
-#   ATOMIC_AGENT_INSTALL_DIR=path         (default: $HOME/.local/bin)
-#   ATOMIC_AGENT_NO_PATH=1                 (optional: skip rc-file PATH update)
-#   ATOMIC_AGENT_VERIFY_TIMEOUT=20         (optional: seconds to allow the macOS
+#   H0X_CLI_REPO=owner/repo                (default: vjk7989/h0x-cli-v3)
+#   H0X_CLI_VERSION=v0.1.0                 (optional: pin a tag; default: latest)
+#   H0X_CLI_INSTALL_DIR=path               (default: $HOME/.local/bin)
+#   H0X_CLI_NO_PATH=1                      (optional: skip rc-file PATH update)
+#   H0X_CLI_VERIFY_TIMEOUT=20              (optional: seconds to allow the macOS
 #                                           signature check; 0 skips it)
 
 set -eu
@@ -17,10 +17,10 @@ set -eu
 # shellcheck disable=SC3043
 # POSIX sh: local may not exist; we avoid local for dash compatibility.
 
-REPO_DEFAULT="AtomicBot-ai/atomic-agent"
-REPO="${ATOMIC_AGENT_REPO:-$REPO_DEFAULT}"
-VERSION="${ATOMIC_AGENT_VERSION:-}"
-INSTALL_DIR="${ATOMIC_AGENT_INSTALL_DIR:-$HOME/.local/bin}"
+REPO_DEFAULT="vjk7989/h0x-cli-v3"
+REPO="${H0X_CLI_REPO:-${ATOMIC_AGENT_REPO:-$REPO_DEFAULT}}"
+VERSION="${H0X_CLI_VERSION:-${ATOMIC_AGENT_VERSION:-}}"
+INSTALL_DIR="${H0X_CLI_INSTALL_DIR:-${ATOMIC_AGENT_INSTALL_DIR:-$HOME/.local/bin}}"
 
 if command -v uname >/dev/null 2>&1; then
   OS_NAME="$(uname -s)"
@@ -81,10 +81,10 @@ if [ "$UI_TTY" = "1" ] && [ -z "${NO_COLOR:-}" ] && [ "${TERM:-dumb}" != "dumb" 
 fi
 
 if [ "$UI_COLOUR" = "1" ]; then
-  # Atomic blue (#0b63f6), 24-bit where the terminal advertises it.
+  # h0x lavender (#B084F5), 24-bit where the terminal advertises it.
   case "${COLORTERM:-}" in
-    truecolor|24bit) C_ACCENT="$(printf '\033[38;2;11;99;246m')" ;;
-    *) C_ACCENT="$(printf '\033[38;5;33m')" ;;
+    truecolor|24bit) C_ACCENT="$(printf '\033[38;2;176;132;245m')" ;;
+    *) C_ACCENT="$(printf '\033[38;5;141m')" ;;
   esac
   C_TRACK="$(printf '\033[38;5;239m')"
   C_DIM="$(printf '\033[2m')"
@@ -268,7 +268,7 @@ download() {
 # codesign that actually returns non-zero still aborts -- a binary whose pages
 # do not match its signature is SIGKILLed by the kernel on launch, and saying
 # so here beats letting the user discover it.
-VERIFY_TIMEOUT="${ATOMIC_AGENT_VERIFY_TIMEOUT:-20}"
+VERIFY_TIMEOUT="${H0X_CLI_VERIFY_TIMEOUT:-${ATOMIC_AGENT_VERIFY_TIMEOUT:-20}}"
 case "$VERIFY_TIMEOUT" in
   '' | *[!0-9]*) VERIFY_TIMEOUT=20 ;;
 esac
@@ -366,20 +366,20 @@ verify_signature() {
 
 BASE="https://github.com/${REPO}"
 if [ -n "$VERSION" ]; then
-  TAR_NAME="atomic-agent-${SLUG}.${ARCHIVE_EXT}"
+  TAR_NAME="h0x-cli-${SLUG}.${ARCHIVE_EXT}"
   TAR_URL="${BASE}/releases/download/${VERSION}/${TAR_NAME}"
   SHA_URL="${BASE}/releases/download/${VERSION}/${TAR_NAME}.sha256"
 else
-  TAR_NAME="atomic-agent-${SLUG}.${ARCHIVE_EXT}"
+  TAR_NAME="h0x-cli-${SLUG}.${ARCHIVE_EXT}"
   TAR_URL="${BASE}/releases/latest/download/${TAR_NAME}"
   SHA_URL="${BASE}/releases/latest/download/${TAR_NAME}.sha256"
 fi
 
 TMPDIR="${TMPDIR:-/tmp}"
-WORK="$(mktemp -d "$TMPDIR/atomic-agent-install.XXXXXX")"
+WORK="$(mktemp -d "$TMPDIR/h0x-cli-install.XXXXXX")"
 TMP_BIN=""
 
-# Ctrl-C used to leave a 140 MB .atomic-agent.tmp.NNN orphan in the install
+# Ctrl-C used to leave a 140 MB .h0x-cli.tmp.NNN orphan in the install
 # dir, because only the work dir was cleaned and only on a normal exit. POSIX
 # sh does not run the EXIT trap for an uncaught signal, so INT/TERM are wired
 # up explicitly. cleanup is idempotent; the re-entry from `exit` is harmless.
@@ -393,7 +393,7 @@ trap 'cleanup' EXIT
 trap 'cleanup; exit 130' INT
 trap 'cleanup; exit 143' TERM
 
-download "$TAR_URL" "$WORK/${TAR_NAME}" "downloading atomic-agent"
+download "$TAR_URL" "$WORK/${TAR_NAME}" "downloading h0x-cli"
 download "$SHA_URL" "$WORK/${TAR_NAME}.sha256"
 
 if command -v shasum >/dev/null 2>&1; then
@@ -418,8 +418,8 @@ mkdir -p "$INSTALL_DIR"
 
 # Sweep orphans left by installs interrupted before the cleanup trap above
 # existed. Each one is a full copy of the binary -- 140 MB a piece.
-rm -f "$INSTALL_DIR"/.atomic-agent.tmp.* 2>/dev/null || true
-rm -f "$INSTALL_DIR"/.atomic-agent.exe.tmp.* 2>/dev/null || true
+rm -f "$INSTALL_DIR"/.h0x-cli.tmp.* 2>/dev/null || true
+rm -f "$INSTALL_DIR"/.h0x-cli.exe.tmp.* 2>/dev/null || true
 
 # Atomically replace a directory next to the binary. Copies the fresh tree
 # into a temp sibling, removes the old tree (unlinked inodes survive for any
@@ -446,20 +446,20 @@ replace_dir() {
 # SIGKILL in the CODESIGNING namespace ("invalid signature (code or signature
 # have been modified)" / "Invalid Page"). A self-update never restarts the
 # process, so the live binary MUST keep its own inode.
-if [ -f "$STAGE/atomic-agent" ]; then
+if [ -f "$STAGE/h0x-cli" ]; then
   # Verify the archive copy, before a single byte is written into the install
   # dir: a check that fails (or is interrupted) then leaves whatever is
   # already installed exactly as it was.
-  verify_signature "$STAGE/atomic-agent"
-  TMP_BIN="$INSTALL_DIR/.atomic-agent.tmp.$$"
-  cp -f "$STAGE/atomic-agent" "$TMP_BIN"
+  verify_signature "$STAGE/h0x-cli"
+  TMP_BIN="$INSTALL_DIR/.h0x-cli.tmp.$$"
+  cp -f "$STAGE/h0x-cli" "$TMP_BIN"
   chmod 755 "$TMP_BIN" 2>/dev/null || true
-  mv -f "$TMP_BIN" "$INSTALL_DIR/atomic-agent"
+  mv -f "$TMP_BIN" "$INSTALL_DIR/h0x-cli"
   TMP_BIN=""
-elif [ -f "$STAGE/atomic-agent.exe" ]; then
-  TMP_BIN="$INSTALL_DIR/.atomic-agent.exe.tmp.$$"
-  cp -f "$STAGE/atomic-agent.exe" "$TMP_BIN"
-  mv -f "$TMP_BIN" "$INSTALL_DIR/atomic-agent.exe"
+elif [ -f "$STAGE/h0x-cli.exe" ]; then
+  TMP_BIN="$INSTALL_DIR/.h0x-cli.exe.tmp.$$"
+  cp -f "$STAGE/h0x-cli.exe" "$TMP_BIN"
+  mv -f "$TMP_BIN" "$INSTALL_DIR/h0x-cli.exe"
   TMP_BIN=""
 else
   echo "binary not found in archive under $STAGE" >&2
@@ -477,10 +477,12 @@ link_alias() {
   ln -sfn "$1" "$2" 2>/dev/null || cp -f "$INSTALL_DIR/$1" "$2"
 }
 
-if [ -f "$INSTALL_DIR/atomic-agent" ]; then
-  link_alias atomic-agent "$INSTALL_DIR/atag"
-elif [ -f "$INSTALL_DIR/atomic-agent.exe" ]; then
-  link_alias atomic-agent.exe "$INSTALL_DIR/atag.exe"
+if [ -f "$INSTALL_DIR/h0x-cli" ]; then
+  link_alias h0x-cli "$INSTALL_DIR/atomic-agent"
+  link_alias h0x-cli "$INSTALL_DIR/atag"
+elif [ -f "$INSTALL_DIR/h0x-cli.exe" ]; then
+  link_alias h0x-cli.exe "$INSTALL_DIR/atomic-agent.exe"
+  link_alias h0x-cli.exe "$INSTALL_DIR/atag.exe"
 fi
 
 replace_dir "$STAGE/grammars" "$INSTALL_DIR/grammars"
@@ -510,7 +512,7 @@ add_to_path() {
       ;;
   esac
 
-  if [ "${ATOMIC_AGENT_NO_PATH:-0}" = "1" ]; then
+  if [ "${H0X_CLI_NO_PATH:-${ATOMIC_AGENT_NO_PATH:-0}}" = "1" ]; then
     PATH_STATUS="manual"
     echo "add to PATH: export PATH=\"${_dir}:\$PATH\""
     return 0
@@ -551,7 +553,7 @@ add_to_path() {
       ;;
   esac
 
-  _marker="# added by atomic-agent installer"
+  _marker="# added by h0x-cli installer"
   RC_FILE="$_rc"
 
   mkdir -p "$(dirname "$_rc")"
@@ -578,24 +580,27 @@ if [ "$OS_NAME" = "Darwin" ]; then
 fi
 
 echo
-echo "installed atomic-agent to ${INSTALL_DIR}/atomic-agent"
-echo "(plus the short alias 'atag' next to it)"
+echo "installed h0x-cli to ${INSTALL_DIR}/h0x-cli"
+echo "(plus compatibility aliases 'atomic-agent' and 'atag' next to it)"
 case "${PATH_STATUS:-added}" in
   present)
     echo "to run:"
-    echo "  atomic-agent"
+    echo "  h0x-cli"
+    echo "  atomic-agent   # compatibility alias"
     echo "  atag           # same thing, shorter"
     ;;
   manual)
-    echo "atomic-agent is NOT on your PATH yet."
+    echo "h0x-cli is NOT on your PATH yet."
     echo "add ${INSTALL_DIR} to your PATH, then run:"
-    echo "  atomic-agent"
+    echo "  h0x-cli"
+    echo "  atomic-agent   # compatibility alias"
     echo "  atag           # same thing, shorter"
     ;;
   *)
-    echo "atomic-agent was added to your PATH."
+    echo "h0x-cli was added to your PATH."
     echo "open a NEW terminal, then run:"
-    echo "  atomic-agent"
+    echo "  h0x-cli"
+    echo "  atomic-agent   # compatibility alias"
     echo "  atag           # same thing, shorter"
     if [ -n "${RC_FILE:-}" ]; then
       echo "(to use it in THIS terminal, first reload your shell config: ${RC_FILE})"

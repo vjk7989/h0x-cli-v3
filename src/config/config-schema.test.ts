@@ -2,10 +2,23 @@ import { describe, expect, it } from "vitest";
 
 import {
   ConfigValidationError,
+  ENV_DEFAULTS,
   USER_CONFIG_DEFAULTS,
   USER_CONFIG_VERSION,
   parseUserConfigFile,
 } from "./config-schema.js";
+
+describe("environment defaults (h0x deep rebrand)", () => {
+  it("uses h0x-cli names for new state, project skills, and stable-prefix salt defaults", () => {
+    expect(ENV_DEFAULTS.STATE_DIR).toBe("~/.h0x-cli");
+    expect(ENV_DEFAULTS.PROJECT_SKILLS_DIR).toBe(".h0x-cli/skills");
+    expect(ENV_DEFAULTS.STABLE_PREFIX_SALT).toBe("h0x-cli-v1");
+  });
+
+  it("defaults release/update lookups to the h0x GitHub repository", () => {
+    expect(ENV_DEFAULTS.UPDATE_REPO).toBe("vjk7989/h0x-cli-v3");
+  });
+});
 
 describe("tui.onboarding (config v43, extended in v45)", () => {
   it("defaults every stamp to null on a file that predates the block", () => {

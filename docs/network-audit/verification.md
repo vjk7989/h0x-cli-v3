@@ -276,3 +276,47 @@ and no timeout, and no matching direct Node/esbuild process remained.
 per-command counts derived from the Vitest JSON reports.
 Use `final-test-summary.json` for the final distinct count after relocation;
 the original `test-summary.json` remains pre-relocation evidence.
+
+## Connector Ownership Rebrand Verification
+
+Date: 2026-09-01. Scope: source connector identity changes only. No provider
+accounts, credentials, dashboards, bots, OAuth apps, package releases, production
+connector migrations, or authenticated live probes were created or used.
+
+The separate test-writing agent added focused expectations for OpenRouter
+attribution, AI/ML API source attribution, MCP initialize client info, provider
+wizard verification headers, default download User-Agents, backend installer
+requests, Hugging Face API requests, GitHub skill hub requests, ClawHub requests,
+and loopback provider coverage.
+
+The separate runner reported these integrated results using the pinned G-drive
+Node runtime under `G:\h0xi\atomic-agent`:
+
+- Focused ownership tests passed: 85 tests across 11 files.
+- Typecheck passed: `tsc -p tsconfig.json --noEmit`.
+- Build passed: `tsc -p tsconfig.json` and `node scripts/copy-starter-skills.mjs`.
+- No external authenticated services were contacted by the runner.
+
+Focused passing tests validate request formatting and source wiring for this
+stage. They do not clear the prior full-suite blocker, prove historical traffic,
+prove remote receipt, or authorize reporting/release/package publication.
+
+## Telemetry Policy Verification
+
+Date: 2026-09-01. Scope: PAVii PostHog EU Cloud configuration and Sentry
+placeholder preservation. The selected policy is enabled-by-default PostHog
+analytics with opt-out through `analytics.enabled: false`; Sentry remains
+disabled.
+
+The separate runner reported these results using the pinned G-drive Node runtime:
+
+- Focused telemetry/Sentry tests passed: 15 tests across 2 files.
+- Typecheck passed: `tsc -p tsconfig.json --noEmit`.
+- Build passed: `tsc -p tsconfig.json` and `node scripts/copy-starter-skills.mjs`.
+- Explicit audit telemetry test passed through `audit/vitest.config.ts`: 4 tests.
+- Tests used mocks/local execution and did not contact PostHog or any authenticated external service.
+
+Static sweep result from the parent: the private PostHog API-key prefix was not
+found in `src`, `audit`, `docs`, `README.md`, `AGENTS.md`, `package.json`,
+`scripts`, or `.github`. Remaining `us.i.posthog.com` references are historical
+dependency/audit notes, not current runtime configuration.

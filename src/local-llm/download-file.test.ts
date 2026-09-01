@@ -166,6 +166,22 @@ describe("download-file", () => {
     expect(seen.at(-1)).toBe(5_000);
   });
 
+  it("identifies h0x-cli in the default download User-Agent", async () => {
+    let userAgent: string | null = null;
+    globalThis.fetch = vi.fn(async (_url: string | URL, init?: RequestInit) => {
+      userAgent = new Headers(init?.headers).get("user-agent");
+      return new Response(null, {
+        status: 401,
+        statusText: "Synthetic Unauthorized",
+      });
+    }) as typeof fetch;
+
+    await expect(downloadFile("https://example.invalid/model.gguf", join(dir, "never.bin")))
+      .rejects.toThrow("Download failed: HTTP 401");
+
+    expect(userAgent).toMatch(/^h0x-cli(?:\/|$)/);
+  });
+
 });
 
 async function waitFor(predicate: () => boolean): Promise<void> {

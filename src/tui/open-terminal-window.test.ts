@@ -1,3 +1,7 @@
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { describe, it, expect, vi } from "vitest";
 
 import {
@@ -127,11 +131,21 @@ describe("openAgentTerminalWindow", () => {
 
 describe("isOnPath", () => {
   it("finds a binary that exists on PATH", () => {
-    expect(isOnPath("sh", { PATH: "/nope:/bin:/usr/bin" })).toBe(true);
+    const dir = mkdtempSync(join(tmpdir(), "path-probe-"));
+    try {
+      const name = process.platform === "win32" ? "probe.cmd" : "probe";
+      const target = join(dir, name);
+      writeFileSync(target, process.platform === "win32" ? "@echo off\r\n" : "#!/bin/sh\n", {
+        mode: 0o755,
+      });
+      expect(isOnPath(name, { PATH: dir })).toBe(true);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it("misses one that does not", () => {
-    expect(isOnPath("definitely-not-a-real-binary", { PATH: "/bin" })).toBe(false);
+    expect(isOnPath("definitely-not-a-real-binary", { PATH: tmpdir() })).toBe(false);
   });
 
   it("treats an empty PATH as a miss rather than an error", () => {

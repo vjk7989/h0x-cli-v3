@@ -48,6 +48,24 @@ describe("ClawHubClient.browse", () => {
       },
     ]);
   });
+
+  it("identifies h0x-cli while preserving the ClawHub endpoint", async () => {
+    let requestUrl = "";
+    let userAgent: string | null = null;
+    const fetchImpl = vi.fn(async (url: string | URL, init?: RequestInit) => {
+      requestUrl = String(url);
+      userAgent = new Headers(init?.headers).get("user-agent");
+      return jsonResponse({ items: [], nextCursor: null });
+    });
+    const client = new ClawHubClient({
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    await client.browse({ nonSuspiciousOnly: true });
+
+    expect(requestUrl).toContain("https://clawhub.ai/api/v1/skills?");
+    expect(userAgent).toMatch(/^h0x-cli(?:\/|$)/);
+  });
 });
 
 describe("ClawHubClient.search", () => {

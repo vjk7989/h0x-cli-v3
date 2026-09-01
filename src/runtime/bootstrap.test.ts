@@ -1,7 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import {
+  existsSync,
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { homedir, tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { randomBytes } from "node:crypto";
 
 import { createAgentRuntime, managedLocalLlmHealthFailureHint } from "./bootstrap.js";
@@ -73,6 +80,17 @@ class FakeBackend implements BrowserBackend {
   async scroll(_input: ScrollInput): Promise<ScrollResult> {
     return { scrollY: 0, scrollHeight: 0, viewportHeight: 800 };
   }
+}
+
+function writeRuntimeSkill(root: string, name: string): void {
+  mkdirSync(join(root, name), { recursive: true });
+  writeFileSync(
+    join(root, name, "SKILL.md"),
+    ["---", `name: ${name}`, 'description: "project skill"', "---", "body"].join(
+      "\n",
+    ),
+    "utf8",
+  );
 }
 
 describe("createAgentRuntime", () => {
@@ -346,7 +364,7 @@ describe("createAgentRuntime", () => {
       // 2. A different shell binary now runs silently under the grant.
       const second = await runtime.toolRegistry.invoke(
         "os.shell.run",
-        { cmd: "ls", args: [workingDir] },
+        { cmd: process.execPath, args: ["-e", "process.stdout.write('ok')"] },
         ctx,
       );
       expect(second.status).toBe("ok");
@@ -419,11 +437,11 @@ describe("createAgentRuntime", () => {
       // 3. A different binary is not covered by the git shape; it asks.
       await runtime.toolRegistry.invoke(
         "os.shell.run",
-        { cmd: "ls", args: [workingDir] },
+        { cmd: process.execPath, args: ["-e", "process.stdout.write('ok')"] },
         ctx,
       );
       expect(prompts).toHaveLength(2);
-      expect(prompts[1]?.commandShape).toBe("ls");
+      expect(prompts[1]?.commandShape).toBe(basename(process.execPath));
     } finally {
       await runtime.shutdown();
     }
@@ -626,6 +644,26 @@ describe("createAgentRuntime", () => {
       expect(names).not.toContain("exa-web-search");
       await runtime.refreshSkills();
       expect(notified.map((e) => e.name).sort()).toEqual(names);
+    } finally {
+      await runtime.shutdown();
+    }
+  });
+
+  it("loads legacy .atomic-agent project skills after the h0x project dir rename", async () => {
+    writeRuntimeSkill(
+      join(workingDir, ".atomic-agent", "skills"),
+      "legacy-project-skill",
+    );
+
+    const runtime = await createAgentRuntime({
+      workingDir,
+      approvalLevel: 5,
+      overrides: { browserBackend: backend, skipLlamaHealthCheck: true },
+    });
+    try {
+      expect(runtime.skillCatalog.map((entry) => entry.name)).toContain(
+        "legacy-project-skill",
+      );
     } finally {
       await runtime.shutdown();
     }

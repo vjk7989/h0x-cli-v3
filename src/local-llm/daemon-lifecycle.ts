@@ -290,14 +290,14 @@ export async function startDaemon(opts: DaemonStartOptions): Promise<{ pid: numb
   const { binaryName } = resolvePlatformAsset();
   const binPath = resolveServerBinPath(opts.dataDir, binaryName);
   if (!existsSync(binPath)) {
-    throw new Error("backend not downloaded; run 'atomic-agent models update'");
+    throw new Error("backend not downloaded; run 'h0x-cli models update'");
   }
 
   const model = getLocalModelDef(opts.modelId);
   const modelPath = resolveModelFilePath(opts.dataDir, model.id, model.filename);
   if (!existsSync(modelPath)) {
     throw new Error(
-      `model ${opts.modelId} not downloaded; run 'atomic-agent models pull ${opts.modelId}'`,
+      `model ${opts.modelId} not downloaded; run 'h0x-cli models pull ${opts.modelId}'`,
     );
   }
 
@@ -491,7 +491,7 @@ export async function startEmbeddingDaemon(
   const binPath = resolveServerBinPath(opts.dataDir, binaryName);
   if (!existsSync(binPath)) {
     throw new Error(
-      "backend not downloaded; run 'atomic-agent models update'",
+      "backend not downloaded; run 'h0x-cli models update'",
     );
   }
 
@@ -499,7 +499,7 @@ export async function startEmbeddingDaemon(
   const modelPath = resolveModelFilePath(opts.dataDir, model.id, model.filename);
   if (!existsSync(modelPath)) {
     throw new Error(
-      `embedding model ${opts.modelId} not downloaded; run 'atomic-agent models pull-embedding ${opts.modelId}'`,
+      `embedding model ${opts.modelId} not downloaded; run 'h0x-cli models pull-embedding ${opts.modelId}'`,
     );
   }
 
@@ -654,7 +654,7 @@ export async function getEmbeddingDaemonStatus(
  *
  * Lifecycle pairing: `stopBoth` always tries to kill both pid files,
  * regardless of which one is actually alive, so a half-broken state
- * is recoverable with a single `atomic-agent models stop`.
+ * is recoverable with a single `h0x-cli models stop`.
  */
 export interface StartBothResult {
   chat: { pid: number };

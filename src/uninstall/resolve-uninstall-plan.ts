@@ -51,11 +51,18 @@ export async function resolveUninstallPlan(
   const execPath = options.execPath ?? process.execPath;
   const homeDir = options.homeDir ?? homedir();
   const platform = options.platform ?? process.platform;
-  const installDir = installDirFor(execPath);
+  const installDir = installDirFor(execPath, platform);
   const exeSuffix = platform === "win32" ? ".exe" : "";
+  const installedNames = [
+    `h0x-cli${exeSuffix}`,
+    `atomic-agent${exeSuffix}`,
+    `atag${exeSuffix}`,
+  ];
   const binaryPresent =
-    isInstalledBinary(execPath) &&
-    (await exists(resolve(installDir, `atomic-agent${exeSuffix}`)));
+    isInstalledBinary(execPath, platform) &&
+    (await Promise.all(
+      installedNames.map((name) => exists(resolve(installDir, name))),
+    )).some(Boolean);
 
   const all = planUninstallTargets({
     stateDir: options.stateDir,

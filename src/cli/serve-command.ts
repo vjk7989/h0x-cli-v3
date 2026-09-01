@@ -34,7 +34,7 @@ const HELP =
     "  --port <p>          Listen port (default 8787)",
     "  --cwd <dir>         Working directory for OS tools / sessions (default: cwd)",
     "  --api-key <k>       Require this bearer token on all routes except /health and /v1/models",
-    "                      (falls back to env ATOMIC_AGENT_API_KEY when flag is omitted)",
+    "                      (falls back to env H0X_CLI_API_KEY or legacy ATOMIC_AGENT_API_KEY when flag is omitted)",
     "  --no-approval       Force approval level 5: auto-approve every dangerous tool call (dev / trusted use only)",
     "",
     "Endpoints (authenticated unless noted):",
@@ -104,7 +104,8 @@ function parseArgs(args: string[]): ServeArgs | { help: true } | { error: string
     }
   }
   if (!apiKeyProvided) {
-    const envKey = process.env.ATOMIC_AGENT_API_KEY;
+    const envKey =
+      process.env.H0X_CLI_API_KEY ?? process.env.ATOMIC_AGENT_API_KEY;
     apiKey = envKey && envKey.length > 0 ? envKey : null;
   }
   return {

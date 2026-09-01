@@ -1,6 +1,8 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, relative, resolve, sep } from "node:path";
 
+import { appUserAgent } from "../../brand/index.js";
+
 /**
  * The ONLY module that talks to GitHub. Resolves the default branch,
  * walks the repo tree to discover `SKILL.md` files, and downloads a
@@ -235,14 +237,14 @@ export class GithubSkillClient implements SkillHubClient {
     const headers: Record<string, string> = {
       Accept: "application/vnd.github+json",
       "X-GitHub-Api-Version": "2022-11-28",
-      "User-Agent": "atomic-agent",
+      "User-Agent": appUserAgent(),
     };
     if (this.token) headers.Authorization = `Bearer ${this.token}`;
     return this.guardedFetch(`${this.apiBase}${path}`, headers);
   }
 
   private async rawFetch(url: string): Promise<Response> {
-    const headers: Record<string, string> = { "User-Agent": "atomic-agent" };
+    const headers: Record<string, string> = { "User-Agent": appUserAgent() };
     if (this.token) headers.Authorization = `Bearer ${this.token}`;
     return this.guardedFetch(url, headers);
   }

@@ -60,7 +60,7 @@ import {
 } from "./uninstall/uninstall-orchestrator.js";
 
 /**
- * CLI entry for `atomic-agent tui`. Boots the full runtime once and stays
+ * CLI entry for `h0x-cli tui`. Boots the full runtime once and stays
  * alive across multiple goals: every Enter in the goal input spawns a
  * fresh `SessionState`, runs the loop, and returns the UI to `idle`. The
  * browser, `llama-server` slot pool and skill registry are kept warm
@@ -124,7 +124,9 @@ export async function tuiCommand(args: string[]): Promise<number> {
   // pre-render gate could do, because neither the alt screen nor the
   // runtime existed at the point it ran.
   const skipOnboarding =
-    parsed.skipLlamaSetup || process.env.ATOMIC_AGENT_TUI_SKIP_LLAMA_SETUP === "1";
+    parsed.skipLlamaSetup ||
+    process.env.H0X_CLI_TUI_SKIP_LLAMA_SETUP === "1" ||
+    process.env.ATOMIC_AGENT_TUI_SKIP_LLAMA_SETUP === "1";
   const onboarding =
     !skipOnboarding && needsOnboarding()
       ? createOnboardingState(getConfig().localModels.url)

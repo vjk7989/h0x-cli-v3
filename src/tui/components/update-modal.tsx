@@ -8,7 +8,7 @@ export interface UpdateModalProps {
 }
 
 /**
- * Y/N offer shown at startup when a newer atomic-agent release is
+ * Y/N offer shown at startup when a newer h0x-cli release is
  * published. Accepting runs the canonical `install.sh`; the running
  * process is not restarted, so the success message asks the user to
  * relaunch. Rendering matches the other inline modals so it stacks

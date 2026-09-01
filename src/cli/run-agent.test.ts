@@ -2,12 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { Interface as ReadlineInterface } from "node:readline";
 import { Readable } from "node:stream";
 
 import type { CompletionResult } from "../llm/llama-server-client.js";
 import { resetConfigCache } from "../config/index.js";
 
 import { formatLlamaUnreachableHint } from "../llm/llama-server-health.js";
+import { SessionStore } from "../session/session-store.js";
 import { formatAgentEvent } from "./run-agent.js";
 
 const HINT = formatLlamaUnreachableHint("http://127.0.0.1:8080");
@@ -158,6 +160,7 @@ const { runAgentCommand } = await import("./run-agent.js");
 describe("runAgentCommand exit codes", () => {
   let stateDir: string;
   let workingDir: string;
+  let stdout = "";
   let stderr = "";
   const realStdin = process.stdin;
 
@@ -170,12 +173,30 @@ describe("runAgentCommand exit codes", () => {
     process.env.ATOMIC_AGENT_GRAMMARS_DIR = join(process.cwd(), "grammars");
     resetConfigCache();
     model.emits = "";
+    stdout = "";
     stderr = "";
-    vi.spyOn(process.stdout, "write").mockImplementation(() => true);
-    vi.spyOn(process.stderr, "write").mockImplementation((chunk: unknown) => {
-      stderr += typeof chunk === "string" ? chunk : String(chunk);
+    vi.spyOn(process.stdout, "write").mockImplementation(((
+      chunk: unknown,
+      encodingOrCallback?: BufferEncoding | ((error?: Error | null) => void),
+      callback?: (error?: Error | null) => void,
+    ) => {
+      stdout += typeof chunk === "string" ? chunk : String(chunk);
+      const done =
+        typeof encodingOrCallback === "function" ? encodingOrCallback : callback;
+      done?.();
       return true;
-    });
+    }) as typeof process.stdout.write);
+    vi.spyOn(process.stderr, "write").mockImplementation(((
+      chunk: unknown,
+      encodingOrCallback?: BufferEncoding | ((error?: Error | null) => void),
+      callback?: (error?: Error | null) => void,
+    ) => {
+      stderr += typeof chunk === "string" ? chunk : String(chunk);
+      const done =
+        typeof encodingOrCallback === "function" ? encodingOrCallback : callback;
+      done?.();
+      return true;
+    }) as typeof process.stderr.write);
   });
 
   afterEach(() => {
@@ -187,13 +208,19 @@ describe("runAgentCommand exit codes", () => {
     rmSync(workingDir, { recursive: true, force: true });
     delete process.env.ATOMIC_AGENT_STATE_DIR;
     delete process.env.ATOMIC_AGENT_GRAMMARS_DIR;
+    delete process.env.H0X_CLI_EVAL_DISABLE_SESSION_SAVE;
     resetConfigCache();
     vi.restoreAllMocks();
   });
 
   function feedStdin(lines: string[]): void {
+    const stdin = Readable.from(lines);
+    Object.defineProperty(stdin, "isTTY", {
+      value: false,
+      configurable: true,
+    });
     Object.defineProperty(process, "stdin", {
-      value: Readable.from(lines),
+      value: stdin,
       configurable: true,
     });
   }
@@ -242,8 +269,9 @@ describe("runAgentCommand exit codes", () => {
   );
 
   it(
-    "still exits 0 when the same turn ends on a reply",
+    "consumes one-shot piped input without the interactive prompt",
     async () => {
+      const questionSpy = vi.spyOn(ReadlineInterface.prototype, "question");
       model.emits = JSON.stringify({
         tool: "reply",
         args: { text: "the note says hello" },
@@ -256,8 +284,90 @@ describe("runAgentCommand exit codes", () => {
         "2",
         "--no-approval",
       ]);
+      expect(stdout).toBe("the note says hello\n");
+      expect(stderr).toContain('"sessionId":');
+      expect(stderr).toContain('"status": "pending"');
+      expect(stderr).toContain('"turnCount": 1');
+      expect(stderr).toContain('"stepCount": 1');
       expect(stderr).not.toContain('"status": "stalled"');
+      expect(stderr).not.toContain("you> ");
+      expect(questionSpy).not.toHaveBeenCalled();
       expect(code).toBe(0);
+    },
+    60_000,
+  );
+
+  it(
+    "keeps real TTY input on the readline question prompt path",
+    async () => {
+      const stdin = Readable.from([]);
+      Object.defineProperty(stdin, "isTTY", {
+        value: true,
+        configurable: true,
+      });
+      Object.defineProperty(process, "stdin", {
+        value: stdin,
+        configurable: true,
+      });
+      const questionSpy = vi
+        .spyOn(ReadlineInterface.prototype, "question")
+        .mockImplementation(function (
+          this: ReadlineInterface,
+          query: string,
+          callback: (answer: string) => void,
+        ): ReadlineInterface {
+          process.stderr.write(query);
+          callback("/quit");
+          return this;
+        });
+
+      const code = await runAgentCommand([
+        "--cwd",
+        workingDir,
+        "--max-steps",
+        "2",
+        "--no-approval",
+      ]);
+
+      expect(questionSpy).toHaveBeenCalledTimes(1);
+      expect(questionSpy).toHaveBeenCalledWith("you> ", expect.any(Function));
+      expect(stderr).toContain("you> ");
+      expect(stderr).toContain('"turnCount": 0');
+      expect(stdout).toBe("");
+      expect(code).toBe(0);
+    },
+    60_000,
+  );
+
+  it(
+    "can skip durable session persistence for eval one-shot runs",
+    async () => {
+      process.env.H0X_CLI_EVAL_DISABLE_SESSION_SAVE = "1";
+      model.emits = JSON.stringify({
+        tool: "reply",
+        args: { text: "saved only to trace" },
+      });
+      feedStdin(["answer once\n"]);
+
+      const code = await runAgentCommand([
+        "--cwd",
+        workingDir,
+        "--max-steps",
+        "2",
+        "--no-approval",
+      ]);
+
+      const sessionId = /"sessionId": "([^"]+)"/.exec(stderr)?.[1];
+      expect(sessionId).toEqual(expect.any(String));
+      expect(stdout).toBe("saved only to trace\n");
+      expect(code).toBe(0);
+
+      const store = new SessionStore({ dbFile: join(stateDir, "sessions.sqlite") });
+      try {
+        expect(store.load(sessionId ?? "")).toBeNull();
+      } finally {
+        store.close();
+      }
     },
     60_000,
   );

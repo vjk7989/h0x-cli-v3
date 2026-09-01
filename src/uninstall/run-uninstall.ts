@@ -65,7 +65,7 @@ export async function runUninstall(
       removed.push({
         path: target.path,
         ok: false,
-        error: "refused: not a path atomic-agent installs",
+        error: "refused: not a path h0x-cli installs",
       });
       continue;
     }

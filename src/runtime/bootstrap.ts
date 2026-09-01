@@ -7,6 +7,7 @@ import {
   getConfig,
   getTrustConfigPaths,
   resetConfigCache,
+  ENV_DEFAULTS,
 } from "../config/index.js";
 
 import type { LlmStreamParams } from "../agent/step-executor.js";
@@ -605,7 +606,7 @@ export function managedLocalLlmHealthFailureHint(port: number): string {
 
 /**
  * One-stop factory that wires the whole agent runtime. Both the CLI
- * (`atomic-agent run`) and the sidecar (`atomic-agent-sidecar`) go
+ * (`h0x-cli run`) and the sidecar (`atomic-agent-sidecar`) go
  * through this function — there is no other way to construct a live
  * AgentLoop. Keeping the wiring in a single file means the two entry
  * points cannot drift in subtle ways.
@@ -993,7 +994,10 @@ export async function createAgentRuntime(
   const skillRegistry = new SkillRegistry(
     {
       globalDir: config.paths.globalSkillsDir,
-      projectDir: join(workingDir, config.paths.projectSkillsDirName),
+      projectDir: [
+        join(workingDir, config.paths.projectSkillsDirName),
+        join(workingDir, ENV_DEFAULTS.LEGACY_PROJECT_SKILLS_DIR),
+      ],
     },
     config.skills.disabled,
   );
@@ -2266,6 +2270,9 @@ export async function createAgentRuntime(
     return recorder;
   };
 
+  const shouldPersistSessions =
+    process.env.H0X_CLI_EVAL_DISABLE_SESSION_SAVE !== "1";
+
   const createSession = (
     input: { metadata?: Record<string, unknown> } = {},
   ): SessionState => {
@@ -2274,7 +2281,9 @@ export async function createAgentRuntime(
       workingDir,
       ...(input.metadata ? { metadata: input.metadata } : {}),
     });
-    sessionStore.save(state);
+    if (shouldPersistSessions) {
+      sessionStore.save(state);
+    }
     ensureRecorder(state);
     return state;
   };
@@ -2298,7 +2307,9 @@ export async function createAgentRuntime(
           maxSteps: runOptions.maxSteps ?? config.agent.maxSteps,
           signal: runOptions.signal ?? new AbortController().signal,
         });
-        sessionStore.save(result.session);
+        if (shouldPersistSessions) {
+          sessionStore.save(result.session);
+        }
         return result;
       } finally {
         activeTraceSessions.delete(session.id);
@@ -2414,7 +2425,11 @@ export async function createAgentRuntime(
     sessionLoader: sessionStore,
     sessionFactory: {
       create: (input) => createSession(input ?? {}),
-      save: (state) => sessionStore.save(state),
+      save: (state) => {
+        if (shouldPersistSessions) {
+          sessionStore.save(state);
+        }
+      },
     },
     defaultMaxSteps: config.agent.maxSteps,
     backoff: {
@@ -2972,7 +2987,7 @@ function buildReflectionRunner(args: {
 
 /**
  * Wire trace sinks into a fan-out bus. Always includes the on-disk
- * NDJSON sink so `atomic-agent trace show` can read the session back —
+ * NDJSON sink so `h0x-cli trace show` can read the session back —
  * callers append additional sinks (sidecar relay, sentry, …) via
  * `handlers.traceSinks`.
  */

@@ -232,7 +232,7 @@ describe("handleInboundText", () => {
     await handleInboundText(makeUpdate("/start"), ctx);
     expect(calls).toHaveLength(0);
     expect(api.sent).toHaveLength(1);
-    expect(api.sent[0]!.text).toContain("atomic-agent");
+    expect(api.sent[0]!.text).toContain("h0x-cli");
     expect(api.sent[0]!.text).toContain("/help");
   });
 

@@ -10,6 +10,7 @@ export const REPO_ROOT = resolve(HERE, "..", "..");
 export const CLI_BIN = resolve(REPO_ROOT, "dist", "cli", "index.js");
 export const VITEST_CONFIG = resolve(REPO_ROOT, "eval-agents", "vitest.config.ts");
 export const ENV_FILE = resolve(REPO_ROOT, "eval-agents", ".env");
+export const VITEST_BIN = resolve(REPO_ROOT, "node_modules", "vitest", "vitest.mjs");
 
 export function makeLog(tag) {
   return (msg) => console.error(`[eval-agents:${tag}] ${msg}`);
@@ -22,6 +23,13 @@ export function loadEnv() {
   } catch (err) {
     console.error(`[eval-agents] failed to load ${ENV_FILE}: ${err?.message ?? err}`);
   }
+}
+
+export function readEvalEnv(h0xName, legacyName) {
+  const h0x = process.env[h0xName]?.trim();
+  if (h0x) return h0x;
+  const legacy = process.env[legacyName]?.trim();
+  return legacy || undefined;
 }
 
 export function runCli(args, { capture = false } = {}) {
@@ -72,11 +80,16 @@ export async function waitForHealth(url, timeoutMs) {
 }
 
 export async function bringUpDaemons(log) {
-  if (process.env.ATOMIC_AGENT_EVAL_LLAMA_URL) {
-    log(`ATOMIC_AGENT_EVAL_LLAMA_URL=${process.env.ATOMIC_AGENT_EVAL_LLAMA_URL}`);
+  const llamaUrl = readEvalEnv("H0X_CLI_EVAL_LLAMA_URL", "ATOMIC_AGENT_EVAL_LLAMA_URL");
+  const configuredEmbedUrl = readEvalEnv(
+    "H0X_CLI_EVAL_EMBED_URL",
+    "ATOMIC_AGENT_EVAL_EMBED_URL",
+  );
+  if (llamaUrl) {
+    log(`eval llama URL configured`);
     return {
-      chatUrl: process.env.ATOMIC_AGENT_EVAL_LLAMA_URL,
-      embedUrl: process.env.ATOMIC_AGENT_EVAL_EMBED_URL ?? null,
+      chatUrl: llamaUrl,
+      embedUrl: configuredEmbedUrl ?? null,
       startedByUs: false,
     };
   }
@@ -109,7 +122,7 @@ export async function bringUpDaemons(log) {
 
   let embedUrl = null;
   for (const url of [
-    process.env.ATOMIC_AGENT_EVAL_EMBED_URL,
+    configuredEmbedUrl,
     "http://127.0.0.1:19092",
     "http://127.0.0.1:18992",
   ].filter(Boolean)) {
@@ -125,7 +138,11 @@ export async function bringUpDaemons(log) {
 }
 
 export function teardownDaemons(log, startedByUs) {
-  if (!startedByUs || process.env.ATOMIC_AGENT_EVAL_KEEP_DAEMON === "1") return;
+  const keepDaemon = readEvalEnv(
+    "H0X_CLI_EVAL_KEEP_DAEMON",
+    "ATOMIC_AGENT_EVAL_KEEP_DAEMON",
+  );
+  if (!startedByUs || keepDaemon === "1") return;
   log("stopping managed daemons");
   try {
     runCli(["models", "stop"]);
@@ -137,8 +154,8 @@ export function teardownDaemons(log, startedByUs) {
 export function runVitest({ extraEnv = {}, forwarded = [] }) {
   return new Promise((resolveExit) => {
     const child = spawn(
-      "npx",
-      ["vitest", "run", "--config", VITEST_CONFIG, ...forwarded],
+      process.execPath,
+      [VITEST_BIN, "run", "--config", VITEST_CONFIG, ...forwarded],
       {
         cwd: REPO_ROOT,
         env: { ...process.env, ...extraEnv },

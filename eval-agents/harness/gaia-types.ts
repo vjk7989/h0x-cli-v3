@@ -24,6 +24,10 @@ export interface GaiaRunMetrics {
   promptTokens: number | null;
   predictedTokens: number | null;
   toolErrors: number | null;
+  recoveredFromTrace?: boolean;
+  recoveredFromMaxSteps?: boolean;
+  finalizationAttempted?: boolean;
+  finalizationFailed?: boolean;
   wallClockMs: number;
   timedOut: boolean;
   exitCode: number | null;

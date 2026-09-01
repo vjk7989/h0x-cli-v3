@@ -32,6 +32,12 @@ describe("sendWelcomeMessage", () => {
     expect(WELCOME_MESSAGE_TEXT).not.toMatch(/\$|\{|\}/);
   });
 
+  it("uses h0x-cli product identity in active welcome copy", () => {
+    expect(WELCOME_MESSAGE_TEXT).toContain("h0x-cli");
+    expect(WELCOME_MESSAGE_TEXT).not.toContain("Atomic Agent");
+    expect(WELCOME_MESSAGE_TEXT).not.toContain("atomic-agent");
+  });
+
   it("swallows API errors, returns delivered=false, and scrubs the token from the warn log", async () => {
     // The error message intentionally embeds a token-shaped fragment;
     // `scrubErrorMessage` must redact it before the warn line lands

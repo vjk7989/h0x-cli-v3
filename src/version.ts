@@ -16,7 +16,7 @@ const FALLBACK_VERSION = "0.0.0-dev";
 let cached: string | null = null;
 
 /**
- * Resolve the running atomic-agent version. Prefers the build-time
+ * Resolve the running h0x-cli version. Prefers the build-time
  * constant (SEA binary), falling back to the package manifest for
  * `node dist/...` and `tsx src/...` invocations. Never throws — an
  * unreadable manifest degrades to {@link FALLBACK_VERSION}.

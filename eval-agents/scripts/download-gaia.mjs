@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * Download GAIA validation split + attachments into eval-agents/datasets/gaia/hf/.
+ * Download GAIA validation or test split + attachments into eval-agents/datasets/gaia/hf/.
  *
  * Requires HF_TOKEN (or HUGGINGFACE_HUB_TOKEN) and accepting the dataset
  * license on https://huggingface.co/datasets/gaia-benchmark/GAIA
  *
  * Usage:
  *   npm run eval:agents:datasets
- *   node eval-agents/scripts/download-gaia.mjs --force
+ *   node eval-agents/scripts/download-gaia.mjs --split test --force
  */
 
 import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
@@ -22,14 +22,16 @@ import { loadEnv, makeLog, REPO_ROOT } from "./_lib.mjs";
 
 const HERE = fileURLToPath(new URL(".", import.meta.url));
 const DEST = resolve(HERE, "..", "datasets", "gaia", "hf");
-const VALIDATION_DIR = join(DEST, "2023", "validation");
-const META = join(VALIDATION_DIR, "metadata.jsonl");
-const META_PARQUET = join(VALIDATION_DIR, "metadata.parquet");
 
 const log = makeLog("download-gaia");
 
 function parseArgs(argv) {
-  return { force: argv.includes("--force") };
+  const splitIndex = argv.indexOf("--split");
+  const split = splitIndex >= 0 ? argv[splitIndex + 1] : "validation";
+  if (!["validation", "test", "all"].includes(split)) {
+    throw new Error(`unsupported --split ${split}`);
+  }
+  return { force: argv.includes("--force"), split };
 }
 
 /**
@@ -55,6 +57,11 @@ function resolveHfToken() {
  */
 function resolveHfCli() {
   for (const bin of ["hf", "huggingface-cli"]) {
+    if (process.platform === "win32") {
+      const r = spawnSync("where.exe", [bin], { encoding: "utf8" });
+      const out = (r.stdout ?? "").trim();
+      if (r.status === 0 && out.length > 0) return out.split(/\r?\n/)[0];
+    }
     const r = spawnSync("sh", ["-lc", `command -v ${bin}`], { encoding: "utf8" });
     const out = (r.stdout ?? "").trim();
     if (r.status === 0 && out.length > 0) return out.split(/\r?\n/)[0];
@@ -67,12 +74,15 @@ function resolveHfCli() {
  * per-level shards), not the legacy metadata.jsonl. Convert the full
  * Parquet into the metadata.jsonl shape the harness loader expects.
  */
-async function convertParquetToJsonl() {
-  if (!existsSync(META_PARQUET)) {
-    log(`metadata.parquet missing at ${META_PARQUET} — cannot build metadata.jsonl`);
+async function convertParquetToJsonl(split) {
+  const splitDir = join(DEST, "2023", split);
+  const meta = join(splitDir, "metadata.jsonl");
+  const metaParquet = join(splitDir, "metadata.parquet");
+  if (!existsSync(metaParquet)) {
+    log(`metadata.parquet missing at ${metaParquet} — cannot build metadata.jsonl`);
     process.exit(2);
   }
-  const file = await asyncBufferFromFile(META_PARQUET);
+  const file = await asyncBufferFromFile(metaParquet);
   const rows = await parquetReadObjects({ file });
   const lines = rows.map((r) =>
     JSON.stringify({
@@ -84,37 +94,22 @@ async function convertParquetToJsonl() {
       file_path: r.file_path ?? "",
     }),
   );
-  writeFileSync(META, `${lines.join("\n")}\n`, "utf8");
+  writeFileSync(meta, `${lines.join("\n")}\n`, "utf8");
   const byLevel = {};
   for (const r of rows) byLevel[Number(r.Level)] = (byLevel[Number(r.Level)] ?? 0) + 1;
-  log(`wrote ${rows.length} rows → ${META} (by level: ${JSON.stringify(byLevel)})`);
+  log(`wrote ${rows.length} rows → ${meta} (by level: ${JSON.stringify(byLevel)})`);
 }
 
-async function main() {
-  loadEnv();
-  const { force } = parseArgs(process.argv.slice(2));
-  const token = resolveHfToken();
-  if (!token) {
-    log(
-      "no HF credential found — set HF_TOKEN or run `huggingface-cli login` (gated GAIA download)",
-    );
-    process.exit(2);
-  }
-
-  if (!force && existsSync(META)) {
-    const mb = (statSync(META).size / 1024 / 1024).toFixed(2);
-    log(`already present: ${META} (${mb} MB) — use --force to re-download`);
+async function downloadSplit({ split, force, hfBin, token }) {
+  const splitDir = join(DEST, "2023", split);
+  const meta = join(splitDir, "metadata.jsonl");
+  if (!force && existsSync(meta)) {
+    const mb = (statSync(meta).size / 1024 / 1024).toFixed(2);
+    log(`already present: ${meta} (${mb} MB) — use --force to re-download`);
     return;
   }
 
-  const hfBin = resolveHfCli();
-  if (!hfBin) {
-    log("hf / huggingface-cli not found — install: pip install -U huggingface_hub");
-    process.exit(2);
-  }
-  log(`using HF CLI: ${hfBin}`);
-
-  log(`downloading gaia-benchmark/GAIA validation split → ${DEST}`);
+  log(`downloading gaia-benchmark/GAIA ${split} split → ${DEST}`);
   const r = spawnSync(
     hfBin,
     [
@@ -123,14 +118,16 @@ async function main() {
       "--repo-type",
       "dataset",
       "--include",
-      "2023/validation/*",
+      `2023/${split}/*`,
       "--local-dir",
       DEST,
     ],
     {
       cwd: REPO_ROOT,
       stdio: "inherit",
-      env: { ...process.env, HF_TOKEN: token, HUGGINGFACE_HUB_TOKEN: token },
+      env: token
+        ? { ...process.env, HF_TOKEN: token, HUGGINGFACE_HUB_TOKEN: token }
+        : process.env,
     },
   );
   if (r.status !== 0) {
@@ -138,7 +135,28 @@ async function main() {
     process.exit(r.status ?? 1);
   }
 
-  await convertParquetToJsonl();
+  await convertParquetToJsonl(split);
+}
+
+async function main() {
+  loadEnv();
+  const { force, split } = parseArgs(process.argv.slice(2));
+  const token = resolveHfToken();
+
+  const hfBin = resolveHfCli();
+  if (!hfBin) {
+    log("hf / huggingface-cli not found — install: pip install -U huggingface_hub");
+    process.exit(2);
+  }
+  log(`using HF CLI: ${hfBin}`);
+  if (!token) {
+    log("no env/cached token file found — using HF CLI's saved login if available");
+  }
+
+  const splits = split === "all" ? ["validation", "test"] : [split];
+  for (const selected of splits) {
+    await downloadSplit({ split: selected, force, hfBin, token });
+  }
   log("done.");
 }
 

@@ -36,7 +36,7 @@ h0x-cli
 
 First-run model setup and existing permissions are preserved. The welcome displays the installed version, the actual selected model, current directory, and Git repository/branch when available. The `pavii.tech/docs` address is a temporary placeholder, not a promise of live documentation.
 
-Compatibility aliases remain: `atomic-agent`, `atag`, and `atomic-agent-sidecar`. Existing config keys, `ATOMIC_AGENT_*` environment variables, and storage discovery are unchanged. Outside the local launchers, set `ATOMIC_AGENT_STATE_DIR` explicitly when you need G-drive storage.
+Compatibility aliases remain: `atomic-agent`, `atag`, and `atomic-agent-sidecar`. New installs default to `~/.h0x-cli`; a legacy default `~/.atomic-agent` state directory is copied forward on first h0x default boot without deleting the old data. `H0X_CLI_*` environment variables take precedence over matching legacy `ATOMIC_AGENT_*` aliases.
 
 ### Updates and Removal
 
@@ -290,7 +290,7 @@ Every term has to match (`claude vision` is not a substring of any id), a size t
 Already have your own `llama.cpp` process? Point `h0x-cli` at it:
 
 ```bash
-export ATOMIC_AGENT_LLAMA_URL=http://127.0.0.1:8080
+export H0X_CLI_LLAMA_URL=http://127.0.0.1:8080
 
 ./llama-server -m Qwen3.5-9B-Q4_K_M.gguf \
   --slots 4 \
@@ -344,10 +344,10 @@ h0x-cli serve \
   --host 127.0.0.1 \
   --port 8787 \
   --cwd /path/to/work \
-  --api-key "$ATOMIC_AGENT_API_KEY"
+  --api-key "$H0X_CLI_API_KEY"
 ```
 
-`POST /v1/chat/completions` maps one request to one full macro-turn: `user -> 0..N tool steps -> reply`. Atomic-specific routes expose sessions, approvals, tasks, webhooks, events, skills, config, and capabilities.
+`POST /v1/chat/completions` maps one request to one full macro-turn: `user -> 0..N tool steps -> reply`. h0x-cli routes expose sessions, approvals, tasks, webhooks, events, skills, config, and capabilities.
 
 </details>
 
@@ -443,7 +443,7 @@ Everything h0x-cli does is inspectable and interruptible:
 
 By default, h0x-cli does not require a hosted agent provider. Model calls go to your configured backend, and local artifacts stay under `<stateDir>`.
 
-Upstream PostHog analytics and Sentry crash ingestion are disabled in this h0x-cli build through the existing disabled sentinels, even if an inherited config enables analytics. The legacy privacy setting remains compatible but cannot enable those upstream clients. This does not disable configured model providers, browser requests, MCP servers, Telegram, or managed backend/model downloads.
+h0x-cli uses a PAVii-owned PostHog EU Cloud project for anonymous product analytics when `analytics.enabled` is true, which is the default for new and migrated config. Use `/privacy analytics off` or set `analytics.enabled: false` to opt out. Sentry crash ingestion remains disabled through its placeholder DSN. This does not disable configured model providers, browser requests, MCP servers, Telegram, or managed backend/model downloads.
 
 Local-first bounds where control lives, not where packets go. Network egress happens when:
 
@@ -455,7 +455,7 @@ Local-first bounds where control lives, not where packets go. Network egress hap
 - an MCP server receives a tool call you routed to it;
 - the Telegram channel is enabled and the bot exchanges messages with your paired chat, including opt-in scheduled task reports;
 - you install a skill from ClawHub;
-- the TUI checks GitHub Releases for a newer version at startup (set `ATOMIC_AGENT_UPDATE_CHECK_ON_STARTUP=false` to skip);
+- h0x-cli app update checks are disabled in this development build; when release packaging is enabled later, set `H0X_CLI_UPDATE_CHECK_ON_STARTUP=false` to skip startup checks;
 - analytics or crash reporting is enabled, as described above.
 
 > [!NOTE]
@@ -488,13 +488,15 @@ The promise is not magic secrecy. The promise is that the agent control plane do
 User-facing configuration lives in `<stateDir>/config.json`.
 
 Useful environment variables:
-- `ATOMIC_AGENT_STATE_DIR`: state, config, skills, browser profile, memory, tasks, traces. Default: `~/.atomic-agent`.
-- `ATOMIC_AGENT_LLAMA_URL`: external `llama-server` URL.
-- `ATOMIC_AGENT_LLAMA_API_KEY`: optional bearer token for `llama-server`.
-- `ATOMIC_AGENT_LLAMA_MAX_TOKENS`: completion cap.
-- `ATOMIC_AGENT_BROWSER_CHANNEL`: `chrome`, `msedge`, or `chromium`.
-- `ATOMIC_AGENT_BROWSER_EXECUTABLE_PATH`: explicit Chromium-family executable path.
-- `ATOMIC_AGENT_BROWSER_CDP_URL`: attach to an already-running browser via CDP.
+- `H0X_CLI_STATE_DIR`: state, config, skills, browser profile, memory, tasks, traces. Default: `~/.h0x-cli`; matching `ATOMIC_AGENT_STATE_DIR` remains a compatibility alias.
+- `H0X_CLI_LLAMA_URL`: external `llama-server` URL.
+- `H0X_CLI_LLAMA_API_KEY`: optional bearer token for `llama-server`.
+- `H0X_CLI_LLAMA_MAX_TOKENS`: completion cap.
+- `H0X_CLI_BROWSER_CHANNEL`: `chrome`, `msedge`, or `chromium`.
+- `H0X_CLI_BROWSER_EXECUTABLE_PATH`: explicit Chromium-family executable path.
+- `H0X_CLI_BROWSER_CDP_URL`: attach to an already-running browser via CDP.
+
+For every h0x variable above, the matching legacy `ATOMIC_AGENT_*` name still works when the h0x name is absent.
 
 Secrets for skills and channels belong in `<stateDir>/.env`, not in `config.json`:
 

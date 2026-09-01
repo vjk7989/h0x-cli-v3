@@ -212,7 +212,9 @@ describe("streamCliCommand SIGKILL escalation", () => {
     return -1;
   }
 
-  it("force-kills a child that traps SIGTERM instead of orphaning it", async () => {
+  const itSupportsSigtermTrap = process.platform === "win32" ? it.skip : it;
+
+  itSupportsSigtermTrap("force-kills a child that traps SIGTERM instead of orphaning it", async () => {
     // The `finally` used to clear the SIGKILL timer `stop` had just
     // armed, so this child survived every abort — one orphan per
     // cancelled turn. It reports its own pid so the test can watch it.

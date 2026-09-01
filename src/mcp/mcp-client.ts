@@ -19,6 +19,8 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 
 import { resourceClassFor } from "../agent/tool-resource-class.js";
+import { APP_MACHINE_NAME } from "../brand/index.js";
+import { getAppVersion } from "../version.js";
 import { McpConnectError, McpRequestError, scrubErrorMessage } from "./mcp-errors.js";
 import {
   attachStderrTail,
@@ -65,8 +67,7 @@ export interface McpClientDeps {
 }
 
 /** Defaults — agent identity advertised to servers in `initialize`. */
-const CLIENT_NAME = "atomic-agent";
-const CLIENT_VERSION = "0.1.0";
+const CLIENT_NAME = APP_MACHINE_NAME;
 const DEFAULT_CONNECT_TIMEOUT_MS = 15_000;
 /** Grace for a dying child's stderr to arrive after the transport closes. */
 const STDERR_SETTLE_MS = 250;
@@ -140,7 +141,7 @@ export class McpClient {
         transport instanceof StdioClientTransport ? transport.stderr : null,
       );
       const client = new Client(
-        { name: CLIENT_NAME, version: CLIENT_VERSION },
+        { name: CLIENT_NAME, version: getAppVersion() },
         {
           capabilities: this.deps.samplingHandler
             ? { sampling: {} }

@@ -445,7 +445,7 @@ export interface TuiAppCallbacks {
   /**
    * MCP tab: remove an existing server by name from
    * `<stateDir>/config.json`. Variant α: the live `McpManager` is NOT
-   * mutated — the operator restarts atomic-agent to drop the live
+   * mutated — the operator restarts h0x-cli to drop the live
    * connection. Failures fold into `mcp_remove_failed`.
    */
   onMcpRemoveServer?(name: string): void;
@@ -541,7 +541,7 @@ export interface TuiAppCallbacks {
   onUpdateRestart?(): void;
   /**
    * Ctrl+N / `/window`: open a new OS terminal window running a fresh
-   * `atomic-agent tui` in the same working directory.
+   * `h0x-cli tui` in the same working directory.
    */
   onNewWindowRequested?(): void;
 }

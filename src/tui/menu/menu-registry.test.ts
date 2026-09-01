@@ -24,7 +24,7 @@ const V0_2_2_SLASH_COMMANDS = [
   {
     name: "dump",
     description:
-      "write debug zip (TUI snapshot + recent trace NDJSON) to ~/Documents/atomic-agent-debug",
+      "write debug zip (TUI snapshot + recent trace NDJSON) to ~/Documents/h0x-cli-debug",
   },
   {
     name: "help",

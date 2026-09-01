@@ -293,7 +293,9 @@ describe("verifyTargetForWizard", () => {
     const target = verifyTargetForWizard(withKey("openrouter"));
     expect(target).not.toBeNull();
     expect(target?.baseUrl).toBe("https://openrouter.ai/api");
-    expect(target?.extraHeaders?.["X-Title"]).toBe("Atomic Agent");
+    expect(target?.extraHeaders?.["HTTP-Referer"]).toBe("https://pavii.tech");
+    expect(target?.extraHeaders?.["X-OpenRouter-Title"]).toBe("h0x-cli by PAVii.Ai");
+    expect(target?.extraHeaders?.["X-Title"]).toBe("h0x-cli by PAVii.Ai");
     // Never the free router: it answers on a key with no credit.
     expect(target?.probeModels[0]).not.toBe("openrouter/auto");
   });

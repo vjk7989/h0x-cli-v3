@@ -84,7 +84,10 @@ export async function listStarterSkillNames(): Promise<ReadonlySet<string>> {
  * `src/skills/`, so we also try parent and grandparent `starter-skills/`.
  */
 export function resolveStarterSkillsSourceDir(): string | null {
-  const env = process.env.ATOMIC_AGENT_STARTER_SKILLS_DIR?.trim();
+  const env = (
+    process.env.H0X_CLI_STARTER_SKILLS_DIR ??
+    process.env.ATOMIC_AGENT_STARTER_SKILLS_DIR
+  )?.trim();
   if (env && existsSync(markerPath(env))) {
     return env;
   }

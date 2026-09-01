@@ -55,5 +55,5 @@ export function debugBundleTimestamp(now: Date = new Date()): string {
 }
 
 export function debugBundleFileName(now: Date = new Date()): string {
-  return `atomic-agent-debug-${debugBundleTimestamp(now)}.zip`;
+  return `h0x-cli-debug-${debugBundleTimestamp(now)}.zip`;
 }

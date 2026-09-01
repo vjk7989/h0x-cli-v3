@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Bump the atomic-agent version, commit, and create a git tag.
+# Bump the h0x-cli version, commit, and create a git tag.
 #
 # Usage:
 #   ./scripts/release.sh patch        # 0.1.0 → 0.1.1
@@ -10,7 +10,7 @@
 #
 # The script will:
 #   1. Update version in package.json
-#   2. Create a commit: "atomic-agent: release v<version>"
+#   2. Create a commit: "h0x-cli: release v<version>"
 #   3. Create an annotated git tag: v<version>
 #
 # After running, push with:
@@ -99,8 +99,8 @@ echo "Running npm install to update package-lock.json..."
 
 # Commit and tag.
 git add "$PKG" "$APP_DIR/package-lock.json"
-git commit -m "atomic-agent: release $TAG"
-git tag -a "$TAG" -m "Atomic Agent $TAG"
+git commit -m "h0x-cli: release $TAG"
+git tag -a "$TAG" -m "h0x-cli $TAG"
 
 echo ""
 echo "Done! Created commit and tag $TAG."

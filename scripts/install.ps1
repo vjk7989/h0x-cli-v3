@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Install a released atomic-agent CLI (Node SEA) from GitHub Releases on Windows.
+  Install a released h0x-cli CLI (Node SEA) from GitHub Releases on Windows.
 
 .DESCRIPTION
   Windows counterpart of scripts/install.sh. Downloads the release zip, verifies
@@ -9,14 +9,14 @@
   that directory to the user PATH.
 
 .EXAMPLE
-  irm https://atomicagent.io/install.ps1 | iex
+  irm https://pavii.tech/install.ps1 | iex
 
 .NOTES
   Environment overrides (mirrors install.sh):
-    ATOMIC_AGENT_REPO         owner/atomic-agent   (default: AtomicBot-ai/atomic-agent)
-    ATOMIC_AGENT_VERSION      v0.1.0               (optional: pin a tag; default: latest)
-    ATOMIC_AGENT_INSTALL_DIR  path                 (default: %LOCALAPPDATA%\atomic-agent)
-    ATOMIC_AGENT_NO_PATH      1                    (optional: skip user PATH update)
+    H0X_CLI_REPO              owner/repo           (default: vjk7989/h0x-cli-v3)
+    H0X_CLI_VERSION           v0.1.0               (optional: pin a tag; default: latest)
+    H0X_CLI_INSTALL_DIR       path                 (default: %LOCALAPPDATA%\h0x-cli)
+    H0X_CLI_NO_PATH           1                    (optional: skip user PATH update)
 #>
 
 $ErrorActionPreference = "Stop"
@@ -34,13 +34,15 @@ try {
   # Older frameworks may not expose Tls12 by name — best effort.
 }
 
-$RepoDefault = "AtomicBot-ai/atomic-agent"
-$Repo = if ($env:ATOMIC_AGENT_REPO) { $env:ATOMIC_AGENT_REPO } else { $RepoDefault }
-$Version = $env:ATOMIC_AGENT_VERSION
-$InstallDir = if ($env:ATOMIC_AGENT_INSTALL_DIR) {
+$RepoDefault = "vjk7989/h0x-cli-v3"
+$Repo = if ($env:H0X_CLI_REPO) { $env:H0X_CLI_REPO } elseif ($env:ATOMIC_AGENT_REPO) { $env:ATOMIC_AGENT_REPO } else { $RepoDefault }
+$Version = if ($env:H0X_CLI_VERSION) { $env:H0X_CLI_VERSION } else { $env:ATOMIC_AGENT_VERSION }
+$InstallDir = if ($env:H0X_CLI_INSTALL_DIR) {
+  $env:H0X_CLI_INSTALL_DIR
+} elseif ($env:ATOMIC_AGENT_INSTALL_DIR) {
   $env:ATOMIC_AGENT_INSTALL_DIR
 } else {
-  Join-Path $env:LOCALAPPDATA "atomic-agent"
+  Join-Path $env:LOCALAPPDATA "h0x-cli"
 }
 
 function Write-Info($msg) { Write-Host $msg }
@@ -213,12 +215,12 @@ function Undo-TreeTransaction($journal) {
   if ($stranded.Count -gt 0) {
     Write-Info "warning: could not restore $($stranded.Count) file(s):"
     foreach ($path in $stranded) { Write-Info "  $path" }
-    Write-Info "close atomic-agent and re-run the installer to repair the install"
+    Write-Info "close h0x-cli and re-run the installer to repair the install"
   }
 }
 
 # Drop the displaced originals a committed transaction no longer needs. The
-# ones the live process still maps (its own atomic-agent.exe, the loaded
+# ones the live process still maps (its own h0x-cli.exe, the loaded
 # better_sqlite3.node) cannot be deleted while it runs — they keep their
 # .old-<stamp> name and Remove-StaleBackups collects them on a later update.
 function Remove-TransactionBackups($journal) {
@@ -289,7 +291,7 @@ function Copy-TreeTransactional($src, $dst) {
           Move-Item -LiteralPath $target -Destination $backup -Force -ErrorAction Stop
         } catch {
           Fail ("failed to displace $target (locked and could not be moved aside). " +
-            "Close atomic-agent and re-run the installer.`n  $($_.Exception.Message)")
+            "Close h0x-cli and re-run the installer.`n  $($_.Exception.Message)")
         }
       }
       [void]$journal.Add([pscustomobject]@{ Target = $target; Backup = $backup })
@@ -311,7 +313,7 @@ if ($archRaw -and $archRaw -ne "AMD64") {
   Write-Info "      it will run through the Windows x64 emulation layer."
 }
 $Slug = "win32-x64"
-$ArchiveName = "atomic-agent-$Slug.zip"
+$ArchiveName = "h0x-cli-$Slug.zip"
 
 $Base = "https://github.com/$Repo"
 if ($Version) {
@@ -324,7 +326,7 @@ if ($Version) {
 
 Write-Info "downloading $ArchiveName from $Repo ..."
 
-$Work = Join-Path ([System.IO.Path]::GetTempPath()) ("atomic-agent-install-" + [System.Guid]::NewGuid().ToString("N"))
+$Work = Join-Path ([System.IO.Path]::GetTempPath()) ("h0x-cli-install-" + [System.Guid]::NewGuid().ToString("N"))
 New-Item -ItemType Directory -Path $Work -Force | Out-Null
 
 try {
@@ -351,9 +353,9 @@ try {
   New-Item -ItemType Directory -Path $Stage -Force | Out-Null
   Expand-Zip $ZipPath $Stage
 
-  $BinaryPath = Join-Path $Stage "atomic-agent.exe"
+  $BinaryPath = Join-Path $Stage "h0x-cli.exe"
   if (-not (Test-Path $BinaryPath)) {
-    Fail "binary atomic-agent.exe not found in archive $ArchiveName"
+    Fail "binary h0x-cli.exe not found in archive $ArchiveName"
   }
 
   New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
@@ -366,20 +368,24 @@ try {
   Remove-StaleBackups $InstallDir
   Copy-TreeTransactional $Stage $InstallDir
 
-  # Short alias: `atag` is the same CLI under a shorter name. A .cmd shim
+  # Compatibility aliases point at the h0x-cli binary. A .cmd shim
   # rather than a copy of the (large) SEA binary, and rather than a symlink,
   # which needs an elevated shell or Developer Mode. %~dp0 resolves to the
-  # directory of the shim, so it always launches the atomic-agent.exe sitting
+  # directory of the shim, so it always launches the h0x-cli.exe sitting
   # next to it and asset resolution is unaffected. Rewritten on every install,
   # so it self-heals and needs no place in the transactional copy.
   Set-Content -LiteralPath (Join-Path $InstallDir "atag.cmd") -Encoding ASCII -Value @(
     "@echo off",
-    "`"%~dp0atomic-agent.exe`" %*"
+    "`"%~dp0h0x-cli.exe`" %*"
+  )
+  Set-Content -LiteralPath (Join-Path $InstallDir "atomic-agent.cmd") -Encoding ASCII -Value @(
+    "@echo off",
+    "`"%~dp0h0x-cli.exe`" %*"
   )
 
   Write-Info ""
-  Write-Info "installed atomic-agent to $InstallDir\atomic-agent.exe"
-  Write-Info "(plus the short alias 'atag' next to it)"
+  Write-Info "installed h0x-cli to $InstallDir\h0x-cli.exe"
+  Write-Info "(plus compatibility aliases 'atomic-agent' and 'atag' next to it)"
 }
 catch {
   # A bare PowerShell error record is unreadable when the in-app updater
@@ -405,7 +411,7 @@ function Add-ToUserPath($dir) {
       return
     }
   }
-  if ($env:ATOMIC_AGENT_NO_PATH -eq "1") {
+  if ($env:H0X_CLI_NO_PATH -eq "1" -or $env:ATOMIC_AGENT_NO_PATH -eq "1") {
     Write-Info "add to PATH manually (PowerShell):"
     Write-Info "  [Environment]::SetEnvironmentVariable('Path', `"$dir;`$([Environment]::GetEnvironmentVariable('Path','User'))`", 'User')"
     $script:PathStatus = "manual"
@@ -414,7 +420,7 @@ function Add-ToUserPath($dir) {
   $sep = if ($current.Length -gt 0 -and -not $current.EndsWith(';')) { ";" } else { "" }
   $updated = "$current$sep$dir"
   [Environment]::SetEnvironmentVariable("Path", $updated, "User")
-  # Reflect in the current session too so `atomic-agent` works right away.
+  # Reflect in the current session too so `h0x-cli` works right away.
   $env:Path = "$env:Path;$dir"
   Write-Info "added $dir to user PATH"
   $script:PathStatus = "added"
@@ -426,19 +432,22 @@ Write-Info ""
 switch ($script:PathStatus) {
   "present" {
     Write-Info "to run:"
-    Write-Info "  atomic-agent"
+    Write-Info "  h0x-cli"
+    Write-Info "  atomic-agent   # compatibility alias"
     Write-Info "  atag           # same thing, shorter"
   }
   "manual" {
-    Write-Info "atomic-agent is NOT on your PATH yet."
+    Write-Info "h0x-cli is NOT on your PATH yet."
     Write-Info "add $InstallDir to your PATH, then run:"
-    Write-Info "  atomic-agent"
+    Write-Info "  h0x-cli"
+    Write-Info "  atomic-agent   # compatibility alias"
     Write-Info "  atag           # same thing, shorter"
   }
   default {
-    Write-Info "atomic-agent was added to your PATH."
+    Write-Info "h0x-cli was added to your PATH."
     Write-Info "it works in THIS terminal now; open a NEW terminal elsewhere, then run:"
-    Write-Info "  atomic-agent"
+    Write-Info "  h0x-cli"
+    Write-Info "  atomic-agent   # compatibility alias"
     Write-Info "  atag           # same thing, shorter"
   }
 }

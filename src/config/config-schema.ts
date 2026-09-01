@@ -120,7 +120,7 @@ export interface WebSearchConfig {
 /**
  * Declarative binding between an inbound webhook URL path and the task
  * it materialises. Per-webhook config lets operators point external
- * systems (e.g. a GitHub hook, a cron-like SaaS) at atomic-agent
+ * systems (e.g. a GitHub hook, a cron-like SaaS) at h0x-cli
  * without writing code — the HTTP layer turns each hit into a task.
  *
  * `sessionMode` drives session continuity across repeated hits:
@@ -260,18 +260,21 @@ export interface AtomicAgentConfig {
     worldSnapshotMaxTokens: number;
     /**
      * Max `### loaded-tools` rare-schema entries kept per session (LRU
-     * by `loadedAt`). Env-only: `ATOMIC_AGENT_LOADED_TOOLS_CAP`.
+     * by `loadedAt`). Env-only: `H0X_CLI_LOADED_TOOLS_CAP`
+     * (legacy `ATOMIC_AGENT_LOADED_TOOLS_CAP` remains accepted).
      */
     loadedToolsCap: number;
     /**
      * Safety cap for the `### loaded-tools` section in the variable tail.
-     * Env-only: `ATOMIC_AGENT_LOADED_TOOLS_MAX_TOKENS`.
+     * Env-only: `H0X_CLI_LOADED_TOOLS_MAX_TOKENS`
+     * (legacy `ATOMIC_AGENT_LOADED_TOOLS_MAX_TOKENS` remains accepted).
      */
     loadedToolsMaxTokens: number;
     /**
      * On rare-tool execution error, auto-inject the full schema into
      * `### loaded-tools` for the next step. Env-only:
-     * `ATOMIC_AGENT_AUTO_EXPAND_RARE_ON_ERROR`.
+     * `H0X_CLI_AUTO_EXPAND_RARE_ON_ERROR`
+     * (legacy `ATOMIC_AGENT_AUTO_EXPAND_RARE_ON_ERROR` remains accepted).
      */
     autoExpandRareOnError: boolean;
     /**
@@ -279,7 +282,9 @@ export interface AtomicAgentConfig {
      * inference step (a "batch"). The grammar caps the array at 16
      * structurally; this knob is the runtime soft cap and also drives
      * the prompt instructions paragraph. Env-only:
-     * `ATOMIC_AGENT_MAX_PARALLEL_TOOL_CALLS`. Hard upper bound: 16.
+     * `H0X_CLI_MAX_PARALLEL_TOOL_CALLS`
+     * (legacy `ATOMIC_AGENT_MAX_PARALLEL_TOOL_CALLS` remains accepted).
+     * Hard upper bound: 16.
      */
     maxParallelToolCalls: number;
     /**
@@ -287,24 +292,31 @@ export interface AtomicAgentConfig {
      * summaries appended in a single batched step. When exceeded the
      * oldest within-batch results get an extra truncation pass before
      * being added to the conversation transcript. Env-only:
-     * `ATOMIC_AGENT_BATCH_TOOL_RESULT_CHAR_CAP`.
+     * `H0X_CLI_BATCH_TOOL_RESULT_CHAR_CAP`
+     * (legacy `ATOMIC_AGENT_BATCH_TOOL_RESULT_CHAR_CAP` remains accepted).
      */
     batchToolResultCharCap: number;
     /**
      * No-progress loop detection (OpenClaw-style `ToolLoopTracker`).
      * `loopWarningThreshold` — args-only repeat count that injects a
-     * `### notice` (env `ATOMIC_AGENT_LOOP_WARNING_THRESHOLD`).
+     * `### notice` (env `H0X_CLI_LOOP_WARNING_THRESHOLD`;
+     * legacy `ATOMIC_AGENT_LOOP_WARNING_THRESHOLD` remains accepted).
      * `loopCriticalThreshold` — identical args+result streak that vetoes
-     * the call before dispatch (env `ATOMIC_AGENT_LOOP_CRITICAL_THRESHOLD`).
+     * the call before dispatch (env `H0X_CLI_LOOP_CRITICAL_THRESHOLD`;
+     * legacy `ATOMIC_AGENT_LOOP_CRITICAL_THRESHOLD` remains accepted).
      * `loopBreakerVetoStreak` — consecutive vetoes of one signature that
-     * force a graceful reply (env `ATOMIC_AGENT_LOOP_BREAKER_VETO_STREAK`).
+     * force a graceful reply (env `H0X_CLI_LOOP_BREAKER_VETO_STREAK`;
+     * legacy `ATOMIC_AGENT_LOOP_BREAKER_VETO_STREAK` remains accepted).
      * `loopHistorySize` — sliding window size for the tracker's history
-     * ring (env `ATOMIC_AGENT_LOOP_HISTORY_SIZE`).
+     * ring (env `H0X_CLI_LOOP_HISTORY_SIZE`;
+     * legacy `ATOMIC_AGENT_LOOP_HISTORY_SIZE` remains accepted).
      * `loopWanderingThreshold` — distinct-args spread on a wandering-prone
      * tool (web/http/browser) that injects an actionable redirect notice
-     * (env `ATOMIC_AGENT_LOOP_WANDERING_THRESHOLD`).
+     * (env `H0X_CLI_LOOP_WANDERING_THRESHOLD`;
+     * legacy `ATOMIC_AGENT_LOOP_WANDERING_THRESHOLD` remains accepted).
      * `loopWanderingEscalation` — distinct-args spread that escalates to a
-     * forced graceful reply (env `ATOMIC_AGENT_LOOP_WANDERING_ESCALATION`).
+     * forced graceful reply (env `H0X_CLI_LOOP_WANDERING_ESCALATION`;
+     * legacy `ATOMIC_AGENT_LOOP_WANDERING_ESCALATION` remains accepted).
      * All env-only.
      */
     loopWarningThreshold: number;
@@ -322,7 +334,8 @@ export interface AtomicAgentConfig {
      * (and therefore never reaches for) the live browser — web work is
      * funnelled to `os.web.search` + `os.web.fetch`. The tools
      * stay registered and grammar-valid so an explicit fallback can
-     * still drive them. Env `ATOMIC_AGENT_BROWSER_ENABLED`, default `true`.
+     * still drive them. Env `H0X_CLI_BROWSER_ENABLED`
+     * (legacy `ATOMIC_AGENT_BROWSER_ENABLED` remains accepted), default `true`.
      */
     enabled: boolean;
     channel: BrowserChannel;
@@ -469,13 +482,15 @@ export interface AtomicAgentConfig {
   update: {
     /**
      * Fire the startup version check in the TUI. Env-only:
-     * `ATOMIC_AGENT_UPDATE_CHECK_ON_STARTUP`. Set to `false` to disable
+     * `H0X_CLI_UPDATE_CHECK_ON_STARTUP`. Set to `false` to disable
+     * (legacy `ATOMIC_AGENT_UPDATE_CHECK_ON_STARTUP` remains accepted).
      * the network call and the update prompt entirely.
      */
     checkOnStartup: boolean;
     /**
      * GitHub `owner/repo` queried for the latest release and used as the
-     * `install.sh` source. Env-only: `ATOMIC_AGENT_REPO`.
+     * `install.sh` source. Env-only: `H0X_CLI_REPO`
+     * (legacy `ATOMIC_AGENT_REPO` remains accepted).
      */
     repo: string;
   };
@@ -959,7 +974,7 @@ export interface UserManagedLocalLlmConfig {
    * `true` (default) — closing the terminal frees the RAM/VRAM the
    * model was holding; a second live session keeps the daemon up (see
    * `session-registry.ts`). `false` — keep the model warm between
-   * sessions; the operator stops it via `atomic-agent models stop`.
+   * sessions; the operator stops it via `h0x-cli models stop`.
    * Standalone daemons started with `models start` are never touched.
    * Added in config v34; older files transparently get `true`.
    */
@@ -975,7 +990,7 @@ export interface UserManagedLocalLlmConfig {
  * simultaneously.
  *
  * Lifecycle is tied to the chat daemon at the CLI level
- * (`atomic-agent models start` brings both up, `models stop` brings
+ * (`h0x-cli models start` brings both up, `models stop` brings
  * both down) but failure isolation is preserved: if the embedding
  * daemon refuses to start, the chat daemon still runs and the memory
  * subsystem transparently falls back to FTS5-only recall.
@@ -1015,7 +1030,7 @@ export interface UserConfigFile {
     /**
      * Upper bound on `n_predict` for grammar-constrained tool-call
      * completions. Added in config v7 to let users raise the cap
-     * without juggling the `ATOMIC_AGENT_LLAMA_MAX_TOKENS` env var.
+     * without juggling the `H0X_CLI_LLAMA_MAX_TOKENS` env var.
      * Range [64, 131072]. The env var, when set, still wins over
      * this file value (operator override).
      */
@@ -2009,7 +2024,7 @@ export const USER_CONFIG_DEFAULTS: UserConfigFile = {
 
 /** Non-user env-based defaults (not part of the user config file). */
 export const ENV_DEFAULTS = {
-  STATE_DIR: "~/.atomic-agent",
+  STATE_DIR: "~/.h0x-cli",
   HEALTH_TIMEOUT_MS: 3000,
   REQUEST_TIMEOUT_MS: 300_000,
   HEALTH_RETRIES: 5,
@@ -2017,14 +2032,15 @@ export const ENV_DEFAULTS = {
   COMPLETION_RETRIES: 3,
   COMPLETION_RETRY_BACKOFF_MS: 150,
   DEFAULT_SLOT_ID: 0,
-  STABLE_PREFIX_SALT: "atomic-agent-v1",
+  STABLE_PREFIX_SALT: "h0x-cli-v1",
   BROWSER_ENABLED: true,
   BROWSER_CHANNEL: "chrome" as BrowserChannel,
   BROWSER_HEADLESS: false,
   BROWSER_NO_SANDBOX: false,
   BROWSER_LAUNCH_TIMEOUT_MS: 30_000,
   SKILLS_CATALOG_BUDGET: 512,
-  PROJECT_SKILLS_DIR: ".atomic-agent/skills",
+  PROJECT_SKILLS_DIR: ".h0x-cli/skills",
+  LEGACY_PROJECT_SKILLS_DIR: ".atomic-agent/skills",
   USER_CONFIG_FILE_NAME: "config.json",
   TASKS_ENABLED: true,
   TASKS_MAX_ATTEMPTS: 3,
@@ -2040,7 +2056,7 @@ export const ENV_DEFAULTS = {
   /** Fire the TUI startup version check against GitHub Releases. */
   UPDATE_CHECK_ON_STARTUP: true,
   /** GitHub `owner/repo` for self-update release lookups + install.sh. */
-  UPDATE_REPO: "AtomicBot-ai/atomic-agent",
+  UPDATE_REPO: "vjk7989/h0x-cli-v3",
   /** Max rare-tool schema entries kept in `session.loadedTools` (LRU). */
   LOADED_TOOLS_CAP: 8,
   /** Safety cap (estimated tokens) for the `### loaded-tools` section. */

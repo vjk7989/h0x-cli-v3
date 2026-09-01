@@ -7,7 +7,7 @@ see `npm run bundle:sea`) with `mainFormat: "module"` in
 `sea-config.json`. The separate **Tauri sidecar** entry is still
 `atomic-agent-sidecar` when installed from npm; it is not the SEA
 release described here. llama-server is **not** bundled — connect over
-HTTP (`ATOMIC_AGENT_LLAMA_URL`) or use `atomic-agent models` for managed
+HTTP (`H0X_CLI_LLAMA_URL`) or use `h0x-cli models` for managed
 local runtimes. Neither Chrome/Edge nor Playwright browser binaries are
 bundled; `playwright-core` attaches to the already-installed system
 browser.
@@ -75,8 +75,8 @@ bundle:build-binary`.
    npm run bundle:package
    ```
 
-The output lands at `bundle/atomic-agent-<slug>.<ext>` and
-`bundle/atomic-agent-<slug>.<ext>.sha256` (for `shasum -a 256 -c`).
+The output lands at `bundle/h0x-cli-<slug>.<ext>` and
+`bundle/h0x-cli-<slug>.<ext>.sha256` (for `shasum -a 256 -c`).
 
 ## Troubleshooting: `killed` in zsh (macOS)
 
@@ -88,14 +88,14 @@ The output lands at `bundle/atomic-agent-<slug>.<ext>` and
   CI later replaces that ad-hoc signature with the Developer ID one. If
   you hit `killed`, first verify the binary is signed:
   ```bash
-  codesign -dv ./bundle/darwin-arm64/atomic-agent
+  codesign -dv ./bundle/darwin-arm64/h0x-cli
   # Format=Mach-O thin (arm64)  Signature=adhoc  ← expected
   ```
 - `xattr -l` showing **`com.apple.provenance` only** is **not** quarantine.
   Blocking downloads use **`com.apple.quarantine`**. `provenance` alone does
   not explain a silent `killed`.
 - Compare: if **`node dist-sea/cli.mjs --help`** works but
-  **`./bundle/.../atomic-agent`** is killed, the problem is the SEA binary
+  **`./bundle/.../h0x-cli`** is killed, the problem is the SEA binary
   path (signing, Node version, SEA config), not the JS sources. If both
   fail, debug the bundle first.
 - For jetsam / real OOM, check **Console** (or `log show --predicate
@@ -124,12 +124,12 @@ first launch.
 From a published release (or `latest`):
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/OWNER/atomic-agent/BRANCH/scripts/install.sh" | sh
+curl -fsSL "https://raw.githubusercontent.com/vjk7989/h0x-cli-v3/BRANCH/scripts/install.sh" | sh
 ```
 
-Set `ATOMIC_AGENT_REPO=owner/atomic-agent` if the default in
+Set `H0X_CLI_REPO=vjk7989/h0x-cli-v3` if the default in
 [scripts/install.sh](../scripts/install.sh) does not match your fork.
-Optional: `ATOMIC_AGENT_VERSION`, `ATOMIC_AGENT_INSTALL_DIR`.
+Optional: `H0X_CLI_VERSION`, `H0X_CLI_INSTALL_DIR`.
 
 ## Signing / notarisation (local / manual)
 
@@ -140,7 +140,7 @@ an unsigned binary with `npm run bundle:build-binary` and
 ## What the bundle contains
 
 ```
-atomic-agent[.exe]            # SEA binary (CLI entry)
+h0x-cli[.exe]                 # SEA binary (CLI entry)
 grammars/tool-call.gbnf      # GBNF for structured tool-call decoding
 vendor/rg[.exe]              # pinned ripgrep for os.fs.grep (sibling of binary)
 prebuilds/…                  # better-sqlite3 native prebuilds for the target
@@ -159,7 +159,7 @@ once the archive is extracted.
   `<bundle>/vendor/rg[.exe]` next to the SEA binary. The runtime resolver
   (`src/runtime/ripgrep-resolver.ts`) discovers it via
   `<dirname(process.execPath)>/vendor/rg[.exe]`.
-- **Override:** set `ATOMIC_AGENT_RG_PATH=/path/to/rg` to point the agent
+- **Override:** set `H0X_CLI_RG_PATH=/path/to/rg` to point the agent
   at a different binary without repackaging.
 - **Size impact:** roughly +5 MB per target. The binary is stripped and
   stored alongside the SEA rather than embedded inside it, because Node
@@ -219,16 +219,17 @@ which are standard OS utilities and need no bundling.
 ## Runtime requirements (documented in README.txt)
 
 - **External llama-server (or managed mode).** Set
-  `ATOMIC_AGENT_LLAMA_URL=http://host:port` as needed.
+  `H0X_CLI_LLAMA_URL=http://host:port` as needed.
 - **Google Chrome or Microsoft Edge installed** on the host. We use the
   system browser via `playwright-core` (`channel: chrome|msedge`).
 - **macOS:** Accessibility + Screen Recording permissions must be granted
-  to the `atomic-agent` binary for window-management and reliable keyboard
+  to the `h0x-cli` binary for window-management and reliable keyboard
   automation. Users grant this the first time the tool is used.
 - **Linux:** `wmctrl` needed for `os.window.*`; `xdg-open`/`pbpaste`
   equivalents are consumed by `clipboardy` where applicable.
-- **Skills** live under `$ATOMIC_AGENT_STATE_DIR/skills/` and
-  `./.atomic-agent/skills/`. The redistributable ships a `starter-skills/`
+- **Skills** live under `$H0X_CLI_STATE_DIR/skills/` and
+  `./.h0x-cli/skills/`. Legacy `./.atomic-agent/skills/` remains readable.
+  The redistributable ships a `starter-skills/`
   tree next to the binary; each boot the runtime replaces matching names
   under the global skills dir so starter packs stay current (project-local
   skills are unchanged).

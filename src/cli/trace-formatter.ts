@@ -7,7 +7,7 @@ export interface FormatShowOptions {
 
 /**
  * Convert a trace event stream into a compact human-readable chronology
- * suitable for `atomic-agent trace show`. Long payloads (prompt tail,
+ * suitable for `h0x-cli trace show`. Long payloads (prompt tail,
  * completion content) are truncated unless `raw` is set — the full
  * bytes live in the NDJSON file and can be inspected with `trace
  * export` anyway.

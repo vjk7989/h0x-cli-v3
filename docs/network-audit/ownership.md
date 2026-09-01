@@ -26,9 +26,12 @@ changed. User will decide reporting policy after reviewing the audit.
 3. Rebrand first-party attribution in a separately tested patch: OpenRouter inference,
    key verification, embeddings, MCP client handshake/version, AI/ML source header,
    GitHub/Hugging Face/ClawHub download User-Agents. Preserve custom user settings.
-4. Decide whether PostHog and Sentry are removed, remain disabled, or use newly owned
-   projects with explicitly approved collection. Source-map uploads are a separate
-   build decision. Do not merely replace the disabled sentinels with working keys.
+   Source implementation is in progress on 2026-09-01; see
+   [the rebrand ADR](../rebrand/decisions.md#connector-ownership-rebrand).
+4. PostHog policy selected on 2026-09-01: use the PAVii-owned EU Cloud project,
+   enabled by default with opt-out through `analytics.enabled: false`. Sentry
+   runtime reporting remains disabled until a DSN, retention policy and error
+   reporting policy are provided. Source-map uploads are a separate build decision.
 5. Configure only user-owned services, then obtain approval for synthetic authenticated
    checks. Verify account/dashboard ownership separately from local request formatting.
 6. Keep existing full-suite failures as release/push blockers. No automatic package
@@ -42,7 +45,7 @@ changed. User will decide reporting policy after reviewing the audit.
 | AI/ML API | First-party source identifier `agent/h0x-cli`, if accepted by provider contract; no invented partner/referral ID | Your account/key for your own requests, or end-user key design | Confirm accepted header semantics with official provider documentation before patch; capture local headers without paid calls. |
 | MCP client | Our `initialize.clientInfo.name` and truthful installed version | No new account for a local client label. Each actual server may need its own endpoint, account and least-privilege credentials | Local HTTP/SSE/stdio handshake and reconnect tests. Do not rename server/tool namespaces or bypass server authentication. |
 | GitHub/Hugging Face/ClawHub clients | User-Agent product token | Usually no account just for a UA change. Private/gated access still needs the correct provider account/token and applicable model access | Parsed-origin credential tests, redirected-download handling, no foreign-host token forwarding. |
-| PostHog, only if chosen | Point to your project/ingestion region or remove integration | Organization/project ownership, project key and host, dashboard access, event list, retention, deletion/access policy and approved consent design | Test opt-in/out, no queued send after opt-out, redaction, no-content collection, shutdown and failures; check synthetic receipt only with authorization. |
+| PostHog | Source now points to the PAVii EU Cloud ingestion host and public project token; the existing privacy toggle remains the opt-out | Organization/project ownership, public project token, dashboard access, event list, retention, deletion/access policy and approved consent design. Rotate any pasted personal PostHog API key and never ship it | Test opt-out, no queued send after opt-out, no-content collection, shutdown and failures; check live receipt only with explicit authorization. |
 | Sentry runtime, only if chosen | Your DSN and release identity; tighten scrubber contract | Organization/project ownership, DSN/region, access controls, retention, reporting policy | Review dynamic error names/functions/hostnames as potentially identifying data; test source and packaged error payloads before enabling. |
 | Sentry source maps, only if chosen | Your org/project/release and CI upload configuration | Separately stored scoped CI auth token; decision to upload proprietary source; repository integration only if intended | Verify artifact contents locally. A DSN is not a CI auth token. Never ship CI tokens in distributable files. |
 | Telegram | First-party welcome/help copy; display actual bot identity returned by service | A bot controlled by you, chosen display name and available username, bot token, intended owner/chat permissions | Local getMe/send/polling tests first; approved test-chat pairing later. Renaming our TUI cannot rename another person's bot. |

@@ -20,7 +20,7 @@ import { scrubErrorMessage } from "./telegram-channel-types.js";
  */
 export const WELCOME_MESSAGE_TEXT = [
   "✅ Telegram connected.",
-  "You can now control Atomic Agent from this chat.",
+  "You can now control h0x-cli from this chat.",
   "Send /help anytime for available commands.",
 ].join("\n");
 

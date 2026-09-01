@@ -66,7 +66,7 @@ export interface AppKeyCallbacks {
   onAbort(): void;
   /** Persist the Enter-while-busy mode after a Ctrl+T flip. */
   onWhileBusyModePersistRequested?(mode: WhileBusySubmitMode): void;
-  /** Open a fresh OS terminal window running atomic-agent (Ctrl+N, `/window`). */
+  /** Open a fresh OS terminal window running h0x-cli (Ctrl+N, `/window`). */
   onNewWindowRequested?(): void;
   onQuit(): void;
   /** Optional — called when Enter is pressed on the focused sidebar row. */
@@ -533,7 +533,7 @@ export function handleAppKey(
     }
   }
   const debugTabBusy = isPanelModalOpen(state);
-  // Ctrl+N opens a fresh OS terminal window running atomic-agent in the
+  // Ctrl+N opens a fresh OS terminal window running h0x-cli in the
   // same working dir. The editor never sees ctrl-modified letters
   // (it handles only ctrl+a/e/u/k/w/c), so no keystroke is stolen.
   if (

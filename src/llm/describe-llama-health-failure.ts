@@ -31,7 +31,7 @@ export function describeLlamaHealthFailure(
       // UI field for it.
       return (
         `${url}: ${health.error ?? "http 401 — API key required"}. ` +
-        `Set ATOMIC_AGENT_LLAMA_API_KEY in the state dir's .env and retry.`
+        `Set H0X_CLI_LLAMA_API_KEY in the state dir's .env and retry.`
       );
     default:
       return `local-llm /health failed at ${url}: ${health.error ?? "unknown"}`;

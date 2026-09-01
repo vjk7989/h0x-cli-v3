@@ -61,7 +61,7 @@ describe("POST /v1/chat/completions (non-stream)", () => {
   });
 
   it("returns 400 when messages are missing", async () => {
-    const response = await postChat(harness.baseUrl, { model: "atomic-agent" });
+    const response = await postChat(harness.baseUrl, { model: "h0x-cli" });
     expect(response.status).toBe(400);
     const body = (await response.json()) as { error: { message: string } };
     expect(body.error.message).toMatch(/messages/i);
@@ -69,7 +69,7 @@ describe("POST /v1/chat/completions (non-stream)", () => {
 
   it("returns the assistant reply as an OpenAI chat.completion", async () => {
     const response = await postChat(harness.baseUrl, {
-      model: "atomic-agent",
+      model: "h0x-cli",
       messages: [{ role: "user", content: "hello" }],
     });
     expect(response.status).toBe(200);
@@ -88,7 +88,7 @@ describe("POST /v1/chat/completions (non-stream)", () => {
   it("derives a stable session id from the first user message", async () => {
     const expected = deriveChatSessionId(null, "hello");
     const response = await postChat(harness.baseUrl, {
-      model: "atomic-agent",
+      model: "h0x-cli",
       messages: [{ role: "user", content: "hello" }],
     });
     const body = (await response.json()) as { session_id: string };
@@ -102,7 +102,7 @@ describe("POST /v1/chat/completions (non-stream)", () => {
     const response = await postChat(
       harness.baseUrl,
       {
-        model: "atomic-agent",
+        model: "h0x-cli",
         messages: [{ role: "user", content: "hello" }],
       },
       { [SESSION_ID_HEADER]: session.id },
@@ -206,7 +206,7 @@ describe("POST /v1/chat/completions concurrency contract", () => {
       // queue re-reads the stored session at run time and turn 2 really
       // sees turn 1's history — and gating those would deadlock the test
       // against calls it never planned to release.
-      if (!params.prompt.includes("You are atomic-agent")) {
+      if (!params.prompt.includes("You are h0x-cli")) {
         return instantReply("aside");
       }
       userCallCount += 1;
@@ -333,7 +333,7 @@ describe("POST /v1/chat/completions (streaming)", () => {
       const response = await postChat(
         harness.baseUrl,
         {
-          model: "atomic-agent",
+          model: "h0x-cli",
           stream: true,
           messages: [{ role: "user", content: "inspect the page" }],
         },
@@ -353,13 +353,13 @@ describe("POST /v1/chat/completions (streaming)", () => {
     }
   });
 
-  it("omits atomic-agent SSE extensions by default so OpenAI clients validate cleanly", async () => {
+  it("omits h0x-cli SSE extensions by default so OpenAI clients validate cleanly", async () => {
     const harness = await startTestHarness({
       llamaComplete: scriptedToolThenReply(),
     });
     try {
       const response = await postChat(harness.baseUrl, {
-        model: "atomic-agent",
+        model: "h0x-cli",
         stream: true,
         messages: [{ role: "user", content: "inspect the page" }],
       });
@@ -385,7 +385,7 @@ describe("POST /v1/chat/completions (streaming)", () => {
     });
     try {
       const response = await postChat(harness.baseUrl, {
-        model: "atomic-agent",
+        model: "h0x-cli",
         stream: true,
         messages: [{ role: "user", content: "hi" }],
       });
@@ -411,7 +411,7 @@ describe("POST /v1/chat/completions (streaming)", () => {
       const response = await postChat(
         harness.baseUrl,
         {
-          model: "atomic-agent",
+          model: "h0x-cli",
           stream: true,
           messages: [{ role: "user", content: "hi" }],
         },
@@ -464,7 +464,7 @@ describe("POST /v1/chat/completions (streaming)", () => {
       const response = await postChat(
         harness.baseUrl,
         {
-          model: "atomic-agent",
+          model: "h0x-cli",
           stream: true,
           messages: [{ role: "user", content: "hi" }],
         },

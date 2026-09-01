@@ -19,6 +19,15 @@ describe("OpenAiToolCallAdapter", () => {
     );
   });
 
+  it("normalizes Gemini dollar-separated tool names back to dotted names", () => {
+    expect(nameUnescape("os.web$search")).toBe("os.web.search");
+  });
+
+  it("normalizes observed NVIDIA single-underscore web tool aliases", () => {
+    expect(nameUnescape("os.web_search")).toBe("os.web.search");
+    expect(nameUnescape("os.web_fetch")).toBe("os.web.fetch");
+  });
+
   it("maps tool_calls to ToolCallBatch", () => {
     const batch = openAiToolCallsToBatch([
       {

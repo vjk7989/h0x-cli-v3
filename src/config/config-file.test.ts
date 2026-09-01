@@ -56,6 +56,9 @@ describe("user config file IO", () => {
     expect(first).toEqual(USER_CONFIG_DEFAULTS);
     expect(readFileSync(path, "utf8")).toContain("\"localModels\"");
     expect(warn).toHaveBeenCalledOnce();
+    expect(String(warn.mock.calls[0]?.[0])).toContain(
+      `[h0x-cli] created default config at ${path}`,
+    );
 
     const second = ensureUserConfigFileSync(path);
     expect(second).toEqual(USER_CONFIG_DEFAULTS);
@@ -107,7 +110,9 @@ describe("user config file IO", () => {
 
     const calls = warn.mock.calls.map((args) => String(args[0]));
     expect(
-      calls.some((line) => line.includes(`migrated config v5 → v${USER_CONFIG_VERSION}`)),
+      calls.some((line) =>
+        line.includes(`[h0x-cli] migrated config v5 → v${USER_CONFIG_VERSION}`),
+      ),
     ).toBe(true);
     warn.mockRestore();
   });

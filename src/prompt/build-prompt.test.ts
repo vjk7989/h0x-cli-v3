@@ -60,6 +60,37 @@ const SKILLS: SkillCatalogEntry[] = [
 ];
 
 describe("buildPrompt", () => {
+  it("default system persona identifies as h0x-cli by TEAM PAVii.Ai, not Atomic Agent", () => {
+    const { stablePrefix } = buildPrompt({
+      session: mkSession(),
+      toolDescriptors: TOOLS,
+      capabilities: CAPS,
+      skillCatalog: SKILLS,
+    });
+    const systemBlock = stablePrefix.slice(
+      stablePrefix.indexOf("### system"),
+      stablePrefix.indexOf("\n### rules"),
+    );
+    expect(systemBlock).toContain("h0x-cli");
+    expect(systemBlock).toContain("TEAM PAVii.Ai");
+    expect(systemBlock).not.toMatch(/\bYou are atomic-agent\b/i);
+    expect(systemBlock).not.toMatch(/\bYou are Atomic Agent\b/);
+    expect(systemBlock).toMatch(/do not identify as Atomic Agent/i);
+  });
+
+  it("stable prefix includes a concise YAGNI rule without changing prompt mechanics", () => {
+    const { stablePrefix } = buildPrompt({
+      session: mkSession(),
+      toolDescriptors: TOOLS,
+      capabilities: CAPS,
+      skillCatalog: SKILLS,
+    });
+    expect(stablePrefix).toMatch(/\bYAGNI\b/);
+    expect(stablePrefix).toMatch(/current task requires/i);
+    expect(stablePrefix).toContain("One tool-call array per step");
+    expect(stablePrefix).toContain("Always start with `[` and end with `]`");
+  });
+
   it("renders `### lessons` between `### profile` and `### memory-index` (phase 5)", () => {
     const session = mkSession({
       profileFacts: [],

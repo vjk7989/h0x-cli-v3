@@ -2,6 +2,7 @@ import * as fs from "node:fs";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 
+import { appUserAgent } from "../brand/index.js";
 import { huggingFaceToken } from "./huggingface-api.js";
 
 export type DownloadProgressFn = (
@@ -147,7 +148,7 @@ function buildDownloadHeaders(
   userAgent: string | undefined,
 ): Record<string, string> {
   const headers: Record<string, string> = {
-    "User-Agent": userAgent ?? "atomic-agent/local-llm",
+    "User-Agent": userAgent ?? appUserAgent("local-llm"),
   };
   const token = tokenForDownloadUrl(url);
   if (token !== null) headers.Authorization = `Bearer ${token}`;

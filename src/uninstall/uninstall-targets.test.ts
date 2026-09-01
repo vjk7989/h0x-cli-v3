@@ -9,8 +9,8 @@ import {
 
 function input(overrides: Partial<UninstallPlanInput> = {}): UninstallPlanInput {
   return {
-    stateDir: "/Users/op/.atomic-agent",
-    execPath: "/Users/op/.local/bin/atomic-agent",
+    stateDir: "/Users/op/.h0x-cli",
+    execPath: "/Users/op/.local/bin/h0x-cli",
     homeDir: "/Users/op",
     platform: "darwin",
     binaryPresent: true,
@@ -22,8 +22,8 @@ describe("planUninstallTargets", () => {
   it("lists the state dir and the debug bundles as data", () => {
     const data = planUninstallTargets(input()).filter((t) => t.group === "data");
     expect(data.map((t) => t.path)).toEqual([
-      "/Users/op/.atomic-agent",
-      "/Users/op/Documents/atomic-agent-debug",
+      "/Users/op/.h0x-cli",
+      "/Users/op/Documents/h0x-cli-debug",
     ]);
   });
 
@@ -32,6 +32,7 @@ describe("planUninstallTargets", () => {
       .filter((t) => t.group === "program")
       .map((t) => t.path);
     expect(program).toEqual([
+      "/Users/op/.local/bin/h0x-cli",
       "/Users/op/.local/bin/atomic-agent",
       "/Users/op/.local/bin/atag",
       "/Users/op/.local/bin/grammars",
@@ -47,11 +48,12 @@ describe("planUninstallTargets", () => {
     const program = planUninstallTargets(
       input({
         platform: "win32",
-        execPath: "C:\\Users\\op\\bin\\atomic-agent.exe",
+        execPath: "C:\\Users\\op\\bin\\h0x-cli.exe",
         homeDir: "C:\\Users\\op",
       }),
     ).filter((t) => t.group === "program");
-    expect(program.slice(0, 2).map((t) => t.path.replace(/\\/g, "/"))).toEqual([
+    expect(program.slice(0, 3).map((t) => t.path.replace(/\\/g, "/"))).toEqual([
+      "C:/Users/op/bin/h0x-cli.exe",
       "C:/Users/op/bin/atomic-agent.exe",
       "C:/Users/op/bin/atag.exe",
     ]);
@@ -79,6 +81,9 @@ describe("isInstalledBinary", () => {
   it.each([
     ["/Users/op/.local/bin/atomic-agent", true],
     ["/Users/op/.local/bin/atomic-agent.exe", true],
+    ["/Users/op/.local/bin/h0x-cli", true],
+    ["/Users/op/.local/bin/h0x-cli.exe", true],
+    ["/Users/op/.local/bin/atag", true],
     ["/usr/local/bin/node", false],
     ["/usr/local/bin/node22", false],
     ["/opt/homebrew/bin/tsx", false],
@@ -91,7 +96,7 @@ describe("isSafeToRemove", () => {
   const home = "/Users/op";
 
   it("accepts the paths the plan actually names", () => {
-    expect(isSafeToRemove("/Users/op/.atomic-agent", home)).toBe(true);
+    expect(isSafeToRemove("/Users/op/.h0x-cli", home)).toBe(true);
     expect(isSafeToRemove("/Users/op/.local/bin/atag", home)).toBe(true);
     expect(isSafeToRemove("/opt/aa-state", home)).toBe(true);
   });
