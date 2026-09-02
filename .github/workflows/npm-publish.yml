@@ -1,0 +1,56 @@
+# Manual npm publication for h0x-cli.
+# Requires a rotated npm automation token stored as the NPM_TOKEN repository
+# secret. Do not paste or commit npm tokens.
+
+name: Publish npm
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish h0x-cli to npm"
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: npm-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  npm:
+    name: build and optionally publish
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "25.7"
+          check-latest: true
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Inspect package contents
+        run: npm pack --dry-run
+
+      - name: Publish package
+        if: github.event_name == 'workflow_dispatch' && inputs.publish == true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${NODE_AUTH_TOKEN:-}" ]]; then
+            echo "NPM_TOKEN is required to publish h0x-cli to npm" >&2
+            exit 1
+          fi
+          npm publish --access public

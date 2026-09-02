@@ -140,6 +140,10 @@ NPM publishing is not enabled in this stage. When package publication is
 approved, store the npm automation token as `NPM_TOKEN` in CI and confirm the
 package name before adding a publish step. Do not commit npm tokens.
 
+The npm package name is `h0x-cli`. The manual npm workflow builds, runs
+`npm pack --dry-run`, and publishes only when dispatched with `publish=true`
+and a rotated `NPM_TOKEN` secret.
+
 ## Signing / notarisation (local / manual)
 
 On macOS you can run the same shell scripts the workflow uses, or produce

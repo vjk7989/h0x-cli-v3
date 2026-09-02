@@ -254,9 +254,11 @@ Public installer commands now use raw URLs from `buckleson/Pavii-cli-releases`
 so the mirror hosts both installer scripts and release archives. Mirror
 publication is manual-only through `.github/workflows/release.yml` with
 `publish=true` and a `PAVII_RELEASES_TOKEN` repository secret that can write to
-`buckleson/Pavii-cli-releases`. NPM publication is not configured yet; confirm
-the final package name and store the token only as a CI `NPM_TOKEN` secret
-before adding a publish step. Never commit or document pasted npm tokens.
+`buckleson/Pavii-cli-releases`. NPM package identity is `h0x-cli`, and
+publication is gated by `.github/workflows/npm-publish.yml`; it builds, runs
+`npm pack --dry-run`, and publishes only when manually dispatched with
+`publish=true` and a rotated CI `NPM_TOKEN` secret. Never commit or document
+pasted npm tokens.
 
 Sentry source-map upload is disabled for release prep: the workflow no longer
 passes `SENTRY_AUTH_TOKEN`, and `scripts/bundle-sea.ts` no longer configures

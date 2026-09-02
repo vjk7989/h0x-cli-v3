@@ -8,6 +8,26 @@ This is a development-stage fork of [Atomic Agent](https://github.com/AtomicBot-
 
 ## Quick Install
 
+### Public Install
+
+NPM installation will work after the first public package publish:
+
+```bash
+npm install -g h0x-cli
+npx h0x-cli --version
+```
+
+GitHub release installers will work after release archives are uploaded to the
+PAVii release mirror:
+
+```powershell
+irm https://raw.githubusercontent.com/buckleson/Pavii-cli-releases/main/scripts/install.ps1 | iex
+```
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/buckleson/Pavii-cli-releases/main/scripts/install.sh | sh
+```
+
 ### Local Windows Development
 
 Use Node **25.7 or newer** from a G-drive directory. In this workspace, Node 25.7.0 is unpacked at `G:\h0xi\atomic-agent\.local\runtime\node-v25.7.0-win-x64`. A fresh clone needs that runtime installed first; it is not committed.
@@ -40,7 +60,7 @@ Compatibility aliases remain: `atomic-agent`, `atag`, and `atomic-agent-sidecar`
 
 ### Updates and Removal
 
-App update checks and installers are disabled in this build, including `h0x-cli update --check` and `--version`. Update the source checkout through Git and rebuild. Do not use the inherited upstream release installers for h0x-cli; public installation/release packaging is a later stage. Managed model/backend downloads are a separate, unchanged feature.
+App update checks and in-app update installers are disabled in this build, including `h0x-cli update --check` and `--version`. Update the source checkout through Git and rebuild until release archives exist in the PAVii release mirror. Do not use the inherited upstream release installers for h0x-cli. Managed model/backend downloads are a separate, unchanged feature.
 
 The inherited `uninstall` command still targets legacy installation layouts and can delete persistent data. It is not an uninstaller for this development checkout; use `h0x-cli uninstall --dry-run` only to inspect its plan. Do not run a destructive uninstall to remove the local development launcher.
 

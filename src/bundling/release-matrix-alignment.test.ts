@@ -6,6 +6,7 @@ import { BUNDLE_TARGETS } from "../../scripts/bundle-targets.js";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const RELEASE_YML = resolve(REPO_ROOT, ".github/workflows/release.yml");
+const NPM_PUBLISH_YML = resolve(REPO_ROOT, ".github/workflows/npm-publish.yml");
 const PACKAGE_BUNDLE_TS = resolve(REPO_ROOT, "scripts/package-bundle.ts");
 const BUNDLE_SEA_TS = resolve(REPO_ROOT, "scripts/bundle-sea.ts");
 
@@ -72,6 +73,24 @@ describe("release matrix alignment", () => {
     expect(yml).toContain('gh release upload "$TAG" "$f" --repo "$RELEASE_REPO"');
     expect(yml).not.toContain("GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}");
     expect(yml).not.toContain('gh release create "$TAG" --draft');
+  });
+
+  it("keeps Windows signing optional until PAVii signing secrets exist", () => {
+    const yml = readFileSync(RELEASE_YML, "utf8");
+    expect(yml).toContain("WINDOWS_SIGNING_ENABLED:");
+    expect(yml).toContain(
+      "if: matrix.slug == 'win32-x64' && env.WINDOWS_SIGNING_ENABLED == '1'",
+    );
+  });
+
+  it("publishes npm only from a manual NPM_TOKEN-gated workflow", () => {
+    const yml = readFileSync(NPM_PUBLISH_YML, "utf8");
+    expect(yml).toContain("name: Publish npm");
+    expect(yml).toContain("workflow_dispatch:");
+    expect(yml).toContain("NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}");
+    expect(yml).toContain("npm pack --dry-run");
+    expect(yml).toContain("npm publish --access public");
+    expect(yml).not.toMatch(/npm_[A-Za-z0-9]{20,}/);
   });
 
   it("packages archives and bundle readmes with h0x-cli identity", () => {

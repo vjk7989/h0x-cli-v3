@@ -267,7 +267,7 @@ Decision: source repository metadata remains `vjk7989/h0x-cli-v3`, while release
 
 Decision: the release workflow builds on version tags and manual dispatch, but draft GitHub Release creation/upload is manual-only (`workflow_dispatch` with `publish=true`) and targets `buckleson/Pavii-cli-releases` through a separate `PAVII_RELEASES_TOKEN` secret. The default repository `GITHUB_TOKEN` is intentionally not used for mirror publication.
 
-Decision: npm publishing remains blocked until the package name is confirmed and CI receives an `NPM_TOKEN` secret. Tokens pasted into chat must not be committed, logged, documented, or used as source-controlled config; rotate any token that was shared in chat.
+Decision: npm package identity is `h0x-cli`. A manual npm workflow builds, runs `npm pack --dry-run`, and publishes only when dispatched with `publish=true` and a rotated `NPM_TOKEN` secret. Tokens pasted into chat must not be committed, logged, documented, or used as source-controlled config; rotate any token that was shared in chat.
 
 Decision: install scripts document raw `buckleson/Pavii-cli-releases` mirror URLs and h0x environment names, with legacy `ATOMIC_AGENT_*` install overrides still accepted. POSIX and Windows installers install `h0x-cli` as the primary binary and create only the intentional compatibility aliases. Bundle README output includes TEAM PAVii.Ai, the website, and the h0x GitHub repository.
 
@@ -283,6 +283,7 @@ Codebase map for this stage:
 | Bundle and archive identity | `scripts/bundle-targets.ts`, `scripts/package-bundle.ts`, `scripts/bundle-sea.ts` |
 | Installers and version bump script | `scripts/install.sh`, `scripts/install.ps1`, `scripts/release.sh` |
 | GitHub release workflow and mirror gate | `.github/workflows/release.yml` |
+| NPM publish gate | `.github/workflows/npm-publish.yml` |
 | Release-prep tests | `src/bundling/release-matrix-alignment.test.ts`, `src/cli/bin-alias.test.ts`, `src/config/config-schema.test.ts`, `src/update/check-app-update.test.ts`, `src/update/run-app-update.test.ts` |
 
 Verification: focused Stage 2 tests passed with 170 tests across five files; `npx tsc -p tsconfig.json --noEmit` passed; `npm run build` passed and copied starter skills to `dist/starter-skills`; `git diff --check` passed with line-ending warnings only. The independent test-running agent also owns a separate verification report in its final status. The older full-suite blocker remains separate and publication remains unauthorized.
