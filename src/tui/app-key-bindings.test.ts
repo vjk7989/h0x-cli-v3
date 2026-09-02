@@ -78,6 +78,163 @@ describe("handleAppKey", () => {
     expect(handled).toBe(false);
   });
 
+  it("opens the model switch from the empty chat composer on Right Arrow", () => {
+    const state = createInitialTuiState(stubSession());
+    state.uiMode = "chat";
+    state.chatFocus = "editor";
+    state.inputValue = "";
+    const dispatch = vi.fn();
+    const handled = handleAppKey("", emptyKey({ rightArrow: true }), {
+      state,
+      dispatch,
+      callbacks: {
+        onApprovalDecision: vi.fn(),
+        onAbort: vi.fn(),
+        onQuit: vi.fn(),
+      },
+      ctrlCArmed: false,
+      setCtrlCArmed: vi.fn(),
+      sidebarVisible: false,
+      menuLeaderArmed: false,
+      setMenuLeaderArmed: vi.fn(),
+      activateMenuNode: vi.fn(),
+      activateComposerSwitch: vi.fn(),
+    });
+    expect(handled).toBe(true);
+    expect(dispatch).toHaveBeenCalledWith({
+      type: "composer_switch_opened",
+      kind: "model",
+    });
+  });
+
+  it("opens the backend switch from the empty chat composer on Left Arrow", () => {
+    const state = createInitialTuiState(stubSession());
+    state.uiMode = "chat";
+    state.chatFocus = "editor";
+    state.inputValue = "";
+    const dispatch = vi.fn();
+    const handled = handleAppKey("", emptyKey({ leftArrow: true }), {
+      state,
+      dispatch,
+      callbacks: {
+        onApprovalDecision: vi.fn(),
+        onAbort: vi.fn(),
+        onQuit: vi.fn(),
+      },
+      ctrlCArmed: false,
+      setCtrlCArmed: vi.fn(),
+      sidebarVisible: false,
+      menuLeaderArmed: false,
+      setMenuLeaderArmed: vi.fn(),
+      activateMenuNode: vi.fn(),
+      activateComposerSwitch: vi.fn(),
+    });
+    expect(handled).toBe(true);
+    expect(dispatch).toHaveBeenCalledWith({
+      type: "composer_switch_opened",
+      kind: "backend",
+    });
+  });
+
+  it("leaves Left and Right Arrow for the editor when the composer has text", () => {
+    const state = createInitialTuiState(stubSession());
+    state.uiMode = "chat";
+    state.chatFocus = "editor";
+    state.inputValue = "hello";
+    const dispatch = vi.fn();
+    for (const arrow of [{ leftArrow: true }, { rightArrow: true }]) {
+      const handled = handleAppKey("", emptyKey(arrow), {
+        state,
+        dispatch,
+        callbacks: {
+          onApprovalDecision: vi.fn(),
+          onAbort: vi.fn(),
+          onQuit: vi.fn(),
+        },
+        ctrlCArmed: false,
+        setCtrlCArmed: vi.fn(),
+        sidebarVisible: false,
+        menuLeaderArmed: false,
+        setMenuLeaderArmed: vi.fn(),
+        activateMenuNode: vi.fn(),
+        activateComposerSwitch: vi.fn(),
+      });
+      expect(handled).toBe(false);
+    }
+    expect(dispatch).not.toHaveBeenCalledWith(
+      expect.objectContaining({ type: "composer_switch_opened" }),
+    );
+  });
+
+  it("does not open a route switch when another chat layer owns the keyboard", () => {
+    for (const statePatch of [
+      { chatFocus: "sidebar" as const },
+      { slashPaletteOpen: true },
+      { themePickerOpen: true },
+      { sessionPickerOpen: true },
+      { menuOpen: true },
+      { contextPanelOpen: true },
+      { codingModeMenu: { cursor: 0 } },
+      { pendingApproval: pendingRequest() },
+    ]) {
+      const state = createInitialTuiState(stubSession());
+      Object.assign(state, {
+        uiMode: "chat" as const,
+        chatFocus: "editor" as const,
+        inputValue: "",
+        ...statePatch,
+      });
+      const dispatch = vi.fn();
+      handleAppKey("", emptyKey({ rightArrow: true }), {
+        state,
+        dispatch,
+        callbacks: {
+          onApprovalDecision: vi.fn(),
+          onAbort: vi.fn(),
+          onQuit: vi.fn(),
+        },
+        ctrlCArmed: false,
+        setCtrlCArmed: vi.fn(),
+        sidebarVisible: false,
+        menuLeaderArmed: false,
+        setMenuLeaderArmed: vi.fn(),
+        activateMenuNode: vi.fn(),
+        activateComposerSwitch: vi.fn(),
+      });
+      expect(dispatch).not.toHaveBeenCalledWith(
+        expect.objectContaining({ type: "composer_switch_opened" }),
+      );
+    }
+  });
+
+  it("does not steal Left or Right Arrow from an armed menu leader", () => {
+    const state = createInitialTuiState(stubSession());
+    state.uiMode = "chat";
+    state.chatFocus = "editor";
+    state.inputValue = "";
+    const dispatch = vi.fn();
+    const handled = handleAppKey("", emptyKey({ rightArrow: true }), {
+      state,
+      dispatch,
+      callbacks: {
+        onApprovalDecision: vi.fn(),
+        onAbort: vi.fn(),
+        onQuit: vi.fn(),
+      },
+      ctrlCArmed: false,
+      setCtrlCArmed: vi.fn(),
+      sidebarVisible: false,
+      menuLeaderArmed: true,
+      setMenuLeaderArmed: vi.fn(),
+      activateMenuNode: vi.fn(),
+      activateComposerSwitch: vi.fn(),
+    });
+    expect(handled).toBe(true);
+    expect(dispatch).not.toHaveBeenCalledWith(
+      expect.objectContaining({ type: "composer_switch_opened" }),
+    );
+  });
+
   it("PageUp dispatches a chat_scrolled action with a positive delta in chat mode", () => {
     const state = createInitialTuiState(stubSession());
     const dispatch = vi.fn();

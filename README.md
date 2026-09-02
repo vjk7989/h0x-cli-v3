@@ -10,12 +10,25 @@ This is a development-stage fork of [Atomic Agent](https://github.com/AtomicBot-
 
 ### Public Install
 
-NPM installation will work after the first public package publish:
+Use Node `25.7+` before installing:
 
 ```bash
+node -v
 npm install -g h0x-cli
 npx h0x-cli --version
 ```
+
+If npm prints `EBADENGINE`, your active Node is older than the required
+runtime. Switch to Node 25.7 or newer and rerun the install. If npm blocks the
+native SQLite install script, allow only that package once:
+
+```bash
+npm install -g --allow-scripts=better-sqlite3 h0x-cli
+```
+
+Deprecated dependency notices from transitive packages are warnings; a working
+install should still make `h0x-cli --version` and `npx h0x-cli --version`
+print the installed version.
 
 GitHub release installers will work after release archives are uploaded to the
 PAVii release mirror:

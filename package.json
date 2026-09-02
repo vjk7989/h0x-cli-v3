@@ -1,6 +1,6 @@
 {
   "name": "h0x-cli",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "h0x - CLI by TEAM PAVii.Ai: a local-first operator agent with an interactive terminal and sidecar API.",
   "homepage": "https://pavii.tech",
   "repository": {

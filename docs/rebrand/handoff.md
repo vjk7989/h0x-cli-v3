@@ -7,6 +7,18 @@ disable-model-invocation: true
 
 # Rebrand Remediation Handoff
 
+## Current npm/TUI install fix
+
+On 2026-09-02, continue from the `0.4.3` npm/TUI patch if needed. Scope is
+limited to install docs/tests and chat-mode route-switch keyboard routing:
+empty composer `Right Arrow` opens model switch, empty composer `Left Arrow`
+opens backend switch, typed composer text keeps normal cursor movement, and LLM
+panel arrows keep mode navigation. See `src/tui/app-key-bindings.ts`,
+`src/tui/app-key-bindings.test.ts`,
+`src/tui/llm-panel/llm-panel-key-bindings.test.ts`, `README.md`, and
+`src/cli/bin-alias.test.ts`. Do not broaden into provider, prompt, telemetry,
+storage, or mirror release work unless the user explicitly asks.
+
 ## Next-session focus
 
 Continue the post-audit rebrand hardening one area at a time. The September 1

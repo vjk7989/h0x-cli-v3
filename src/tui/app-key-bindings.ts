@@ -257,6 +257,31 @@ function composerOwnsCtrlC(state: TuiState, menuLeaderArmed: boolean): boolean {
   );
 }
 
+function shouldOpenRouteSwitchFromChat(
+  input: string,
+  key: Key,
+  state: TuiState,
+  menuLeaderArmed: boolean,
+): boolean {
+  if (!key.leftArrow && !key.rightArrow) return false;
+  if (input.length > 0) return false;
+  if (key.ctrl || key.meta || key.shift) return false;
+  if (menuLeaderArmed) return false;
+  if (state.uiMode !== "chat") return false;
+  if (state.chatFocus !== "editor") return false;
+  if (state.inputValue.length > 0) return false;
+  if (state.menuOpen || state.contextPanelOpen || state.contextMenu) return false;
+  if (state.codingModeMenu) return false;
+  if (state.composerSwitch !== null) return false;
+  if (state.slashPaletteOpen) return false;
+  if (state.pendingApproval) return false;
+  if (state.updatePrompt || state.updateStatus === "done") return false;
+  if (state.uninstall || state.sessionDelete) return false;
+  if (state.themePickerOpen || state.sessionPickerOpen) return false;
+  if (isPanelModalOpen(state)) return false;
+  return true;
+}
+
 export function handleAppKey(
   input: string,
   key: Key,
@@ -400,6 +425,15 @@ export function handleAppKey(
         !isPanelModalOpen(state),
     })
   ) {
+    return true;
+  }
+  if (
+    shouldOpenRouteSwitchFromChat(input, key, state, ctx.menuLeaderArmed === true)
+  ) {
+    dispatch({
+      type: "composer_switch_opened",
+      kind: key.rightArrow ? "model" : "backend",
+    });
     return true;
   }
   if (ctx.menuLeaderArmed) {

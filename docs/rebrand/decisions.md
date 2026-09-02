@@ -1,5 +1,13 @@
 # ADR: h0x-cli Surface Rebrand
 
+Update 2026-09-02: npm install hardening and chat composer arrow navigation are
+in progress for `0.4.3`. The active decision is narrow: keep Node `>=25.7.0`,
+document `EBADENGINE` and the `better-sqlite3` allow-scripts fallback, and make
+empty-chat `Right Arrow` open the model route switch while empty-chat
+`Left Arrow` opens the backend route switch. Typed composer text keeps normal
+cursor movement; LLM panel arrows keep panel-mode navigation. No provider,
+prompt, telemetry, storage, or release-mirror behavior changes are included.
+
 Date: 2026-08-31. Decision: approved. Delivery status: local rebrand and approved visual follow-up COMPLETE. Tests, typecheck, build/install, source matrix, built-CLI PTY, and final command smoke passed; all work processes stopped. Only the user's manual check and prior full-suite push blockers remain open. No full-suite rerun or push was performed. Source changes remain uncommitted; no commit or remote change has occurred. Completed checks below come from the parent and linked reports, not from tests run by this documentation agent.
 
 Approved visual follow-up: Stage 1 artwork gate GREEN; Stage 2 fully GREEN with 320 tests across 23 files and typecheck exit 0 after the contrast fix. Build and install exited 0; all four wrappers verified. Source PTY 10/10, built-CLI PTY 1/1, visual inspection, and final command smoke 8/8 passed, with caller cwd preserved in all eight smoke cases. No production changes followed the 320-test gate.

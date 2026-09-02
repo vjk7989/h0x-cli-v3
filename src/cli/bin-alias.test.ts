@@ -63,4 +63,14 @@ describe("CLI package and compatibility aliases", () => {
     expect(script).toContain("https://pavii.tech");
     expect(script).toContain("buckleson/Pavii-cli-releases");
   });
+
+  it("documents npm install prerequisites and the native-script fallback", () => {
+    const readme = read("README.md");
+    expect(readme).toContain("Node `25.7+`");
+    expect(readme).toContain("npm install -g h0x-cli");
+    expect(readme).toContain(
+      "npm install -g --allow-scripts=better-sqlite3 h0x-cli",
+    );
+    expect(readme).toContain("EBADENGINE");
+  });
 });

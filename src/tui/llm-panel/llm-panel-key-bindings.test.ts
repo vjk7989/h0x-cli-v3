@@ -68,6 +68,27 @@ describe("handleLlmPanelKey", () => {
     expect(onStop).not.toHaveBeenCalled();
   });
 
+  it("keeps Left and Right Arrow as LLM panel mode navigation", () => {
+    const base = seededState();
+    const state = {
+      ...base,
+      llmPanel: { ...base.llmPanel, mode: "cloud" as const },
+    };
+    for (const [key, mode] of [
+      [emptyKey({ leftArrow: true }), "local"],
+      [emptyKey({ rightArrow: true }), "external"],
+    ] as const) {
+      const dispatched: TuiAction[] = [];
+      const handled = handleLlmPanelKey("", key, {
+        state,
+        dispatch: (action) => dispatched.push(action),
+        callbacks: callbacks(),
+      });
+      expect(handled).toBe(true);
+      expect(dispatched).toEqual([{ type: "llm_mode_set", mode }]);
+    }
+  });
+
   it("selects an exact cloud text model", () => {
     const base = seededState();
     const state = {
