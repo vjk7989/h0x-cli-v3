@@ -2,7 +2,8 @@
 # Install a released h0x-cli CLI (Node SEA) from GitHub Releases.
 #
 # Usage:
-#   curl -fsSL https://pavii.tech/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/buckleson/Pavii-cli-releases/main/scripts/install.sh | sh
+#   Website: https://pavii.tech
 #
 # Environment:
 #   H0X_CLI_REPO=owner/repo                (default: buckleson/Pavii-cli-releases)

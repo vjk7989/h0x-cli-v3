@@ -42,6 +42,9 @@ describe("CLI package and compatibility aliases", () => {
     expect(script).toContain('link_alias h0x-cli "$INSTALL_DIR/atag"');
     // Relative link target, so moving the install dir does not break it.
     expect(script).toContain('ln -sfn "$1" "$2"');
+    expect(script).toContain(
+      "https://raw.githubusercontent.com/buckleson/Pavii-cli-releases/main/scripts/install.sh",
+    );
     expect(script).toContain("https://pavii.tech");
     expect(script).toContain("buckleson/Pavii-cli-releases");
   });
@@ -54,6 +57,9 @@ describe("CLI package and compatibility aliases", () => {
     expect(script).toContain('Join-Path $InstallDir "atag.cmd"');
     // %~dp0 keeps the shim pointed at the binary beside it.
     expect(script).toContain('"`"%~dp0h0x-cli.exe`" %*"');
+    expect(script).toContain(
+      "https://raw.githubusercontent.com/buckleson/Pavii-cli-releases/main/scripts/install.ps1",
+    );
     expect(script).toContain("https://pavii.tech");
     expect(script).toContain("buckleson/Pavii-cli-releases");
   });

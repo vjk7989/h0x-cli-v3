@@ -269,7 +269,7 @@ Decision: the release workflow builds on version tags and manual dispatch, but d
 
 Decision: npm publishing remains blocked until the package name is confirmed and CI receives an `NPM_TOKEN` secret. Tokens pasted into chat must not be committed, logged, documented, or used as source-controlled config; rotate any token that was shared in chat.
 
-Decision: install scripts document `https://pavii.tech` examples and h0x environment names, with legacy `ATOMIC_AGENT_*` install overrides still accepted. POSIX and Windows installers install `h0x-cli` as the primary binary and create only the intentional compatibility aliases. Bundle README output includes TEAM PAVii.Ai, the website, and the h0x GitHub repository.
+Decision: install scripts document raw `buckleson/Pavii-cli-releases` mirror URLs and h0x environment names, with legacy `ATOMIC_AGENT_*` install overrides still accepted. POSIX and Windows installers install `h0x-cli` as the primary binary and create only the intentional compatibility aliases. Bundle README output includes TEAM PAVii.Ai, the website, and the h0x GitHub repository.
 
 Decision: self-update remains unavailable in this development build. The dormant invocation builder now uses `H0X_CLI_*` environment variables and h0x repo/script URLs, but `checkForAppUpdate`, `runAppUpdate`, and `canSelfUpdate` still fail closed until real h0x release artifacts exist and are verified.
 

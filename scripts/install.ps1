@@ -9,7 +9,9 @@
   that directory to the user PATH.
 
 .EXAMPLE
-  irm https://pavii.tech/install.ps1 | iex
+  irm https://raw.githubusercontent.com/buckleson/Pavii-cli-releases/main/scripts/install.ps1 | iex
+
+  Website: https://pavii.tech
 
 .NOTES
   Environment overrides (mirrors install.sh):

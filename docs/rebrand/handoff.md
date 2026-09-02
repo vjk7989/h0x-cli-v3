@@ -250,7 +250,9 @@ dormant self-update invocation path uses h0x environment names and h0x
 installer URLs, but update checks and update actions remain disabled until real
 h0x artifacts exist and are explicitly approved.
 
-Mirror publication is manual-only through `.github/workflows/release.yml` with
+Public installer commands now use raw URLs from `buckleson/Pavii-cli-releases`
+so the mirror hosts both installer scripts and release archives. Mirror
+publication is manual-only through `.github/workflows/release.yml` with
 `publish=true` and a `PAVII_RELEASES_TOKEN` repository secret that can write to
 `buckleson/Pavii-cli-releases`. NPM publication is not configured yet; confirm
 the final package name and store the token only as a CI `NPM_TOKEN` secret

@@ -124,13 +124,12 @@ first launch.
 From a published release (or `latest`):
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/vjk7989/h0x-cli-v3/BRANCH/scripts/install.sh" | sh
+curl -fsSL "https://raw.githubusercontent.com/buckleson/Pavii-cli-releases/main/scripts/install.sh" | sh
 ```
 
-The script is fetched from the source repository, but released archives are
-downloaded from the PAVii release mirror by default:
-`buckleson/Pavii-cli-releases`. Set `H0X_CLI_REPO=owner/repo` only when testing
-another release-asset repository. Optional: `H0X_CLI_VERSION`,
+The script and released archives are downloaded from the PAVii release mirror
+by default: `buckleson/Pavii-cli-releases`. Set `H0X_CLI_REPO=owner/repo` only
+when testing another release-asset repository. Optional: `H0X_CLI_VERSION`,
 `H0X_CLI_INSTALL_DIR`.
 
 Draft GitHub Releases are uploaded to the mirror only from a manual release
