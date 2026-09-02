@@ -147,6 +147,59 @@ describe("createFallbackCompleter (real bootstrap seam)", () => {
     await complete(baseParams);
     expect(recorded).toEqual(["cloud-model"]);
   });
+
+  it("uses the newly active primary on the next turn after a provider hot-swap", async () => {
+    let chainIds = ["cloud", "mistral"];
+    const attempted: string[] = [];
+    const providers = new Map<string, LlmProvider>([
+      [
+        "cloud",
+        fakeProvider("cloud", "native_tools", async () => {
+          attempted.push("cloud");
+          throw new OpenAiHttpError("rate limited", 429, "http://cloud", false, null, "cloud");
+        }),
+      ],
+      [
+        "mistral",
+        fakeProvider("mistral", "native_tools", async () => {
+          attempted.push("mistral");
+          return answer("mistral");
+        }),
+      ],
+      [
+        "claude-cli",
+        fakeProvider("claude-cli", "native_tools", async () => {
+          attempted.push("claude-cli");
+          return answer("claude-cli");
+        }),
+      ],
+    ]);
+    const chain = new ProviderFallbackChain({
+      resolve: () => ({ chain: chainIds, timing: DEFAULT_FALLBACK_TIMING }),
+    });
+    const complete = createFallbackCompleter({
+      fallbackChain: chain,
+      resolveSlice: (providerId) => {
+        const provider = providers.get(providerId)!;
+        return { provider, transport: provider.capabilities.toolTransport };
+      },
+      recordUnaryUsage: () => {},
+      recordStreamUsage: () => {},
+    });
+
+    await expect(complete(baseParams)).resolves.toMatchObject({
+      modelId: "mistral-model",
+    });
+    expect(attempted).toEqual(["cloud", "mistral"]);
+    expect(chain.activeOverrideFor("s1")).toBe("mistral");
+
+    chainIds = ["claude-cli", "mistral"];
+    await expect(complete(baseParams)).resolves.toMatchObject({
+      modelId: "claude-cli-model",
+    });
+    expect(attempted).toEqual(["cloud", "mistral", "claude-cli"]);
+    expect(chain.activeOverrideFor("s1")).toBeNull();
+  });
 });
 
 describe("createFallbackStreamer (real bootstrap seam)", () => {

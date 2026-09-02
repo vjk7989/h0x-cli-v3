@@ -19,6 +19,13 @@ panel arrows keep mode navigation. See `src/tui/app-key-bindings.ts`,
 `src/cli/bin-alias.test.ts`. Do not broaden into provider, prompt, telemetry,
 storage, or mirror release work unless the user explicitly asks.
 
+Follow-up on 2026-09-02: a runtime fallback hot-swap bug was fixed for
+`0.4.4`. `ProviderFallbackChain` now drops a sticky fallback override whenever
+the resolved active primary provider changes, so selecting a new provider/model
+does not leave the next turn routed through a previously failed fallback such as
+`mistral`. Start with `src/llm/fallback/provider-fallback-chain.ts` and its
+test file if this area needs more work.
+
 ## Next-session focus
 
 Continue the post-audit rebrand hardening one area at a time. The September 1

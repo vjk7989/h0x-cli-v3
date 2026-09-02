@@ -62,6 +62,8 @@ export interface FallbackChainOptions {
 interface PartitionState {
   /** Per-provider circuit-breaker entries for this partition. */
   readonly breakers: Map<string, BreakerEntry>;
+  /** Last resolved primary provider; active-provider hot-swaps reset overrides. */
+  primaryId: string | null;
   /** Sticky working provider after a switch-away; null = on primary. */
   overrideId: string | null;
   /** Whether the current override was already announced (dedupe). */
@@ -69,7 +71,12 @@ interface PartitionState {
 }
 
 function freshPartition(): PartitionState {
-  return { breakers: new Map(), overrideId: null, announcedOverride: false };
+  return {
+    breakers: new Map(),
+    primaryId: null,
+    overrideId: null,
+    announcedOverride: false,
+  };
 }
 
 /**
@@ -129,8 +136,17 @@ export class ProviderFallbackChain {
 
     const p = this.partition(partitionKey);
 
-    // A user hot-swap (new primary) or a chain edit that dropped the
-    // override provider drops the override entirely.
+    // A user hot-swap (new primary) drops the sticky fallback override
+    // immediately. Without this, the status bar can show the newly
+    // selected provider while the next turn still routes to the old
+    // override until probe throttling expires.
+    if (p.primaryId && p.primaryId !== primary) {
+      this.clearOverride(p);
+    }
+    p.primaryId = primary;
+
+    // A chain edit that dropped the override provider also drops the
+    // override entirely.
     if (p.overrideId && !chain.includes(p.overrideId)) {
       this.clearOverride(p);
     }

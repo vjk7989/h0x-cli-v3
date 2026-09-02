@@ -300,6 +300,28 @@ describe("ProviderFallbackChain", () => {
     expect(chain.activeOverride).toBeNull();
   });
 
+  it("drops a sticky override when the active primary provider changes", () => {
+    let ids = ["mistral", "claude-cli"];
+    const chain = new ProviderFallbackChain({
+      resolve: () => chainOf(ids),
+    });
+
+    expect(chain.pickProvider()).toEqual({
+      providerId: "mistral",
+      isProbe: false,
+    });
+    chain.advanceFrom("mistral", http(500));
+    chain.recordSuccess("claude-cli", false);
+    expect(chain.activeOverride).toBe("claude-cli");
+
+    ids = ["openai-compatible", "mistral", "claude-cli"];
+    expect(chain.pickProvider()).toEqual({
+      providerId: "openai-compatible",
+      isProbe: false,
+    });
+    expect(chain.activeOverride).toBeNull();
+  });
+
   it("is a transparent pass-through for a single-link chain", () => {
     const notices: ProviderSwitchNotice[] = [];
     const chain = new ProviderFallbackChain({
